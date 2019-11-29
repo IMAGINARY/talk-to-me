@@ -1,3 +1,16 @@
+try {
+    const electron = require("electron");
+    if (electron.remote) {
+        // If running in Electron renderer process, delegate to Electrons main process via Electron remote.
+        module.exports = electron.remote.require(__filename);
+        return;
+    } else {
+        // If running in Electron main process, proceed like with regular nodejs modules.
+    }
+} catch (err) {
+    // If there is no Electron module, there is nothing to do.
+}
+
 const assert = require('assert');
 const path = require('path');
 const {Worker, isMainThread} = require('worker_threads');
