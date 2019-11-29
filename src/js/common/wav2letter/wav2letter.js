@@ -19,38 +19,65 @@ assert(isMainThread, "Can not load this module in worker thread");
 
 const transcribers = {};
 
-function createTranscriber(lang) {
-    const queue = [];
-    const worker = new Worker(path.resolve(__dirname, 'worker.js'), {workerData: {lang: lang}});
-    worker.on('message', transcription => queue.shift().resolve(transcription));
-    worker.on('error', err => queue.shift().reject(err));
-    worker.on('exit', (code) => {
-        if (code !== 0)
-            queue.shift().reject(new Error(`Worker stopped with exit code ${code}`));
-    });
+function getTranscriber(lang) {
+    if (typeof transcribers[lang] === "undefined") {
+        const queue = [];
 
-    const transcribe = async waveform => await new Promise((resolve, reject) => {
-        queue.push({resolve: resolve, reject: reject});
-        worker.postMessage(waveform);
-    });
+        const worker = new Worker(path.resolve(__dirname, 'worker.js'), {workerData: {lang: lang}});
+        worker.on('message', transcription => queue.shift().resolve(transcription));
+        worker.on('error', err => queue.shift().reject(err));
+        worker.on('exit', (code) => {
+            const err = new Error(`Worker stopped with exit code ${code}`);
+            transcribers[lang].queue.forEach(callback => callback.reject(err));
+            delete transcribers[lang];
+        });
 
-    return {transcribe: transcribe, unref: () => worker.unref()};
+        const transcribe = async waveform => await new Promise((resolve, reject) => {
+            queue.push({resolve: resolve, reject: reject});
+            worker.postMessage(waveform);
+        });
+
+        transcribers[lang] = {transcribe: transcribe, worker: worker, queue: queue};
+    }
+    return transcribers[lang];
 }
 
 async function transcribe(params) {
     const lang = params.lang;
     const waveform16kHzFloat32 = params.waveform;
-    if (typeof transcribers[lang] === "undefined")
-        transcribers[lang] = createTranscriber(lang);
-    return await transcribers[lang].transcribe(waveform16kHzFloat32);
+    return await getTranscriber(lang).transcribe(waveform16kHzFloat32);
 }
 
-async function shutdown() {
-    const languages = Object.keys(transcribers);
-    languages.forEach(lang => {
-        transcribers[lang].unref();
-        delete transcribers[lang];
-    });
+function shutdown(lang, ...langs) {
+    if (typeof lang !== 'undefined')
+        langs.unshift(lang);
+    const allLangs = Object.keys(transcribers);
+    if (langs.length === 0)
+        langs = allLangs;
+    else
+        langs = langs.filter(l => typeof allLangs[l] !== "undefined");
+    langs.forEach(lang => transcribers[lang].worker.unref());
 }
 
-module.exports = {transcribe: transcribe, shutdown: shutdown};
+async function terminate(lang, ...langs) {
+    if (typeof lang !== 'undefined')
+        langs.unshift(lang);
+    const allLangs = Object.keys(transcribers);
+    if (langs.length === 0)
+        langs = allLangs;
+    else
+        langs = langs.filter(l => typeof allLangs[l] !== "undefined");
+
+    const promises = [];
+    langs.forEach(lang => promises.push(transcribers[lang].worker.terminate()));
+    return await Promise
+        .all(promises)
+        .then(exitCodes => exitCodes.reduce((exitCodeObj, v, i) => {
+                exitCodeObj[langs[i]] = v;
+                return exitCodeObj;
+            }, {})
+        );
+}
+
+
+module.exports = {transcribe: transcribe, shutdown: shutdown, terminate: terminate};
