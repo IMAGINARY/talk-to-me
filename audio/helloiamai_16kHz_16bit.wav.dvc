@@ -1,0 +1,7 @@
+md5: 29ad657ba3aad2b5a69a4641c25071f8
+outs:
+- md5: 25f0e745c057f428cdd81f9cc2d56d85
+  path: helloiamai_16kHz_16bit.wav
+  cache: true
+  metric: false
+  persist: false

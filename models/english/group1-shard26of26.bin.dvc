@@ -1,0 +1,7 @@
+md5: 07e5288cf200718aec18f137d02087dc
+outs:
+- md5: def65fad7b1279ad3a715e42ed35f13d
+  path: group1-shard26of26.bin
+  cache: true
+  metric: false
+  persist: false

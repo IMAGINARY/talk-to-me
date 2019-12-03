@@ -1,0 +1,8 @@
+
+['remote "s3remote"']
+url = s3://exhibits.storage.imaginary.org/talk-to-me/dvc-storage
+acl = public-read
+[core]
+remote = exhibits-storage-http
+['remote "exhibits-storage-http"']
+url = http://exhibits.storage.imaginary.org/talk-to-me/dvc-storage

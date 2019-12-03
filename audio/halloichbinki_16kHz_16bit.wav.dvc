@@ -1,0 +1,7 @@
+md5: 7e071430a48555f05a8be05f6003b411
+outs:
+- md5: d811b6f5536361b366c50d2029c4a09b
+  path: halloichbinki_16kHz_16bit.wav
+  cache: true
+  metric: false
+  persist: false

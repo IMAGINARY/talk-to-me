@@ -1,0 +1,7 @@
+md5: 47de0cf8ec798c4812315e193e295cf1
+outs:
+- md5: c79857097de1ce2c27a54ba5e894ea09
+  path: group1-shard13of26.bin
+  cache: true
+  metric: false
+  persist: false
