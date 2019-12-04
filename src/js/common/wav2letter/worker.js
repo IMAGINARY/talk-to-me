@@ -1,30 +1,47 @@
 const assert = require('assert');
-const {parentPort, workerData} = require('worker_threads');
+const {parentPort} = require('worker_threads');
 const tf = require('@tensorflow/tfjs-node');
 const fs = require('fs');
 const path = require('path');
 
 const melFilter = require('./mel-filter.js');
 
-const lang = workerData.lang;
+const models = {
+    "en": {
+        url: 'file://' + path.resolve(__dirname, '../../../../models/english/model.json'),
+        letters: '  abcdefghijklmnopqrstuvwxyz   ',
+        tfModel: null,
+    },
+    "de": {
+        url: 'file://' + path.resolve(__dirname, '../../../../models/german/model.json'),
+        letters: '  abcdefghijklmnopqrstuvwxyzßäöü   ',
+        tfModel: null,
+    }
+};
 
-assert(lang === 'en' || lang === 'de', "Only English (en) and German (de) are supported at the moment.");
+function assertLang(lang) {
+    assert(typeof models[lang] !== 'undefined', "Only the following languages are supported at the moment: " + Object.keys(models).join(", "));
+}
 
-const modelUrl = {
-    "en": 'file://' + path.resolve(__dirname, '../../../../models/english/model.json'),
-    "de": 'file://' + path.resolve(__dirname, '../../../../models/german/model.json'),
-}[lang];
+async function getModel(lang) {
+    assertLang(lang);
+    if (models[lang].tfModel === null) {
+        models[lang].tfModel = await tf.loadLayersModel(models[lang].url);
+        transcribeSync(models[lang], new Float32Array(0));
+        console.log(`Model for ${lang} loaded successfully.`);
+    }
+    return models[lang];
+}
 
-const modelLetters = {
-    "en": '  abcdefghijklmnopqrstuvwxyz   ',
-    "de": '  abcdefghijklmnopqrstuvwxyzßäöü   ',
-}[lang];
-
-const tfModelPromise = tf.loadLayersModel(modelUrl).then(model => {
-    transcribeSync(model, new Float32Array(0));
-    console.log(`Model for ${lang} loaded successfully.`);
-    return model;
-});
+function unloadModel(lang) {
+    assertLang(lang);
+    if (models[lang].tfModel !== null) {
+        models[lang].tfModel = null;
+        console.log(`Model for ${lang} unloaded.`);
+    } else {
+        console.log(`Model for ${lang} not unloaded, because it was not loaded.`);
+    }
+}
 
 function melspectrogram(S, sr, n_mels) {
     const n_fft = 2 * (S.shape[0] - 1);
@@ -36,6 +53,7 @@ function rawToMel(audio, sampling_rate, window_size, hop_length, n_freqs, normal
     const spectro = tf.transpose(tf.signal.stft(audio, window_size, hop_length - 1, window_size, tf.signal.hannWindow));
     const power = tf.square(tf.abs(spectro));
     const mel = melspectrogram(power, sampling_rate, n_freqs);
+
     //exportTensor2D("spectro.txt", spectro);
     //exportTensor2D("power.txt", power);
     //exportTensor2D("mel.txt", mel);
@@ -84,13 +102,13 @@ function exportTensor2D(filename, t) {
     });
 }
 
-function transcriptionFromActivations(activations) {
+function transcriptionFromActivations(activations, letters) {
     const maxActivationIndices = tf.argMax(activations.squeeze(0), 1).arraySync();
-    const transcription = maxActivationIndices.map(i => modelLetters[i]).join("").replace(/ +/, " ");
+    const transcription = maxActivationIndices.map(i => letters[i]).join("").replace(/ +/, " ");
     return transcription;
 }
 
-function transcribeSync(tfModel, waveform16kHzFloat32) {
+function transcribeSync(model, waveform16kHzFloat32) {
     const windowSize = 400;
     if (waveform16kHzFloat32.length < windowSize) {
         const paddedWaveform = new Float32Array(windowSize);
@@ -99,14 +117,29 @@ function transcribeSync(tfModel, waveform16kHzFloat32) {
     }
 
     const melSpectrogram = rawToMel(tf.tensor(waveform16kHzFloat32), 16000, windowSize, 160, 128, true);
-    const allActivations = w2l_forward(tf.expandDims(melSpectrogram, 0), tfModel, 'channels_last', true);
-    const transcription = transcriptionFromActivations(allActivations[11]);
+    const allActivations = w2l_forward(tf.expandDims(melSpectrogram, 0), model.tfModel, 'channels_last', true);
+    const transcription = transcriptionFromActivations(allActivations[11], model.letters);
     return transcription;
 }
 
-async function transcribe(waveform16kHzFloat32) {
-    const transcription = transcribeSync(await tfModelPromise, waveform16kHzFloat32);
+async function transcribe(params) {
+    const model = await getModel(params.lang);
+    const transcription = transcribeSync(model, params.waveform);
     parentPort.postMessage(transcription);
 }
 
-parentPort.on('message', transcribe);
+function processMessage(message) {
+    switch (message.method) {
+        case 'transcribe':
+            transcribe(message.data);
+            break;
+        case 'unloadModel':
+            unloadModel(message.data);
+            break;
+        default:
+            throw new Error("Unknown method: " + message.method);
+            break;
+    }
+}
+
+parentPort.on('message', processMessage);
