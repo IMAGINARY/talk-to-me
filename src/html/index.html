@@ -29,6 +29,8 @@
         const EventEmitter = require('events');
 
         const wav2letter = require("../js/common/wav2letter/wav2letter.js");
+        Promise.all(['en', 'de'].map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
+            .then(() => console.log("Speech recognition models loaded."));
 
         function addText(text, lang) {
             console.log(lang + ":", text);
