@@ -1,6 +1,5 @@
 const {BrowserWindow, ipcMain} = require('electron');
 const path = require('path');
-const wav2letter = require("../common/wav2letter/wav2letter.js");
 
 function createWindow() {
     // Create the browser window.
