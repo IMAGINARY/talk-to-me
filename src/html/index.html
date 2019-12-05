@@ -136,20 +136,25 @@
 
             async function startRecording() {
                 samples.clear();
-                micStream.enabled = true;
+                await unmuteRecording();
                 await context.resume();
             }
 
             async function stopRecording() {
+                await muteRecording();
                 micStream.enabled = false;
                 await context.suspend();
             }
 
             async function muteRecording() {
-                micStream.enabled = false;
+                micStream.getAudioTracks().forEach(t => t.enabled = false);
             }
 
-            stopRecording();
+            async function unmuteRecording() {
+                micStream.getAudioTracks().forEach(t => t.enabled = true);
+            }
+
+            await stopRecording();
 
             const canvas = document.querySelector('#waveform-viz');
             const canvasCtx = canvas.getContext("2d");
