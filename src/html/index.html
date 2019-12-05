@@ -110,19 +110,25 @@
 
             const context = new AudioContext({sampleRate: sampleRate});
             const source = context.createMediaStreamSource(micStream);
+            const gain = context.createGain();
             const processor = context.createScriptProcessor(1024, 1, 1);
             processor.onaudioprocess = e => samples.push(e.inputBuffer.getChannelData(0));
             const filters = createFilters(context);
 
+            window.context = context;
+            window.micStream = micStream;
+
             const useFilters = false
             if (useFilters) {
-                source.connect(filters[0]);
+                source.connect(gain);
+                gain.connect(filters[0]);
                 filters[filters.length - 1].connect(processor);
                 filters[filters.length - 1].connect(context.destination);
                 processor.connect(context.destination);
             } else {
-                source.connect(processor);
-                source.connect(context.destination);
+                source.connect(gain);
+                gain.connect(context.destination);
+                gain.connect(processor);
                 processor.connect(context.destination);
             }
 
@@ -137,21 +143,18 @@
             async function startRecording() {
                 samples.clear();
                 await unmuteRecording();
-                await context.resume();
             }
 
             async function stopRecording() {
                 await muteRecording();
-                micStream.enabled = false;
-                await context.suspend();
             }
 
             async function muteRecording() {
-                micStream.getAudioTracks().forEach(t => t.enabled = false);
+                gain.gain.value = 0.0;
             }
 
             async function unmuteRecording() {
-                micStream.getAudioTracks().forEach(t => t.enabled = true);
+                gain.gain.value = 1.0;
             }
 
             await stopRecording();
