@@ -82,6 +82,8 @@
             const lengthInMs = 2000;
             const sampleRate = 16000;
             const samples = new FixedSizeFloat32Buffer(lengthInMs * sampleRate / 1000);
+            // Initially fill up the buffer
+            samples.push(new Float32Array(samples.maxLength));
 
             const createFilters = context => {
                 const filter = context.createBiquadFilter();
@@ -131,6 +133,8 @@
                 gain.connect(processor);
                 processor.connect(context.destination);
             }
+
+            samples.on('data', () => drawWaveform());
 
             samples.on('full', async data => {
                 await stopRecording();
@@ -190,12 +194,7 @@
                 canvasCtx.restore();
             }
 
-            function renderLoop() {
-                drawWaveform();
-                requestAnimationFrame(renderLoop);
-            }
-
-            renderLoop();
+            drawWaveform();
 
             return {
                 startRecording: startRecording,
