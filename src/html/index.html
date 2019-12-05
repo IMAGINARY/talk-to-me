@@ -3,29 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <title>Talk to Me</title>
+    <link rel="stylesheet" type="text/css" href="../../node_modules/@fortawesome/fontawesome-free/css/all.css">
+    <style>
+        body {
+            background-color: white;
+            text-align: center;
+        }
+
+        #record-button {
+            font-size: 3em;
+        }
+
+        #waveform-viz {
+            width: 100%;
+        }
+
+        .chunk {
+            border: 1px solid gray;
+        }
+    </style>
     <script>
         const assert = require('assert');
         const fs = require('fs').promises;
         const path = require('path');
-        const WavDecoder = require("wav-decoder");
+        const EventEmitter = require('events');
 
         const wav2letter = require("../js/common/wav2letter/wav2letter.js");
 
-        async function transcribeWavFile(path, lang) {
-            const buffer = await fs.readFile(path);
-            const audioData = await WavDecoder.decode(buffer);
-
-            assert(audioData.numberOfChannels > 0, "Input file has no audio channel.");
-            assert(audioData.sampleRate === 16000, "Input file has sample rate other than 16kHz.");
-
-            return await wav2letter.transcribe({waveform: audioData.channelData[0], lang: lang});
+        function addText(text, lang) {
+            console.log(lang + ":", text);
+            const chunkContainer = document.getElementById(`chunks-${lang}`);
+            chunkContainer.appendChild(document.createTextNode(text));
+            chunkContainer.appendChild(document.createElement('br'));
         }
 
-        transcribeWavFile(path.resolve(__dirname, '../../audio/helloiamai_16kHz_16bit.wav'), "en")
-            .then(t => console.log(t));
+        class FixedSizeFloat32Buffer extends EventEmitter {
+            constructor(maxLength) {
+                super();
+                this.buffer = new Float32Array(maxLength);
+                this.count = 0;
+            }
+
+            push(data) {
+                const newData = data.subarray(0, this.buffer.length - this.count);
+                const overflow = data.subarray(this.buffer.length - this.count);
+                if (newData.length > 0) {
+                    this.buffer.set(newData, this.count);
+                    const prevCount = this.count;
+                    this.count += newData.length;
+                    this.emit('data', this.buffer.subarray(prevCount, this.count));
+                    if (this.count === this.buffer.length) {
+                        this.emit('full', this.buffer);
+                    }
+                }
+                return overflow;
+            }
+
+            clear() {
+                this.count = 0;
+            }
+
+            get data() {
+                return this.buffer.subarray(0, this.count);
+            }
+
+            get length() {
+                return this.count;
+            }
+
+            get maxLength() {
+                return this.buffer.length;
+            }
+        }
+
+        async function init() {
+            const lengthInMs = 2000;
+            const sampleRate = 16000;
+            const samples = new FixedSizeFloat32Buffer(lengthInMs * sampleRate / 1000);
+
+            const createFilters = context => {
+                const filter = context.createBiquadFilter();
+                filter.Q.value = 8.30;
+                filter.frequency.value = 355;
+                filter.gain.value = 3.0;
+                filter.type = 'bandpass';
+
+                const compressor = context.createDynamicsCompressor();
+                compressor.threshold.value = -50;
+                compressor.knee.value = 40;
+                compressor.ratio.value = 12;
+                compressor.reduction.value = -20;
+                compressor.attack.value = 0;
+                compressor.release.value = 0.25;
+
+                filter.connect(compressor);
+
+                return [filter, compressor];
+            };
+
+            const micStream = await navigator.mediaDevices.getUserMedia({
+                audio: {sampleRate: 16000, noiseSuppression: true, autoGainControl: false},
+                video: false
+            });
+
+            const context = new AudioContext({sampleRate: sampleRate});
+            const source = context.createMediaStreamSource(micStream);
+            const processor = context.createScriptProcessor(1024, 1, 1);
+            processor.onaudioprocess = e => samples.push(e.inputBuffer.getChannelData(0));
+            const filters = createFilters(context);
+
+            const useFilters = false
+            if (useFilters) {
+                source.connect(filters[0]);
+                filters[filters.length - 1].connect(processor);
+                filters[filters.length - 1].connect(context.destination);
+                processor.connect(context.destination);
+            } else {
+                source.connect(processor);
+                source.connect(context.destination);
+                processor.connect(context.destination);
+            }
+
+            samples.on('full', async data => {
+                await stopRecording();
+                const lettersEn = await wav2letter.transcribe({waveform: data, lang: 'en'});
+                addText(lettersEn, 'en');
+                const lettersDe = await wav2letter.transcribe({waveform: data, lang: 'de'});
+                addText(lettersDe, 'de');
+            });
+
+            async function startRecording() {
+                samples.clear();
+                micStream.enabled = true;
+                await context.resume();
+            }
+
+            async function stopRecording() {
+                micStream.enabled = false;
+                await context.suspend();
+            }
+
+            async function muteRecording() {
+                micStream.enabled = false;
+            }
+
+            stopRecording();
+
+            const canvas = document.querySelector('#waveform-viz');
+            const canvasCtx = canvas.getContext("2d");
+
+            function drawWaveform() {
+                const amplification = 1.0 / samples.data.reduce((max, cur) => Math.max(max, Math.abs(cur)), 0.1);
+
+                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+                canvasCtx.save();
+                canvasCtx.imageSmoothingEnabled = false;
+                canvasCtx.translate(0, canvas.height / 2.0);
+                canvasCtx.strokeStyle = '#999';
+                canvasCtx.fillStyle = '#000';
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(0, 0);
+                canvasCtx.lineTo(canvas.width * samples.length, 0.0);
+                canvasCtx.stroke();
+                canvasCtx.strokeStyle = '#000';
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(0, 0);
+                const samplesSoFar = samples.data;
+                for (let i = 0; i < samplesSoFar.length; ++i)
+                    canvasCtx.lineTo(i / samples.maxLength * canvas.width, +0.5 * amplification * samplesSoFar[i] * canvas.height);
+                for (let i = samplesSoFar.length - 1; i >= 0; --i)
+                    canvasCtx.lineTo(i / samples.maxLength * canvas.width, -0.5 * amplification * samplesSoFar[i] * canvas.height);
+                canvasCtx.closePath();
+                canvasCtx.fill();
+                canvasCtx.stroke();
+                canvasCtx.restore();
+            }
+
+            function renderLoop() {
+                drawWaveform();
+                requestAnimationFrame(renderLoop);
+            }
+
+            renderLoop();
+
+            return {
+                startRecording: startRecording,
+                stopRecording: stopRecording,
+                muteRecording: muteRecording,
+            };
+        }
     </script>
 </head>
 <body>
-
+<p>
+    <canvas id="waveform-viz" width="512" height="128" style="border: 1px solid black;"></canvas>
+</p>
+<p>
+    <i id="record-button"
+       class="fas fa-microphone"
+       onmousedown="state.startRecording(); this.style.color='red';"
+       onmouseup="state.muteRecording(); this.style.color='inherit';">
+    </i>
+</p>
+<form>
+    <table border="1" align="center" width="100%">
+        <tr>
+            <th width="50%">English</th>
+            <th width="50%">German</th>
+            <!--
+            <th width="50%"><input type="radio" id="en" name="language" value="English" onchange="state.setLanguage('en');" checked>
+                <label for="en"> English</label></th>
+            <th width="50%"><input type="radio" id="de" name="language" value="German" onchange="state.setLanguage('de');">
+                <label for="de"> German</label></th>
+            -->
+        </tr>
+        <tr>
+            <td id="chunks-en" valign="top"></td>
+            <td id="chunks-de" valign="top"></td>
+        </tr>
+    </table>
+</form>
+<script>
+    let state;
+    init().then(s => state = s);
+</script>
 </body>
 </html>
