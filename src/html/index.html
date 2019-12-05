@@ -6,8 +6,10 @@
     <link rel="stylesheet" type="text/css" href="../../node_modules/@fortawesome/fontawesome-free/css/all.css">
     <style>
         body {
-            background-color: white;
+            background-color: #202020;
             text-align: center;
+            color: #F0F0F0;
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
         }
 
         #record-button {
@@ -20,6 +22,47 @@
 
         .chunk {
             border: 1px solid gray;
+        }
+        #mic {
+            text-align: center;
+            vertical-align: middle;
+            border-radius: 40px;
+            width: 80px;
+            height: 80px;
+            background-color: #404040;
+            text-align:center;
+            margin: 0 auto;
+        }
+        #main {
+            margin: 0 auto;
+            text-align:center;
+            padding: 20px;
+            margin: 20px;
+            width: 100%;
+        }
+        #waveform {
+            margin: 20px;
+            border-radius: 20px;
+            padding: 10px 25px 10px 25px;
+            background-color: #FFFF20;
+            margin: 0 auto;
+            text-align:center;
+            width: 60%;
+        }
+        #lang {
+            width: 100%;
+            border: none;
+            padding: 20px;
+            border-collapse:collapse;
+        }
+        tr {
+            border: 0;
+        }
+        td {
+            border: 0;
+        }
+        th {
+            border: 0;
         }
     </style>
     <script>
@@ -205,34 +248,39 @@
     </script>
 </head>
 <body>
-<p>
-    <canvas id="waveform-viz" width="512" height="128" style="border: 1px solid black;"></canvas>
-</p>
-<p>
-    <i id="record-button"
-       class="fas fa-microphone"
-       onmousedown="state.startRecording(); this.style.color='red';"
-       onmouseup="state.muteRecording(); this.style.color='inherit';">
-    </i>
-</p>
-<form>
-    <table border="1" align="center" width="100%">
-        <tr>
-            <th width="50%">English</th>
-            <th width="50%">German</th>
-            <!--
-            <th width="50%"><input type="radio" id="en" name="language" value="English" onchange="state.setLanguage('en');" checked>
-                <label for="en"> English</label></th>
-            <th width="50%"><input type="radio" id="de" name="language" value="German" onchange="state.setLanguage('de');">
-                <label for="de"> German</label></th>
-            -->
-        </tr>
-        <tr>
-            <td id="chunks-en" valign="top"></td>
-            <td id="chunks-de" valign="top"></td>
-        </tr>
-    </table>
-</form>
+    <div id="main">
+        <div id="waveform">
+            <canvas id="waveform-viz" width="512" height="128"></canvas>
+        </div>
+        <br>
+        <br>
+        <div id="mic">
+            <br>
+                <i id="record-button"
+                class="fas fa-microphone"
+                onmousedown="state.startRecording(); this.style.color='red';"
+                onmouseup="state.muteRecording(); this.style.color='inherit';">
+             </i>
+        </div>
+        <form>
+                <table border="1" align="center" width="100%" id="lang">
+                    <tr>
+                        <th width="50%">English</th>
+                        <th width="50%">German</th>
+                        <!--
+                        <th width="50%"><input type="radio" id="en" name="language" value="English" onchange="state.setLanguage('en');" checked>
+                            <label for="en"> English</label></th>
+                        <th width="50%"><input type="radio" id="de" name="language" value="German" onchange="state.setLanguage('de');">
+                            <label for="de"> German</label></th>
+                        -->
+                    </tr>
+                    <tr>
+                        <td id="chunks-en" valign="top"></td>
+                        <td id="chunks-de" valign="top"></td>
+                    </tr>
+                </table>
+            </form>
+                <div>
 <script>
     let state;
     init().then(s => state = s);
