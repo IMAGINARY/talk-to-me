@@ -26,7 +26,7 @@ async function getModel(lang) {
     assertLang(lang);
     if (models[lang].tfModel === null) {
         models[lang].tfModel = await tf.loadLayersModel(models[lang].url);
-        transcribeSync(models[lang], new Float32Array(0));
+        tf_predictExtSync(models[lang], new Float32Array(0));
         console.log(`Model for ${lang} loaded successfully.`);
     }
     return models[lang];
@@ -65,21 +65,10 @@ function rawToMel(audio, sampling_rate, window_size, hop_length, n_freqs, normal
         const stdDev = tf.sqrt(tf.sum(tf.squaredDifference(logMel, mean)).div(logMel.shape[0] * logMel.shape[1]));
         //exportTensor2D("stdDev.txt", spectro);
         const normalizedLogMel = logMel.sub(mean).div(stdDev);
-        return normalizedLogMel;
+        return normalizedLogMel.transpose();
     } else {
-        return logMel;
+        return logMel.transpose();
     }
-}
-
-function w2l_forward(audio, model, data_format, return_all = false) {
-    if (data_format === "channels_last")
-        audio = tf.transpose(audio, [0, 2, 1]);
-
-    const out = model.predict(audio);
-    if (return_all)
-        return out;
-    else
-        return out[out.length - 1];
 }
 
 function exportTensor2D(filename, t) {
@@ -101,31 +90,79 @@ function exportTensor2D(filename, t) {
     });
 }
 
-function transcriptionFromActivations(activations, letters) {
-    const maxActivationIndices = tf.argMax(activations.squeeze(0), 1).arraySync();
+function tf_decodeGreedy(letterActivations, letters) {
+    const maxActivationIndices = tf.argMax(letterActivations, 1).arraySync();
     const transcription = maxActivationIndices.map(i => letters[i]).join("").replace(/ +/, " ");
     return transcription;
 }
 
-function transcribeSync(model, waveform16kHzFloat32) {
-    const windowSize = 400;
-    if (waveform16kHzFloat32.length < windowSize) {
-        const paddedWaveform = new Float32Array(windowSize);
-        paddedWaveform.set(waveform16kHzFloat32);
-        waveform16kHzFloat32 = paddedWaveform;
+function ensureWaveformLength(waveform, targetLength) {
+    if (waveform.length < targetLength) {
+        const paddedWaveform = new Float32Array(targetLength);
+        paddedWaveform.set(waveform);
+        return paddedWaveform;
+    } else {
+        return waveform;
     }
-
-    const melSpectrogram = rawToMel(tf.tensor(waveform16kHzFloat32), 16000, windowSize, 160, 128, true);
-    const allActivations = w2l_forward(tf.expandDims(melSpectrogram, 0), model.tfModel, 'channels_last', true);
-    const transcription = transcriptionFromActivations(allActivations[11], model.letters);
-    return transcription;
 }
 
 async function transcribe(params) {
-    const model = await getModel(params.lang);
-    const transcription = transcribeSync(model, params.waveform);
+    const prediction = await tf_predictExt(params);
+    const letterActivations = prediction.layers[prediction.layers.length - 1];
+    const transcription = tf_decodeGreedy(letterActivations, prediction.letters);
     return transcription;
 }
 
+function tf_predictExtSync(model, waveform16kHzFloat32) {
+    const windowSize = 400;
+    waveform16kHzFloat32 = ensureWaveformLength(waveform16kHzFloat32, windowSize);
 
-module.exports = {transcribe: transcribe, unloadModel: unloadModel};
+    const logMelSpectrogram = rawToMel(tf.tensor(waveform16kHzFloat32), 16000, windowSize, 160, 128, true);
+
+    const allActivations = model.tfModel
+        .predict(tf.expandDims(logMelSpectrogram, 0))
+        .map(layer => layer.squeeze(0));
+
+    return {
+        logMelSpectrogram: logMelSpectrogram,
+        layers: allActivations,
+        letters: model.letters
+    }
+}
+
+async function tf_predictExt(params) {
+    const model = await getModel(params.lang);
+    const prediction = tf_predictExtSync(model, params.waveform);
+    return prediction;
+}
+
+async function predictExt(params) {
+    const tfPrediction = await tf_predictExt(params);
+    return {
+        logMelSpectrogram: await tensorToShapedTypedArray(tfPrediction.logMelSpectrogram),
+        layers: await Promise.all(tfPrediction.layers.map(tensorToShapedTypedArray)),
+        letters: tfPrediction.letters,
+    }
+}
+
+async function predict(params) {
+    const tfPrediction = await tf_predictExt(params);
+    return {
+        letterActivations: await tensorToShapedTypedArray(tfPrediction.layers[tfPrediction.layers.length - 1]),
+        letters: tfPrediction.letters
+    }
+}
+
+async function tensorToShapedTypedArray(tensor) {
+    return {
+        data: await tensor.data(),
+        shape: tensor.shape,
+    }
+}
+
+module.exports = {
+    transcribe: transcribe,
+    predict: predict,
+    predictExt: predictExt,
+    unloadModel: unloadModel,
+};

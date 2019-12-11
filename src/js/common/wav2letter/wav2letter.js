@@ -20,24 +20,18 @@ const steve = new Steve();
 async function setupSteve() {
     await steve.registerMethod('transcribe', `require('${workerPath}').transcribe`);
     await steve.registerMethod('unload', `require('${workerPath}').unloadModel`);
+    await steve.registerMethod('predict', `require('${workerPath}').predict`);
+    await steve.registerMethod('predictExt', `require('${workerPath}').predictExt`);
     return steve;
 }
 
 const stevePromise = setupSteve();
 
-async function transcribe(params) {
-    const steve = await stevePromise;
-    return await steve.getExecutor().transcribe(params);
-}
-
-async function unload(lang) {
-    const steve = await stevePromise;
-    await steve.getExecutor().unload(lang);
-}
-
 module.exports = {
-    transcribe: transcribe,
+    transcribe: async params => (await stevePromise).getExecutor().transcribe(params),
+    unload: async params => (await stevePromise).getExecutor().unload(params),
+    predict: async params => (await stevePromise).getExecutor().predict(params),
+    predictExt: async params => (await stevePromise).getExecutor().predictExt(params),
     shutdown: steve.shutdown.bind(steve),
     terminate: steve.terminate.bind(steve),
-    unload: unload
 };
