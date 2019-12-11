@@ -1,5 +1,4 @@
 const assert = require('assert');
-const {parentPort} = require('worker_threads');
 const tf = require('@tensorflow/tfjs-node');
 const fs = require('fs');
 const path = require('path');
@@ -128,33 +127,5 @@ async function transcribe(params) {
     return transcription;
 }
 
-function reportTaskResult(taskId, methodName, result) {
-    parentPort.postMessage({taskId: taskId, method: methodName, isError: false, result: result});
 
-}
-
-function reportTaskError(taskId, methodName, error) {
-    parentPort.postMessage({taskId: taskId, method: methodName, isError: true, result: error});
-}
-
-async function selectAndExecuteTask(methodName, data) {
-    switch (methodName) {
-        case 'transcribe':
-            return await transcribe(data);
-        case 'unloadModel':
-            return unloadModel(data);
-        default:
-            throw new Error("Unknown method: " + methodName);
-    }
-}
-
-async function processMessage(message) {
-    try {
-        const taskResult = await selectAndExecuteTask(message.methodName, message.data);
-        reportTaskResult(message.taskId, message.methodName, taskResult);
-    } catch (err) {
-        reportTaskError(message.taskId, message.methodName, err);
-    }
-}
-
-parentPort.on('message', processMessage);
+module.exports = {transcribe: transcribe, unloadModel: unloadModel};
