@@ -11,54 +11,33 @@ try {
     // If there is no Electron module, there is nothing to do.
 }
 
-const assert = require('assert');
 const path = require('path');
-const {Worker, isMainThread} = require('worker_threads');
+const Steve = require('../steve/steve.js');
 
-assert(isMainThread, "Can not load this module in worker thread");
+const workerPath = path.resolve(__dirname, 'worker.js');
+const steve = new Steve();
 
-let transcriber = getTranscriber();
-
-function getTranscriber() {
-    const queue = [];
-
-    const worker = new Worker(path.resolve(__dirname, 'worker.js'));
-    worker.on('message', transcription => queue.shift().resolve(transcription));
-    worker.on('error', err => queue.shift().reject(err));
-    worker.on('exit', (code) => {
-        const err = new Error(`Worker stopped with exit code ${code}`);
-        queue.forEach(callback => callback.reject(err));
-    });
-
-    const transcribe = async params => await new Promise((resolve, reject) => {
-        queue.push({resolve: resolve, reject: reject});
-        worker.postMessage({method: 'transcribe', data: params});
-    });
-
-    const unloadModel = async lang => worker.postMessage({method: 'unloadModel', data: lang});
-
-    return {
-        transcribe: transcribe,
-        unloadModel: unloadModel,
-        worker: worker,
-        queue: queue
-    };
+async function setupSteve() {
+    await steve.registerMethod('transcribe', `require('${workerPath}').transcribe`);
+    await steve.registerMethod('unload', `require('${workerPath}').unloadModel`);
+    return steve;
 }
+
+const stevePromise = setupSteve();
 
 async function transcribe(params) {
-    return await transcriber.transcribe(params);
+    const steve = await stevePromise;
+    return await steve.getExecutor().transcribe(params);
 }
 
-function shutdown() {
-    transcriber.worker.unref();
+async function unload(lang) {
+    const steve = await stevePromise;
+    await steve.getExecutor().unload(lang);
 }
 
-async function terminate() {
-    return await transcriber.worker.terminate();
-}
-
-function unload(lang) {
-    transcriber.unloadModel(lang);
-}
-
-module.exports = {transcribe: transcribe, shutdown: shutdown, terminate: terminate, unload: unload};
+module.exports = {
+    transcribe: transcribe,
+    shutdown: steve.shutdown.bind(steve),
+    terminate: steve.terminate.bind(steve),
+    unload: unload
+};

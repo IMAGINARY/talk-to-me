@@ -1,5 +1,4 @@
 const assert = require('assert');
-const {parentPort} = require('worker_threads');
 const tf = require('@tensorflow/tfjs-node');
 const fs = require('fs');
 const path = require('path');
@@ -125,21 +124,8 @@ function transcribeSync(model, waveform16kHzFloat32) {
 async function transcribe(params) {
     const model = await getModel(params.lang);
     const transcription = transcribeSync(model, params.waveform);
-    parentPort.postMessage(transcription);
+    return transcription;
 }
 
-function processMessage(message) {
-    switch (message.method) {
-        case 'transcribe':
-            transcribe(message.data);
-            break;
-        case 'unloadModel':
-            unloadModel(message.data);
-            break;
-        default:
-            throw new Error("Unknown method: " + message.method);
-            break;
-    }
-}
 
-parentPort.on('message', processMessage);
+module.exports = {transcribe: transcribe, unloadModel: unloadModel};
