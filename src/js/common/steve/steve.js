@@ -18,7 +18,7 @@ const {Worker, isMainThread} = require('worker_threads');
 assert(isMainThread, "Can not load this module in worker thread");
 
 /***
- * Simple generator for task ids. Probably not very efficient when there are a lot of active tasks.
+ * Simple generator for job ids. Probably not very efficient when there are a lot of active jobs.
  */
 class IdGenerator {
     constructor() {
@@ -50,22 +50,22 @@ class Steve {
     constructor() {
         this._executor = {};
         this._idGenerator = new IdGenerator();
-        this._taskPromises = new Map();
+        this._jobPromises = new Map();
         this._worker = new Worker(path.resolve(__dirname, 'steve-worker.js'));
-        this._worker.on('message', taskMessage => {
-            const taskPromise = this._taskPromises.get(taskMessage.taskId);
-            this._taskPromises.delete(taskMessage.taskId);
-            this._idGenerator.revoke(taskMessage.taskId);
-            if (taskMessage.isError) {
-                taskPromise.reject(taskMessage.result);
+        this._worker.on('message', jobMessage => {
+            const jobPromise = this._jobPromises.get(jobMessage.jobId);
+            this._jobPromises.delete(jobMessage.jobId);
+            this._idGenerator.revoke(jobMessage.jobId);
+            if (jobMessage.isError) {
+                jobPromise.reject(jobMessage.result);
             } else {
-                taskPromise.resolve(taskMessage.result);
+                jobPromise.resolve(jobMessage.result);
             }
         });
-        this._worker.on('error', this._rejectAllTasksWithError.bind(this));
+        this._worker.on('error', this._rejectAllJobsWithError.bind(this));
         this._worker.on('exit', (code) => {
             const err = new Error(`Worker stopped with exit code ${code}`);
-            this._rejectAllTasksWithError(err);
+            this._rejectAllJobsWithError(err);
         });
     }
 
@@ -75,18 +75,18 @@ class Steve {
 
     async _registerMethodInWorker(methodName, code) {
         await new Promise((resolve, reject) => {
-            const taskId = this._idGenerator.generate();
-            this._taskPromises.set(taskId, {resolve: resolve, reject: reject});
-            this._worker.postMessage({taskId: taskId, methodName: methodName, data: code, registerMethod: true});
+            const jobId = this._idGenerator.generate();
+            this._jobPromises.set(jobId, {resolve: resolve, reject: reject});
+            this._worker.postMessage({jobId: jobId, methodName: methodName, data: code, registerMethod: true});
         });
     }
 
     async registerMethod(methodName, code) {
         await this._registerMethodInWorker(methodName, code);
         this._executor[methodName] = async data => await new Promise((resolve, reject) => {
-            const taskId = this._idGenerator.generate();
-            this._taskPromises.set(taskId, {resolve: resolve, reject: reject});
-            this._worker.postMessage({taskId: taskId, methodName: methodName, data: data});
+            const jobId = this._idGenerator.generate();
+            this._jobPromises.set(jobId, {resolve: resolve, reject: reject});
+            this._worker.postMessage({jobId: jobId, methodName: methodName, data: data});
         });
     }
 
@@ -98,11 +98,11 @@ class Steve {
         return await this._worker.terminate();
     }
 
-    _rejectAllTasksWithError(err) {
-        const taskPromisesTmp = Array.from(this._taskPromises.values());
-        this._taskPromises.clear();
+    _rejectAllJobsWithError(err) {
+        const jobPromisesTmp = Array.from(this._jobPromises.values());
+        this._jobPromises.clear();
         this._idGenerator.clear();
-        taskPromisesTmp.forEach(taskPromise => taskPromise.reject(err));
+        jobPromisesTmp.forEach(jobPromise => jobPromise.reject(err));
     };
 
 }
