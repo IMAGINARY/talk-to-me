@@ -125,20 +125,35 @@ function transcribeSync(model, waveform16kHzFloat32) {
 async function transcribe(params) {
     const model = await getModel(params.lang);
     const transcription = transcribeSync(model, params.waveform);
-    parentPort.postMessage(transcription);
+    return transcription;
 }
 
-function processMessage(message) {
-    switch (message.method) {
+function reportTaskResult(taskId, methodName, result) {
+    parentPort.postMessage({taskId: taskId, method: methodName, isError: false, result: result});
+
+}
+
+function reportTaskError(taskId, methodName, error) {
+    parentPort.postMessage({taskId: taskId, method: methodName, isError: true, result: error});
+}
+
+async function selectAndExecuteTask(methodName, data) {
+    switch (methodName) {
         case 'transcribe':
-            transcribe(message.data);
-            break;
+            return await transcribe(data);
         case 'unloadModel':
-            unloadModel(message.data);
-            break;
+            return unloadModel(data);
         default:
-            throw new Error("Unknown method: " + message.method);
-            break;
+            throw new Error("Unknown method: " + methodName);
+    }
+}
+
+async function processMessage(message) {
+    try {
+        const taskResult = await selectAndExecuteTask(message.methodName, message.data);
+        reportTaskResult(message.taskId, message.methodName, taskResult);
+    } catch (err) {
+        reportTaskError(message.taskId, message.methodName, err);
     }
 }
 
