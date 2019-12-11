@@ -77,16 +77,16 @@ class Steve {
         await new Promise((resolve, reject) => {
             const jobId = this._idGenerator.generate();
             this._jobPromises.set(jobId, {resolve: resolve, reject: reject});
-            this._worker.postMessage({jobId: jobId, methodName: methodName, data: code, registerMethod: true});
+            this._worker.postMessage({jobId: jobId, methodName: methodName, args: [code], registerMethod: true});
         });
     }
 
     async registerMethod(methodName, code) {
         await this._registerMethodInWorker(methodName, code);
-        this._executor[methodName] = async data => await new Promise((resolve, reject) => {
+        this._executor[methodName] = async (...args) => await new Promise((resolve, reject) => {
             const jobId = this._idGenerator.generate();
             this._jobPromises.set(jobId, {resolve: resolve, reject: reject});
-            this._worker.postMessage({jobId: jobId, methodName: methodName, data: data});
+            this._worker.postMessage({jobId: jobId, methodName: methodName, args: args});
         });
     }
 
