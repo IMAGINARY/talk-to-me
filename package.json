@@ -8,7 +8,7 @@
   "license": "Apache-2.0",
   "private": false,
   "devDependencies": {
-    "electron": "^7.1.2",
+    "electron": "^7.1.5",
     "electron-builder": "^22.2.0"
   },
   "dependencies": {
