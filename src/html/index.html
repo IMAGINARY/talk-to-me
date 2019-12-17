@@ -20,8 +20,15 @@
             width: 100%;
         }
 
-        .chunk {
-            border: 1px solid gray;
+        .transcription-wrapper {
+            margin-top: 1em;
+        }
+
+        .transcription {
+            font-family: monospace;
+            white-space: pre;
+            margin-top: 0.5em;
+            height: 5em;
         }
 
         #mic {
@@ -86,11 +93,11 @@
         Promise.all(['en', 'de'].map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
             .then(() => console.log("Speech recognition models loaded."));
 
-        function addText(text, lang) {
+        function setTranscriptionText(text, lang) {
             console.log(lang + ":", text);
             const chunkContainer = document.getElementById(`chunks-${lang}`);
+            chunkContainer.innerHTML = "";
             chunkContainer.appendChild(document.createTextNode(text));
-            chunkContainer.appendChild(document.createElement('br'));
         }
 
         function addLettersForPredictionExt(predictionExt) {
@@ -99,7 +106,7 @@
             const decodedBest4 = decoded.hi(decoded.shape[0], 4);
             const letters = wav2letter.decoder.indexToLetter(decodedBest4, predictionExt.letters);
             const strings = unpack(letters.transpose(1, 0)).map(lineLetters => lineLetters.join(""));
-            strings.forEach(s => addText(s, predictionExt.lang));
+            setTranscriptionText(strings.join("\n"), predictionExt.lang);
         }
 
         class FixedSizeFloat32Buffer extends EventEmitter {
@@ -215,6 +222,7 @@
 
             async function startRecording() {
                 samples.clear();
+                ["en", "de"].forEach(l => setTranscriptionText("", l));
                 await unmuteRecording();
             }
 
@@ -288,24 +296,14 @@
            onmouseup="state.muteRecording(); this.style.color='inherit';">
         </i>
     </div>
-    <form>
-        <table border="1" align="center" width="100%" id="lang">
-            <tr>
-                <th width="50%">English</th>
-                <th width="50%">German</th>
-                <!--
-                <th width="50%"><input type="radio" id="en" name="language" value="English" onchange="state.setLanguage('en');" checked>
-                    <label for="en"> English</label></th>
-                <th width="50%"><input type="radio" id="de" name="language" value="German" onchange="state.setLanguage('de');">
-                    <label for="de"> German</label></th>
-                -->
-            </tr>
-            <tr>
-                <td id="chunks-en" valign="top"></td>
-                <td id="chunks-de" valign="top"></td>
-            </tr>
-        </table>
-    </form>
+    <div class="transcription-wrapper">
+        English
+        <div id="chunks-en" class="transcription"></div>
+    </div>
+    <div class="transcription-wrapper">
+        German
+        <div id="chunks-de" class="transcription"></div>
+    </div>
 </div>
 <script>
     let state;
