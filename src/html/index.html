@@ -77,8 +77,12 @@
         const fs = require('fs').promises;
         const path = require('path');
         const EventEmitter = require('events');
+        const ndarray = require('ndarray');
+        const unpack = require('ndarray-unpack');
 
         const wav2letter = require("../js/common/wav2letter/wav2letter.js");
+        const w2lUtils = require('../js/common/wav2letter/util.js');
+
         Promise.all(['en', 'de'].map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
             .then(() => console.log("Speech recognition models loaded."));
 
@@ -87,6 +91,15 @@
             const chunkContainer = document.getElementById(`chunks-${lang}`);
             chunkContainer.appendChild(document.createTextNode(text));
             chunkContainer.appendChild(document.createElement('br'));
+        }
+
+        function addLettersForPredictionExt(predictionExt) {
+            const letterActivations = predictionExt.layers[11];
+            const decoded = wav2letter.decoder.decodeGreedyAll(letterActivations);
+            const decodedBest4 = decoded.hi(decoded.shape[0], 4);
+            const letters = wav2letter.decoder.indexToLetter(decodedBest4, predictionExt.letters);
+            const strings = unpack(letters.transpose(1, 0)).map(lineLetters => lineLetters.join(""));
+            strings.forEach(s => addText(s, predictionExt.lang));
         }
 
         class FixedSizeFloat32Buffer extends EventEmitter {
@@ -188,10 +201,16 @@
 
             samples.on('full', async data => {
                 await stopRecording();
-                const lettersEn = await wav2letter.transcribe({waveform: data, lang: 'en'});
-                addText(lettersEn, 'en');
-                const lettersDe = await wav2letter.transcribe({waveform: data, lang: 'de'});
-                addText(lettersDe, 'de');
+                const predictionExt = {};
+
+                window.waveform = data;
+                window.predictionExt = predictionExt;
+
+                predictionExt['en'] = await wav2letter.predictExt({waveform: data, lang: 'en'});
+                addLettersForPredictionExt(predictionExt['en']);
+                predictionExt['de'] = await wav2letter.predictExt({waveform: data, lang: 'de'});
+                addLettersForPredictionExt(predictionExt['de']);
+
             });
 
             async function startRecording() {

@@ -2,19 +2,23 @@ const assert = require('assert');
 const tf = require('@tensorflow/tfjs-node');
 const fs = require('fs');
 const path = require('path');
+const ndarray = require("ndarray")
 
 const melFilter = require('./mel-filter.js');
 
 const models = {
     "en": {
+        lang: "en",
         url: 'file://' + path.resolve(__dirname, '../../../../models/english/model.json'),
         letters: '  abcdefghijklmnopqrstuvwxyz   ',
         tfModel: null,
     },
     "de": {
+        lang: "de",
         url: 'file://' + path.resolve(__dirname, '../../../../models/german/model.json'),
         letters: '  abcdefghijklmnopqrstuvwxyzßäöü   ',
         tfModel: null,
+
     }
 };
 
@@ -126,7 +130,8 @@ function tf_predictExtSync(model, waveform16kHzFloat32) {
     return {
         logMelSpectrogram: logMelSpectrogram,
         layers: allActivations,
-        letters: model.letters
+        letters: model.letters,
+        lang: model.lang,
     }
 }
 
@@ -139,25 +144,24 @@ async function tf_predictExt(params) {
 async function predictExt(params) {
     const tfPrediction = await tf_predictExt(params);
     return {
-        logMelSpectrogram: await tensorToShapedTypedArray(tfPrediction.logMelSpectrogram),
-        layers: await Promise.all(tfPrediction.layers.map(tensorToShapedTypedArray)),
+        logMelSpectrogram: await tensorToNDArray(tfPrediction.logMelSpectrogram),
+        layers: await Promise.all(tfPrediction.layers.map(tensorToNDArray)),
         letters: tfPrediction.letters,
+        lang: tfPrediction.lang,
     }
 }
 
 async function predict(params) {
     const tfPrediction = await tf_predictExt(params);
     return {
-        letterActivations: await tensorToShapedTypedArray(tfPrediction.layers[tfPrediction.layers.length - 1]),
-        letters: tfPrediction.letters
+        letterActivations: await tensorToNDArray(tfPrediction.layers[tfPrediction.layers.length - 1]),
+        letters: tfPrediction.letters,
+        lang: tfPrediction.lang,
     }
 }
 
-async function tensorToShapedTypedArray(tensor) {
-    return {
-        data: await tensor.data(),
-        shape: tensor.shape,
-    }
+async function tensorToNDArray(tensor) {
+    return ndarray(await tensor.data(), tensor.shape);
 }
 
 module.exports = {
