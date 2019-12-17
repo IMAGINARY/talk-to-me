@@ -109,6 +109,35 @@
             setTranscriptionText(strings.join("\n"), predictionExt.lang);
         }
 
+        function drawSpectrogram(logMelSpectrogramData) {
+            const tempCanvas = document.createElement("canvas");
+            const tempCtx = tempCanvas.getContext("2d");
+
+            const imageData = tempCtx.createImageData(logMelSpectrogramData.shape[0], logMelSpectrogramData.shape[1]);
+            for (let y = 0; y < imageData.height; ++y) {
+                for (let x = 0; x < imageData.width; ++x) {
+                    const c = 255 * logMelSpectrogramData.get(x, y);
+                    imageData.data[4 * (y * imageData.width + x) + 0] = c;
+                    imageData.data[4 * (y * imageData.width + x) + 1] = c;
+                    imageData.data[4 * (y * imageData.width + x) + 2] = c;
+                    imageData.data[4 * (y * imageData.width + x) + 3] = 255;
+                }
+            }
+            tempCtx.putImageData(imageData, 0, 0);
+
+            // TODO: need to go via separate canvas (or image) for scaling
+            const canvas = document.getElementById("spectrogram-viz");
+            const ctx = canvas.getContext("2d");
+
+            ctx.save();
+            const xscale = canvas.width / logMelSpectrogramData.shape[0];
+            const yscale = canvas.height / logMelSpectrogramData.shape[1];
+            console.log(xscale, yscale);
+            ctx.scale(xscale, yscale);
+            ctx.drawImage(tempCanvas, 0, 0);
+            ctx.restore();
+        }
+
         class FixedSizeFloat32Buffer extends EventEmitter {
             constructor(maxLength) {
                 super();
@@ -218,6 +247,8 @@
                 predictionExt['de'] = await wav2letter.predictExt({waveform: data, lang: 'de'});
                 addLettersForPredictionExt(predictionExt['de']);
 
+                drawSpectrogram(predictionExt['en'].logMelSpectrogram);
+
             });
 
             async function startRecording() {
@@ -285,6 +316,9 @@
 <div id="main">
     <div id="waveform">
         <canvas id="waveform-viz" width="512" height="128"></canvas>
+    </div>
+    <div id="spectrogram">
+        <canvas id="spectrogram-viz" width="512" height="128"></canvas>
     </div>
     <br>
     <br>
