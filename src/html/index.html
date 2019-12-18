@@ -294,6 +294,7 @@
             });
 
             async function startRecording() {
+                document.getElementById("record-button").style.color = 'red';
                 samples.clear();
                 document.getElementById("spectrogram-viz").getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
                 ["en", "de"].forEach(l => setTranscriptionText("", l));
@@ -301,6 +302,7 @@
             }
 
             async function stopRecording() {
+                document.getElementById("record-button").style.color = "inherit";
                 await muteRecording();
             }
 
@@ -359,18 +361,15 @@
 <div id="main">
     <div id="waveform">
         <canvas id="waveform-viz" width="512" height="128"></canvas>
-    </div>
-    <div id="spectrogram">
+        <br/>
         <canvas id="spectrogram-viz" width="512" height="128"></canvas>
     </div>
     <br>
     <br>
-    <div id="mic">
+    <div id="mic" onmousedown="state.startRecording();">
         <br>
         <i id="record-button"
-           class="fas fa-microphone"
-           onmousedown="state.startRecording(); this.style.color='red';"
-           onmouseup="state.muteRecording(); this.style.color='inherit';">
+           class="fas fa-microphone">
         </i>
     </div>
     <div class="transcription-wrapper">
