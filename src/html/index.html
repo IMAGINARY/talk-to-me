@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Talk to Me</title>
     <link rel="stylesheet" type="text/css" href="../../node_modules/@fortawesome/fontawesome-free/css/all.css">
+    <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
     <style>
         body {
             background-color: #202020;
@@ -24,6 +25,10 @@
             width: 100%;
         }
 
+        #transcription-viz {
+            width: 100%;
+        }
+
         .transcription-wrapper {
             margin-top: 1em;
         }
@@ -39,11 +44,13 @@
             text-align: center;
             vertical-align: middle;
             border-radius: 40px;
+            line-height: 80px;
+            padding-top: 14px;
             width: 80px;
             height: 80px;
             background-color: #404040;
             text-align: center;
-            margin: 0 auto;
+            margin: 30px auto 30px auto;
         }
 
         #main {
@@ -91,7 +98,11 @@
         const ndarray = require('ndarray');
         const unpack = require('ndarray-unpack');
         const ops = require('ndarray-ops');
-        const colormap = require('colormap')
+        const colormap = require('colormap');
+
+        const $ = require("jquery");
+        const popper = require("popper.js");
+        const bootstrap = require('bootstrap');
 
         const wav2letter = require("../js/common/wav2letter/wav2letter.js");
         const w2lUtils = require('../js/common/wav2letter/util.js');
@@ -99,11 +110,21 @@
         Promise.all(['en', 'de'].map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
             .then(() => console.log("Speech recognition models loaded."));
 
-        function setTranscriptionText(text, lang) {
-            console.log(lang + ":", text);
-            const chunkContainer = document.getElementById(`chunks-${lang}`);
-            chunkContainer.innerHTML = "";
-            chunkContainer.appendChild(document.createTextNode(text));
+        function setTranscriptionText(text) {
+            console.log(text);
+            const canvas = document.getElementById("transcription-viz");
+            const ctx = canvas.getContext("2d");
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = "16px monospace";
+
+            const lineHeight = 16;
+            const lines = text.split("\n");
+            lines.forEach((l, lineNum) => {
+                const charWidth = canvas.width / l.length;
+                Array.from(l).forEach((c, charNum) => ctx.fillText(c, charNum * charWidth, lineHeight * (lineNum + 1)));
+            });
         }
 
         function addLettersForPredictionExt(predictionExt) {
@@ -280,25 +301,17 @@
 
             samples.on('full', async data => {
                 await stopRecording();
-                const predictionExt = {};
 
                 window.waveform = data;
-                window.predictionExt = predictionExt;
-
-                predictionExt['en'] = await wav2letter.predictExt({waveform: data, lang: 'en'});
-                addLettersForPredictionExt(predictionExt['en']);
-                predictionExt['de'] = await wav2letter.predictExt({waveform: data, lang: 'de'});
-                addLettersForPredictionExt(predictionExt['de']);
-
-                drawSpectrogram(predictionExt['en'].logMelSpectrogram);
-
+                window.predictionExt = await wav2letter.predictExt({waveform: data, lang: language});
+                addLettersForPredictionExt(window.predictionExt);
+                drawSpectrogram(window.predictionExt.logMelSpectrogram);
             });
 
             async function startRecording() {
                 document.getElementById("record-button").style.color = 'red';
+                resetVisualization();
                 samples.clear();
-                document.getElementById("spectrogram-viz").getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-                ["en", "de"].forEach(l => setTranscriptionText("", l));
                 await unmuteRecording();
             }
 
@@ -323,8 +336,6 @@
             function drawWaveform() {
                 const amplification = 1.0 / samples.data.reduce((max, cur) => Math.max(max, Math.abs(cur)), 0.1);
 
-                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-
                 canvasCtx.save();
                 canvasCtx.imageSmoothingEnabled = false;
                 canvasCtx.translate(0, canvas.height / 2.0);
@@ -348,12 +359,26 @@
                 canvasCtx.restore();
             }
 
+            function resetVisualization() {
+                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+                document.getElementById("spectrogram-viz").getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+                setTranscriptionText("");
+            }
+
             drawWaveform();
+
+            let language = "en";
+
+            function setLanguage(lang) {
+                language = lang;
+                resetVisualization();
+            }
 
             return {
                 startRecording: startRecording,
                 stopRecording: stopRecording,
                 muteRecording: muteRecording,
+                setLanguage: setLanguage,
             };
         }
     </script>
@@ -361,25 +386,26 @@
 <body>
 <div id="main">
     <div id="waveform">
-        <canvas id="waveform-viz" width="512" height="128"></canvas>
+        <canvas id="waveform-viz" width="1024" height="256"></canvas>
         <br/>
-        <canvas id="spectrogram-viz" width="512" height="128"></canvas>
+        <canvas id="spectrogram-viz" width="1024" height="256"></canvas>
+        <br/>
+        <canvas id="transcription-viz" width="1024" height="72"></canvas>
     </div>
     <br>
     <br>
     <div id="mic" onmousedown="state.startRecording();">
-        <br>
         <i id="record-button"
            class="fas fa-microphone">
         </i>
     </div>
-    <div class="transcription-wrapper">
-        English
-        <div id="chunks-en" class="transcription"></div>
-    </div>
-    <div class="transcription-wrapper">
-        German
-        <div id="chunks-de" class="transcription"></div>
+    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+        <label class="btn btn-secondary active">
+            <input type="radio" name="options" id="btn-en" onclick="state.setLanguage('en');" checked> English
+        </label>
+        <label class="btn btn-secondary">
+            <input type="radio" name="options" id="btn-de" onclick="state.setLanguage('de');"> German
+        </label>
     </div>
 </div>
 <script>
