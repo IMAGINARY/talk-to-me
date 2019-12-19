@@ -98,6 +98,7 @@
         const ndarray = require('ndarray');
         const unpack = require('ndarray-unpack');
         const ops = require('ndarray-ops');
+        const opsExt = require('../js/common/ndarray-ops-ext.js');
         const colormap = require('colormap');
 
         const $ = require("jquery");
@@ -109,32 +110,6 @@
 
         Promise.all(['en', 'de'].map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
             .then(() => console.log("Speech recognition models loaded."));
-
-        function setTranscriptionText(text) {
-            console.log(text);
-            const canvas = document.getElementById("transcription-viz");
-            const ctx = canvas.getContext("2d");
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            ctx.font = "16px monospace";
-
-            const lineHeight = 16;
-            const lines = text.split("\n");
-            lines.forEach((l, lineNum) => {
-                const charWidth = canvas.width / l.length;
-                Array.from(l).forEach((c, charNum) => ctx.fillText(c, charNum * charWidth, lineHeight * (lineNum + 1)));
-            });
-        }
-
-        function addLettersForPredictionExt(predictionExt) {
-            const letterActivations = predictionExt.layers[11];
-            const decoded = wav2letter.decoder.decodeGreedyAll(letterActivations);
-            const decodedBest4 = decoded.hi(decoded.shape[0], 4);
-            const letters = wav2letter.decoder.indexToLetter(decodedBest4, predictionExt.letters);
-            const strings = unpack(letters.transpose(1, 0)).map(lineLetters => lineLetters.join(""));
-            setTranscriptionText(strings.join("\n"), predictionExt.lang);
-        }
 
         // maps a value between 0 and 1 to RGB color array
         const heatmap = (() => {
@@ -163,44 +138,6 @@
                 return palette[index];
             };
         })();
-
-        function drawSpectrogram(logMelSpectrogramData) {
-            const tempCanvas = document.createElement("canvas");
-            const tempCtx = tempCanvas.getContext("2d");
-
-            const min = ops.inf(logMelSpectrogramData);
-            const max = ops.sup(logMelSpectrogramData);
-            const range = max - min;
-
-            const imageData = tempCtx.createImageData(logMelSpectrogramData.shape[0], logMelSpectrogramData.shape[1]);
-            for (let y = 0; y < imageData.height; ++y) {
-                for (let x = 0; x < imageData.width; ++x) {
-                    const value = logMelSpectrogramData.get(x, y);
-                    const normalizedValue = (value - min) / range;
-                    const color = alphamap(normalizedValue);
-                    imageData.data[4 * (y * imageData.width + x) + 0] = color[0];
-                    imageData.data[4 * (y * imageData.width + x) + 1] = color[1];
-                    imageData.data[4 * (y * imageData.width + x) + 2] = color[2];
-                    imageData.data[4 * (y * imageData.width + x) + 3] = color[3];
-                }
-            }
-            tempCtx.putImageData(imageData, 0, 0);
-
-            // TODO: avoid creating a new canvas every time
-            const canvas = document.getElementById("spectrogram-viz");
-            const ctx = canvas.getContext("2d");
-            ctx.imageSmoothingEnabled = false;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            ctx.save();
-            const xscale = canvas.width / logMelSpectrogramData.shape[0];
-            const yscale = canvas.height / logMelSpectrogramData.shape[1];
-            ctx.translate(0, canvas.height);
-            ctx.scale(xscale, -yscale);
-            ctx.drawImage(tempCanvas, 0, 0);
-            ctx.restore();
-        }
 
         class FixedSizeFloat32Buffer extends EventEmitter {
             constructor(maxLength) {
@@ -242,6 +179,79 @@
         }
 
         async function init() {
+            const waveformCanvas = document.querySelector('#waveform-viz');
+            const waveformCtx = waveformCanvas.getContext("2d");
+            const spectrogramCanvas = document.querySelector('#spectrogram-viz');
+            const spectrogramCtx = spectrogramCanvas.getContext("2d");
+            const transcriptionCanvas = document.querySelector('#transcription-viz');
+            const transcriptionCtx = transcriptionCanvas.getContext("2d");
+
+            function setTranscriptionTexts(indices, probabilities, alphabet, numBest) {
+                transcriptionCtx.clearRect(0, 0, transcriptionCanvas.width, transcriptionCanvas.height);
+
+                transcriptionCtx.font = "16px monospace";
+
+                const lineHeight = 16;
+                const charWidth = transcriptionCanvas.width / indices.shape[0];
+                for (let position = 0; position < indices.shape[0]; ++position) {
+                    const bestK = indices.pick(position).hi(numBest);
+                    const sup = ops.sup(probabilities.pick(position));
+                    for (let lineNum = 0; lineNum < bestK.shape[0]; ++lineNum) {
+                        const charIndex = bestK.get(lineNum);
+                        const char = alphabet[charIndex];
+                        const opacity = probabilities.get(position, charIndex) / sup;
+                        transcriptionCtx.fillStyle = `rgba(0,0,0,${opacity})`;
+                        transcriptionCtx.fillText(char, position * charWidth, lineHeight * (lineNum + 1));
+                        console.log(char, opacity);
+                    }
+                    console.log("-");
+                }
+            }
+
+            function addLettersForPredictionExt(predictionExt) {
+                const letterActivations = predictionExt.layers[11];
+                const decoded = wav2letter.decoder.decodeGreedyAll(letterActivations);
+                const letterProbabilities = ndarray(new Float32Array(letterActivations.shape[0] * letterActivations.shape[1]), letterActivations.shape);
+                opsExt.sigmoid(letterProbabilities, letterActivations);
+                setTranscriptionTexts(decoded, letterProbabilities, predictionExt.letters, 4);
+            }
+
+            function drawSpectrogram(logMelSpectrogramData) {
+                // TODO: avoid creating a new canvas every time
+                const tempCanvas = document.createElement("canvas");
+                const tempCtx = tempCanvas.getContext("2d");
+
+                const min = ops.inf(logMelSpectrogramData);
+                const max = ops.sup(logMelSpectrogramData);
+                const range = max - min;
+
+                const imageData = tempCtx.createImageData(logMelSpectrogramData.shape[0], logMelSpectrogramData.shape[1]);
+                for (let y = 0; y < imageData.height; ++y) {
+                    for (let x = 0; x < imageData.width; ++x) {
+                        const value = logMelSpectrogramData.get(x, y);
+                        const normalizedValue = (value - min) / range;
+                        const color = alphamap(normalizedValue);
+                        imageData.data[4 * (y * imageData.width + x) + 0] = color[0];
+                        imageData.data[4 * (y * imageData.width + x) + 1] = color[1];
+                        imageData.data[4 * (y * imageData.width + x) + 2] = color[2];
+                        imageData.data[4 * (y * imageData.width + x) + 3] = color[3];
+                    }
+                }
+                tempCtx.putImageData(imageData, 0, 0);
+
+                spectrogramCtx.imageSmoothingEnabled = false;
+
+                spectrogramCtx.clearRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
+
+                spectrogramCtx.save();
+                const xScale = spectrogramCanvas.width / logMelSpectrogramData.shape[0];
+                const yScale = spectrogramCanvas.height / logMelSpectrogramData.shape[1];
+                spectrogramCtx.translate(0, spectrogramCanvas.height);
+                spectrogramCtx.scale(xScale, -yScale);
+                spectrogramCtx.drawImage(tempCanvas, 0, 0);
+                spectrogramCtx.restore();
+            }
+
             const lengthInMs = 2000;
             const sampleRate = 16000;
             const samples = new FixedSizeFloat32Buffer(lengthInMs * sampleRate / 1000);
@@ -330,39 +340,36 @@
 
             await stopRecording();
 
-            const canvas = document.querySelector('#waveform-viz');
-            const canvasCtx = canvas.getContext("2d");
-
             function drawWaveform() {
                 const amplification = 1.0 / samples.data.reduce((max, cur) => Math.max(max, Math.abs(cur)), 0.1);
 
-                canvasCtx.save();
-                canvasCtx.imageSmoothingEnabled = false;
-                canvasCtx.translate(0, canvas.height / 2.0);
-                canvasCtx.strokeStyle = '#999';
-                canvasCtx.fillStyle = '#000';
-                canvasCtx.beginPath();
-                canvasCtx.moveTo(0, 0);
-                canvasCtx.lineTo(canvas.width * samples.length, 0.0);
-                canvasCtx.stroke();
-                canvasCtx.strokeStyle = '#000';
-                canvasCtx.beginPath();
-                canvasCtx.moveTo(0, 0);
+                waveformCtx.save();
+                waveformCtx.imageSmoothingEnabled = false;
+                waveformCtx.translate(0, waveformCanvas.height / 2.0);
+                waveformCtx.strokeStyle = '#999';
+                waveformCtx.fillStyle = '#000';
+                waveformCtx.beginPath();
+                waveformCtx.moveTo(0, 0);
+                waveformCtx.lineTo(waveformCanvas.width * samples.length, 0.0);
+                waveformCtx.stroke();
+                waveformCtx.strokeStyle = '#000';
+                waveformCtx.beginPath();
+                waveformCtx.moveTo(0, 0);
                 const samplesSoFar = samples.data;
                 for (let i = 0; i < samplesSoFar.length; ++i)
-                    canvasCtx.lineTo(i / samples.maxLength * canvas.width, +0.5 * amplification * samplesSoFar[i] * canvas.height);
+                    waveformCtx.lineTo(i / samples.maxLength * waveformCanvas.width, +0.5 * amplification * samplesSoFar[i] * waveformCanvas.height);
                 for (let i = samplesSoFar.length - 1; i >= 0; --i)
-                    canvasCtx.lineTo(i / samples.maxLength * canvas.width, -0.5 * amplification * samplesSoFar[i] * canvas.height);
-                canvasCtx.closePath();
-                canvasCtx.fill();
-                canvasCtx.stroke();
-                canvasCtx.restore();
+                    waveformCtx.lineTo(i / samples.maxLength * waveformCanvas.width, -0.5 * amplification * samplesSoFar[i] * waveformCanvas.height);
+                waveformCtx.closePath();
+                waveformCtx.fill();
+                waveformCtx.stroke();
+                waveformCtx.restore();
             }
 
             function resetVisualization() {
-                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-                document.getElementById("spectrogram-viz").getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-                setTranscriptionText("");
+                waveformCtx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+                spectrogramCtx.clearRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
+                transcriptionCtx.clearRect(0, 0, transcriptionCanvas.width, transcriptionCanvas.height);
             }
 
             drawWaveform();
