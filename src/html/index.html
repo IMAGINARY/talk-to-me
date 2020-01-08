@@ -108,6 +108,8 @@
         const wav2letter = require("../js/common/wav2letter/wav2letter.js");
         const w2lUtils = require('../js/common/wav2letter/util.js');
 
+        const FixedSizeBuffer = require("../js/common/util/FixedSizeBuffer.js");
+
         Promise.all(['en', 'de'].map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
             .then(() => console.log("Speech recognition models loaded."));
 
@@ -138,45 +140,6 @@
                 return palette[index];
             };
         })();
-
-        class FixedSizeFloat32Buffer extends EventEmitter {
-            constructor(maxLength) {
-                super();
-                this.buffer = new Float32Array(maxLength);
-                this.count = 0;
-            }
-
-            push(data) {
-                const newData = data.subarray(0, this.buffer.length - this.count);
-                const overflow = data.subarray(this.buffer.length - this.count);
-                if (newData.length > 0) {
-                    this.buffer.set(newData, this.count);
-                    const prevCount = this.count;
-                    this.count += newData.length;
-                    this.emit('data', this.buffer.subarray(prevCount, this.count));
-                    if (this.count === this.buffer.length) {
-                        this.emit('full', this.buffer);
-                    }
-                }
-                return overflow;
-            }
-
-            clear() {
-                this.count = 0;
-            }
-
-            get data() {
-                return this.buffer.subarray(0, this.count);
-            }
-
-            get length() {
-                return this.count;
-            }
-
-            get maxLength() {
-                return this.buffer.length;
-            }
-        }
 
         async function init() {
             const waveformCanvas = document.querySelector('#waveform-viz');
@@ -254,7 +217,7 @@
 
             const lengthInMs = 2000;
             const sampleRate = 16000;
-            const samples = new FixedSizeFloat32Buffer(lengthInMs * sampleRate / 1000);
+            const samples = new FixedSizeBuffer("float32", lengthInMs * sampleRate / 1000);
             // Initially fill up the buffer
             samples.push(new Float32Array(samples.maxLength));
 
