@@ -109,6 +109,7 @@
         const w2lUtils = require('../js/common/wav2letter/util.js');
 
         const FixedSizeBuffer = require("../js/common/util/FixedSizeBuffer.js");
+        const WaveformVisualizer = require("../js/renderer/waveform-visualizer.js");
 
         Promise.all(['en', 'de'].map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
             .then(() => console.log("Speech recognition models loaded."));
@@ -270,8 +271,6 @@
                 processor.connect(context.destination);
             }
 
-            samples.on('data', () => drawWaveform());
-
             samples.on('full', async data => {
                 await stopRecording();
 
@@ -303,39 +302,15 @@
 
             await stopRecording();
 
-            function drawWaveform() {
-                const amplification = 1.0 / samples.data.reduce((max, cur) => Math.max(max, Math.abs(cur)), 0.1);
-
-                waveformCtx.save();
-                waveformCtx.imageSmoothingEnabled = false;
-                waveformCtx.translate(0, waveformCanvas.height / 2.0);
-                waveformCtx.strokeStyle = '#999';
-                waveformCtx.fillStyle = '#000';
-                waveformCtx.beginPath();
-                waveformCtx.moveTo(0, 0);
-                waveformCtx.lineTo(waveformCanvas.width * samples.length, 0.0);
-                waveformCtx.stroke();
-                waveformCtx.strokeStyle = '#000';
-                waveformCtx.beginPath();
-                waveformCtx.moveTo(0, 0);
-                const samplesSoFar = samples.data;
-                for (let i = 0; i < samplesSoFar.length; ++i)
-                    waveformCtx.lineTo(i / samples.maxLength * waveformCanvas.width, +0.5 * amplification * samplesSoFar[i] * waveformCanvas.height);
-                for (let i = samplesSoFar.length - 1; i >= 0; --i)
-                    waveformCtx.lineTo(i / samples.maxLength * waveformCanvas.width, -0.5 * amplification * samplesSoFar[i] * waveformCanvas.height);
-                waveformCtx.closePath();
-                waveformCtx.fill();
-                waveformCtx.stroke();
-                waveformCtx.restore();
-            }
+            const waveformVisualizer = new WaveformVisualizer(waveformCanvas, samples);
 
             function resetVisualization() {
-                waveformCtx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+                samples.clear();
                 spectrogramCtx.clearRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
                 transcriptionCtx.clearRect(0, 0, transcriptionCanvas.width, transcriptionCanvas.height);
             }
 
-            drawWaveform();
+            //drawWaveform();
 
             let language = "en";
 
