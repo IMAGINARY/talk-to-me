@@ -230,6 +230,10 @@
             //drawWaveform();
 
             let language = "en";
+            $("#language-selector > a").on('click', e => {
+                const language = e.currentTarget.getAttribute("data-lang");
+                state.setLanguage(language);
+            });
 
             function setLanguage(lang) {
                 language = lang;
@@ -261,13 +265,15 @@
            class="fas fa-microphone">
         </i>
     </div>
-    <div class="btn-group btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-secondary active">
-            <input type="radio" name="options" id="btn-en" onclick="state.setLanguage('en');" checked> English
-        </label>
-        <label class="btn btn-secondary">
-            <input type="radio" name="options" id="btn-de" onclick="state.setLanguage('de');"> German
-        </label>
+    <div class="btn-group dropright">
+        <button type="button" class="btn btn-secondary btn-lg dropdown-toggle" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-language fa-lg"></i>
+        </button>
+        <div id="language-selector" class="dropdown-menu">
+            <a data-lang="de" class="dropdown-item" href="#">Deutsch</a>
+            <a data-lang="en" class="dropdown-item" href="#">English</a>
+        </div>
     </div>
 </div>
 <script>
