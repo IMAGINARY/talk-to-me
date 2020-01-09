@@ -104,7 +104,7 @@
 
                 const min = ops.inf(logMelSpectrogramData);
                 const max = ops.sup(logMelSpectrogramData);
-                const range = max - min;
+                const range = Math.max(max - min, Number.EPSILON);
 
                 const imageData = tempCtx.createImageData(logMelSpectrogramData.shape[0], logMelSpectrogramData.shape[1]);
                 for (let y = 0; y < imageData.height; ++y) {
