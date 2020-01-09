@@ -197,7 +197,7 @@
 
             async function startRecording() {
                 document.getElementById("record-button").style.color = 'red';
-                resetVisualization();
+                reset();
                 samples.clear();
                 processor.connect(context.destination);
                 await unmuteRecording();
@@ -221,7 +221,8 @@
 
             const waveformVisualizer = new WaveformVisualizer(waveformCanvas, samples);
 
-            function resetVisualization() {
+            function reset(
+            ) {
                 samples.clear();
                 spectrogramCtx.clearRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
                 transcriptionCtx.clearRect(0, 0, transcriptionCanvas.width, transcriptionCanvas.height);
@@ -235,7 +236,7 @@
 
             function setLanguage(lang) {
                 language = lang;
-                resetVisualization();
+                reset();
             }
 
             return {
