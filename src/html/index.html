@@ -82,7 +82,7 @@
                         const char = alphabet[charIndex];
                         const opacity = probabilities.get(position, charIndex) / sup;
                         transcriptionCtx.fillStyle = `rgba(0,0,0,${opacity})`;
-                        transcriptionCtx.fillText(char, position * charWidth, lineHeight * (lineNum + 1));
+                        transcriptionCtx.fillText(char, position * charWidth, lineHeight * (numBest - lineNum));
                         console.log(char, opacity);
                     }
                     console.log("-");
@@ -251,11 +251,11 @@
 <body>
 <div id="main">
     <div id="waveform">
-        <canvas id="waveform-viz" width="1024" height="256"></canvas>
+        <canvas id="transcription-viz" width="1024" height="72"></canvas>
         <br/>
         <canvas id="spectrogram-viz" width="1024" height="256"></canvas>
         <br/>
-        <canvas id="transcription-viz" width="1024" height="72"></canvas>
+        <canvas id="waveform-viz" width="1024" height="256"></canvas>
     </div>
     <br>
     <br>
