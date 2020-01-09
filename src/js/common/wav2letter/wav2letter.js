@@ -38,10 +38,11 @@ const workerPath = path.resolve(__dirname, 'worker.js');
 const steve = new Steve();
 
 async function setupSteve() {
-    await steve.registerMethod('transcribe', `require('${workerPath}').transcribe`);
-    await steve.registerMethod('unload', `require('${workerPath}').unloadModel`);
-    await steve.registerMethod('predict', `require('${workerPath}').predict`);
-    await steve.registerMethod('predictExt', `require('${workerPath}').predictExt`);
+    const workerModule = `require(${JSON.stringify(workerPath)})`;
+    await steve.registerMethod('transcribe', workerModule + ".transcribe");
+    await steve.registerMethod('unload', workerModule + ".unloadModel");
+    await steve.registerMethod('predict', workerModule + ".predict");
+    await steve.registerMethod('predictExt', workerModule + ".predictExt");
     return steve;
 }
 
