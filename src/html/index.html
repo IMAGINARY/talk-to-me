@@ -180,12 +180,10 @@
                 gain.connect(filters[0]);
                 filters[filters.length - 1].connect(processor);
                 filters[filters.length - 1].connect(context.destination);
-                processor.connect(context.destination);
             } else {
                 source.connect(gain);
                 gain.connect(context.destination);
                 gain.connect(processor);
-                processor.connect(context.destination);
             }
 
             samples.on('full', async data => {
@@ -201,12 +199,14 @@
                 document.getElementById("record-button").style.color = 'red';
                 resetVisualization();
                 samples.clear();
+                processor.connect(context.destination);
                 await unmuteRecording();
             }
 
             async function stopRecording() {
                 document.getElementById("record-button").style.color = "inherit";
                 await muteRecording();
+                processor.disconnect();
             }
 
             async function muteRecording() {
