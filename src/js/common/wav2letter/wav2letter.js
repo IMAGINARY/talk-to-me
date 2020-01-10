@@ -29,30 +29,47 @@ try {
     // If there is no Electron module, there is nothing to do.
 }
 
-const path = require('path');
-const Steve = require('../steve/steve.js');
+// disable worker threads until Electron supports loading files from ASAR archives from within worker threads
+const useWorkerThread = false;
+if (useWorkerThread) {
+    const path = require('path');
+    const Steve = require('../steve/steve.js');
 
-const workerPath = path.resolve(__dirname, 'worker.js');
-const steve = new Steve();
+    const workerPath = path.resolve(__dirname, 'worker.js');
+    const steve = new Steve();
 
-async function setupSteve() {
-    const workerModule = `require(${JSON.stringify(workerPath)})`;
-    await steve.registerMethod('transcribe', workerModule + ".transcribe");
-    await steve.registerMethod('unload', workerModule + ".unloadModel");
-    await steve.registerMethod('predict', workerModule + ".predict");
-    await steve.registerMethod('predictExt', workerModule + ".predictExt");
-    return steve;
+    async function setupSteve() {
+        const workerModule = `require(${JSON.stringify(workerPath)})`;
+        await steve.registerMethod('transcribe', workerModule + ".transcribe");
+        await steve.registerMethod('unload', workerModule + ".unloadModel");
+        await steve.registerMethod('predict', workerModule + ".predict");
+        await steve.registerMethod('predictExt', workerModule + ".predictExt");
+        return steve;
+    }
+
+    const stevePromise = setupSteve();
+
+    module.exports = {
+        transcribe: async params => (await stevePromise).getExecutor().transcribe(params),
+        unload: async params => (await stevePromise).getExecutor().unload(params),
+        predict: async params => coercePredictResult(await (await stevePromise).getExecutor().predict(params)),
+        predictExt: async params => coercePredictExtResult(await (await stevePromise).getExecutor().predictExt(params)),
+        decoder: require("./decoder.js"),
+        shutdown: steve.shutdown.bind(steve),
+        terminate: steve.terminate.bind(steve),
+    };
+} else {
+    const worker = require('./worker.js');
+
+    module.exports = {
+        transcribe: worker.transcribe,
+        unload: worker.unload,
+        predict: worker.predict,
+        predictExt: worker.predictExt,
+        decoder: require("./decoder.js"),
+        shutdown: () => {
+        },
+        terminate: () => {
+        },
+    };
 }
-
-const stevePromise = setupSteve();
-
-module.exports = {
-    transcribe: async params => (await stevePromise).getExecutor().transcribe(params),
-    unload: async params => (await stevePromise).getExecutor().unload(params),
-    predict: async params => coercePredictResult(await (await stevePromise).getExecutor().predict(params)),
-    predictExt: async params => coercePredictExtResult(await (await stevePromise).getExecutor().predictExt(params)),
-    decoder: require("./decoder.js"),
-    shutdown: steve.shutdown.bind(steve),
-    terminate: steve.terminate.bind(steve),
-};
-
