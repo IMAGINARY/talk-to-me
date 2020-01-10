@@ -34,6 +34,23 @@
   },
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
-    "start": "electron ."
+    "start": "electron .",
+    "pack": "CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build --dir",
+    "dist": "CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build",
+    "pack-debug": "DEBUG=electron-builder CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build --dir",
+    "dist-debug": "DEBUG=electron-builder CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build"
+  },
+  "build": {
+    "appId": "org.imaginary.talk-to-me",
+    "productName": "Talk to me",
+    "files": [
+      "!audio${/*}",
+      "!models${/*}"
+    ],
+    "extraResources": [
+      "models/**/*",
+      "!models/**/*.dvc",
+      "!models/**/.gitignore"
+    ]
   }
 }
