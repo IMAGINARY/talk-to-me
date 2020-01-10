@@ -51,6 +51,15 @@
       "models/**/*",
       "!models/**/*.dvc",
       "!models/**/.gitignore"
-    ]
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "target": [
+        "dmg"
+      ],
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "gatekeeperAssess": true
+    }
   }
 }
