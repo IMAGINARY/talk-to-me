@@ -52,6 +52,21 @@
       "!models/**/*.dvc",
       "!models/**/.gitignore"
     ],
+    "linux": {
+      "executableName": "talk-to-me",
+      "target": [
+        "deb",
+        "rpm",
+        "AppImage"
+      ],
+      "asarUnpack": [
+        "node_modules/**/*.node",
+        "node_modules/**/*.so",
+        "node_modules/**/*.so.*"
+      ],
+      "category": "Education",
+      "packageCategory": "education"
+    },
     "mac": {
       "category": "public.app-category.education",
       "target": [
