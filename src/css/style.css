@@ -14,10 +14,6 @@ body {
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
-#record-button {
-    font-size: 3em;
-}
-
 #waveform-viz {
     width: 100%;
 }
@@ -41,19 +37,6 @@ body {
     height: 5em;
 }
 
-#mic {
-    text-align: center;
-    vertical-align: middle;
-    border-radius: 40px;
-    line-height: 80px;
-    padding-top: 14px;
-    width: 80px;
-    height: 80px;
-    background-color: #404040;
-    text-align: center;
-    margin: 30px auto 30px auto;
-}
-
 #main {
     margin: 0 auto;
     text-align: center;
@@ -70,6 +53,11 @@ body {
     margin: 0 auto;
     text-align: center;
     width: 60%;
+}
+
+#audio-controls {
+    margin-top: 1em;
+    margin-bottom: 1em;
 }
 
 #lang {

@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="../../node_modules/@fortawesome/fontawesome-free/css/all.css">
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap-reboot.min.css">
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/circular-btn.css">
     <link rel="stylesheet" type="text/css" href="../css/style.css">
     <script>
         const assert = require('assert');
@@ -223,8 +224,7 @@
 
             const waveformVisualizer = new WaveformVisualizer(waveformCanvas, samples);
 
-            function reset(
-            ) {
+            function reset() {
                 samples.clear();
                 spectrogramCtx.clearRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
                 transcriptionCtx.clearRect(0, 0, transcriptionCanvas.width, transcriptionCanvas.height);
@@ -261,19 +261,23 @@
     </div>
     <br>
     <br>
-    <div id="mic" onmousedown="state.startRecording();">
-        <i id="record-button"
-           class="fas fa-microphone">
-        </i>
-    </div>
-    <div class="btn-group dropright">
-        <button type="button" class="btn btn-secondary btn-lg dropdown-toggle" data-toggle="dropdown"
-                aria-haspopup="true" aria-expanded="false">
-            <i class="fas fa-language fa-lg"></i>
+    <div id="audio-controls">
+        <button id="record-button" type="button" class="btn btn-secondary btn-circle btn-xl"
+                onmousedown="state.startRecording();">
+            <i class="fas fa-microphone fa-3x">
+            </i>
         </button>
-        <div id="language-selector" class="dropdown-menu">
-            <a data-lang="de" class="dropdown-item" href="#">Deutsch</a>
-            <a data-lang="en" class="dropdown-item" href="#">English</a>
+    </div>
+    <div id="language-controls">
+        <div class="btn-group dropright">
+            <button type="button" class="btn btn-secondary btn-lg dropdown-toggle" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-language fa-lg"></i>
+            </button>
+            <div id="language-selector" class="dropdown-menu">
+                <a data-lang="de" class="dropdown-item" href="#">Deutsch</a>
+                <a data-lang="en" class="dropdown-item" href="#">English</a>
+            </div>
         </div>
     </div>
 </div>
