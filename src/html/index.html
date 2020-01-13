@@ -135,7 +135,10 @@
 
             const lengthInMs = 2000;
             const sampleRate = 16000;
-            const samples = new FixedSizeBuffer("float32", lengthInMs * sampleRate / 1000);
+            const context = new AudioContext({sampleRate: sampleRate});
+            const audioBuffer = context.createBuffer(1, lengthInMs * sampleRate / 1000, sampleRate);
+            const samples = FixedSizeBuffer.wrapArray(audioBuffer.getChannelData(0));
+
             // Initially fill up the buffer
             samples.push(new Float32Array(samples.maxLength));
 
@@ -164,7 +167,6 @@
                 video: false
             });
 
-            const context = new AudioContext({sampleRate: sampleRate});
             const source = context.createMediaStreamSource(micStream);
             const gain = context.createGain();
             const processor = context.createScriptProcessor(1024, 1, 1);
