@@ -220,6 +220,22 @@
                 gain.gain.value = 1.0;
             }
 
+            async function playRecording() {
+                const bufferSource = context.createBufferSource();
+                bufferSource.buffer = audioBuffer;
+                bufferSource.connect(context.destination);
+                const playbackEnded = new Promise(resolve => {
+                    const listener = () => {
+                        bufferSource.removeEventListener("ended", listener);
+                        bufferSource.disconnect();
+                        resolve();
+                    };
+                    bufferSource.addEventListener("ended", listener);
+                });
+                bufferSource.start();
+                await playbackEnded;
+            }
+
             await stopRecording();
 
             const waveformVisualizer = new WaveformVisualizer(waveformCanvas, samples);
@@ -245,6 +261,7 @@
                 startRecording: startRecording,
                 stopRecording: stopRecording,
                 muteRecording: muteRecording,
+                playRecording: playRecording,
                 setLanguage: setLanguage,
             };
         }
@@ -265,6 +282,12 @@
         <button id="record-button" type="button" class="btn btn-secondary btn-circle btn-xl"
                 onmousedown="state.startRecording();">
             <i class="fas fa-microphone fa-3x">
+            </i>
+        </button>
+        <button id="play-button" type="button" class="btn btn-secondary btn-circle btn-xl"
+                onmousedown="state.playRecording();">
+            <i class="fas fa-play fa-2x"
+               style="transform: translateX(0.225ex);">
             </i>
         </button>
     </div>
