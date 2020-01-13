@@ -182,10 +182,8 @@
                 source.connect(gain);
                 gain.connect(filters[0]);
                 filters[filters.length - 1].connect(processor);
-                filters[filters.length - 1].connect(context.destination);
             } else {
                 source.connect(gain);
-                gain.connect(context.destination);
                 gain.connect(processor);
             }
 
