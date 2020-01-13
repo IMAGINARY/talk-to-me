@@ -12,12 +12,36 @@ const dtypes = {
     "uint8_clamped": typeof Uint8ClampedArray === "undefined" ? undefined : Uint8ClampedArray,
 };
 
+const dtypes_inv = {
+    "Int8Array": "int8",
+    "Int16Array": "int16",
+    "Int32Array": "int32",
+    "Uint8Array": "uint8",
+    "Uint16Array": "uint16",
+    "Uint32Array": "uint32",
+    "BigInt64Array": "bigint64",
+    "BigUint64Array": "biguint64",
+    "Float32Array": "float32",
+    "Float64Array": "float64",
+    "Uint8ClampedArray": "uint8_clamped",
+};
+
 class FixedSizeBuffer extends EventEmitter {
     constructor(dtype, maxLength) {
         super();
         this._dtype = dtype;
         this.buffer = new dtypes[this._dtype](maxLength);
         this.count = 0;
+    }
+
+    static wrapArray(array) {
+        const arrayType = Object.prototype.toString.call(array).match(/\[object (.*)\]/)[1];
+        const dtype = dtypes_inv[arrayType];
+        if (typeof dtype === "undefined")
+            throw new TypeError("FixedSizeBuffer can not be build from this object");
+        const result = new FixedSizeBuffer(dtype, 0);
+        result.buffer = array;
+        return result;
     }
 
     push(data) {
