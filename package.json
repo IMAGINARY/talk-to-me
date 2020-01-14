@@ -11,6 +11,7 @@
     "node": ">=12.0.0 <12.11.0"
   },
   "devDependencies": {
+    "cross-env": "^6.0.3",
     "electron": "^7.1.8",
     "electron-builder": "^22.2.0"
   },
@@ -35,10 +36,10 @@
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
     "start": "electron .",
-    "pack": "CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build --dir",
-    "dist": "CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build",
-    "pack-debug": "DEBUG=electron-builder CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build --dir",
-    "dist-debug": "DEBUG=electron-builder CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build"
+    "pack": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build --dir",
+    "dist": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build",
+    "pack-debug": "cross-env DEBUG=electron-builder CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build --dir",
+    "dist-debug": "cross-env DEBUG=electron-builder CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build"
   },
   "build": {
     "appId": "org.imaginary.talk-to-me",
