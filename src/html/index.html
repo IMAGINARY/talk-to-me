@@ -26,7 +26,8 @@
         const wav2letter = require("../js/common/wav2letter/wav2letter.js");
         const w2lUtils = require('../js/common/wav2letter/util.js');
 
-        const FixedSizeBuffer = require("../js/common/util/FixedSizeBuffer.js");
+        const MicrophoneFilterNode = require("../js/renderer/microphone-filter-node.js");
+        const Recorder = require("../js/renderer/recorder.js");
         const WaveformVisualizer = require("../js/renderer/waveform-visualizer.js");
 
         Promise.all(['en', 'de'].map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
@@ -134,107 +135,25 @@
                 spectrogramCtx.restore();
             }
 
-            const lengthInMs = 2000;
-            const sampleRate = 16000;
-            const context = new AudioContext({sampleRate: sampleRate});
-            const audioBuffer = context.createBuffer(1, lengthInMs * sampleRate / 1000, sampleRate);
-            const samples = FixedSizeBuffer.wrapArray(audioBuffer.getChannelData(0));
+            const audioContext = new AudioContext({sampleRate: 16000});
+            const micInputNode = await Recorder.getMicrophoneAudioSource(audioContext);
+            const recorderInputNode = new MicrophoneFilterNode(audioContext, {bypass: true});
+            micInputNode.connect(recorderInputNode);
 
-            // Initially fill up the buffer
-            samples.push(new Float32Array(samples.maxLength));
-
-            const createFilters = context => {
-                const filter = context.createBiquadFilter();
-                filter.Q.value = 8.30;
-                filter.frequency.value = 355;
-                filter.gain.value = 3.0;
-                filter.type = 'bandpass';
-
-                const compressor = context.createDynamicsCompressor();
-                compressor.threshold.value = -50;
-                compressor.knee.value = 40;
-                compressor.ratio.value = 12;
-                compressor.reduction.value = -20;
-                compressor.attack.value = 0;
-                compressor.release.value = 0.25;
-
-                filter.connect(compressor);
-
-                return [filter, compressor];
-            };
-
-            const micStream = await navigator.mediaDevices.getUserMedia({
-                audio: {sampleRate: 16000, noiseSuppression: true, autoGainControl: false},
-                video: false
+            const recorder = new Recorder({
+                audioContext: audioContext,
+                source: recorderInputNode,
+                destination: audioContext.destination,
+                duration: 2 * 1000 /* 2s */,
             });
-
-            const source = context.createMediaStreamSource(micStream);
-            const gain = context.createGain();
-            const processor = context.createScriptProcessor(1024, 1, 1);
-            processor.onaudioprocess = e => samples.push(e.inputBuffer.getChannelData(0));
-            const filters = createFilters(context);
-
-            window.context = context;
-            window.micStream = micStream;
-
-            const useFilters = false
-            if (useFilters) {
-                source.connect(gain);
-                gain.connect(filters[0]);
-                filters[filters.length - 1].connect(processor);
-            } else {
-                source.connect(gain);
-                gain.connect(processor);
-            }
+            const samples = recorder.samples;
 
             samples.on('full', async data => {
-                await stopRecording();
-
                 window.waveform = data;
                 window.predictionExt = await wav2letter.predictExt({waveform: data, lang: language});
                 addLettersForPredictionExt(window.predictionExt);
                 drawSpectrogram(window.predictionExt.logMelSpectrogram);
             });
-
-            async function startRecording() {
-                document.getElementById("record-button").style.color = 'red';
-                reset();
-                samples.clear();
-                processor.connect(context.destination);
-                await unmuteRecording();
-            }
-
-            async function stopRecording() {
-                document.getElementById("record-button").style.color = "inherit";
-                await muteRecording();
-                processor.disconnect();
-            }
-
-            async function muteRecording() {
-                gain.gain.value = 0.0;
-            }
-
-            async function unmuteRecording() {
-                gain.gain.value = 1.0;
-            }
-
-            async function playRecording() {
-                const bufferSource = context.createBufferSource();
-                bufferSource.buffer = audioBuffer;
-                bufferSource.connect(context.destination);
-                const playbackEnded = new Promise(resolve => {
-                    const listener = () => {
-                        bufferSource.removeEventListener("ended", listener);
-                        bufferSource.disconnect();
-                        resolve();
-                    };
-                    bufferSource.addEventListener("ended", listener);
-                });
-                bufferSource.start();
-                await playbackEnded;
-            }
-
-            await stopRecording();
 
             const waveformVisualizer = new WaveformVisualizer(waveformCanvas, samples);
 
@@ -244,24 +163,33 @@
                 transcriptionCtx.clearRect(0, 0, transcriptionCanvas.width, transcriptionCanvas.height);
             }
 
-            let language = "en";
-            $("#language-selector > a").on('click', e => {
-                const language = e.currentTarget.getAttribute("data-lang");
-                state.setLanguage(language);
+            const recordButton = $("#record-button");
+            const playButton = $("#play-button");
+            const restartButton = $("#restart-button");
+
+            playButton.hide();
+
+            samples.on('full', () => {
+                recordButton.hide();
+                playButton.show();
             });
+            samples.on('empty', () => {
+                playButton.hide();
+                recordButton.show();
+            });
+            recorder.on('recording-stopped', () => recordButton.button('toggle'));
+            recorder.on('playback-stopped', () => playButton.button('toggle'));
 
-            function setLanguage(lang) {
-                language = lang;
+            recordButton.on('click', () => recorder.startRecording());
+            playButton.on('click', () => recorder.startPlayback());
+            restartButton.on('click', reset);
+
+            let language = "en";
+            const languageButton = $("language-button");
+            $("#language-selector > a").on('click', e => {
+                language = e.currentTarget.getAttribute("data-lang");
                 reset();
-            }
-
-            return {
-                startRecording: startRecording,
-                stopRecording: stopRecording,
-                muteRecording: muteRecording,
-                playRecording: playRecording,
-                setLanguage: setLanguage,
-            };
+            });
         }
     </script>
 </head>
@@ -277,21 +205,24 @@
     <br>
     <br>
     <div id="audio-controls">
-        <button id="record-button" type="button" class="btn btn-secondary btn-circle btn-xl"
-                onmousedown="state.startRecording();">
+        <button id="record-button" type="button" class="btn btn-secondary btn-circle btn-xl" data-toggle="button">
             <i class="fas fa-microphone fa-3x">
             </i>
         </button>
-        <button id="play-button" type="button" class="btn btn-secondary btn-circle btn-xl"
-                onmousedown="state.playRecording();">
+        <button id="play-button" type="button" class="btn btn-secondary btn-circle btn-xl" data-toggle="button">
             <i class="fas fa-play fa-2x"
                style="transform: translateX(0.225ex);">
+            </i>
+        </button>
+        <button id="restart-button" type="button" class="btn btn-secondary btn-circle btn-xl">
+            <i class="fas fa-redo-alt fa-2x">
             </i>
         </button>
     </div>
     <div id="language-controls">
         <div class="btn-group dropright">
-            <button type="button" class="btn btn-secondary btn-lg dropdown-toggle" data-toggle="dropdown"
+            <button id="language-button" type="button" class="btn btn-secondary btn-lg dropdown-toggle"
+                    data-toggle="dropdown"
                     aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-language fa-lg"></i>
             </button>
@@ -303,8 +234,7 @@
     </div>
 </div>
 <script>
-    let state;
-    init().then(s => state = s);
+    init().then(() => console.log("Initialization complete"));
 </script>
 </body>
 </html>

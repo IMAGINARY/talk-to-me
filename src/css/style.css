@@ -60,6 +60,10 @@ body {
     margin-bottom: 1em;
 }
 
+#audio-controls > .active {
+    color: red;
+}
+
 #lang {
     width: 100%;
     border: none;
