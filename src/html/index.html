@@ -196,14 +196,14 @@
 <body>
 <div id="main">
     <div id="waveform">
-        <canvas id="transcription-viz" width="1024" height="72"></canvas>
-        <br/>
-        <canvas id="spectrogram-viz" width="1024" height="256"></canvas>
-        <br/>
-        <canvas id="waveform-viz" width="1024" height="256"></canvas>
+        <div id="viz-container">
+            <canvas id="transcription-viz" width="1024" height="72"></canvas>
+            <br/>
+            <canvas id="spectrogram-viz" width="1024" height="256"></canvas>
+            <br/>
+            <canvas id="waveform-viz" width="1024" height="256"></canvas>
+        </div>
     </div>
-    <br>
-    <br>
     <div id="audio-controls">
         <button id="record-button" type="button" class="btn btn-secondary btn-circle btn-xl" data-toggle="button">
             <i class="fas fa-microphone fa-3x">
@@ -219,17 +219,17 @@
             </i>
         </button>
     </div>
-    <div id="language-controls">
-        <div class="btn-group dropright">
-            <button id="language-button" type="button" class="btn btn-secondary btn-lg dropdown-toggle"
-                    data-toggle="dropdown"
-                    aria-haspopup="true" aria-expanded="false">
-                <i class="fas fa-language fa-lg"></i>
-            </button>
-            <div id="language-selector" class="dropdown-menu">
-                <a data-lang="de" class="dropdown-item" href="#">Deutsch</a>
-                <a data-lang="en" class="dropdown-item" href="#">English</a>
-            </div>
+</div>
+<div id="language-controls">
+    <div class="btn-group dropup">
+        <button id="language-button" type="button" class="btn btn-secondary btn-lg dropdown-toggle"
+                data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-language fa-lg"></i>
+        </button>
+        <div id="language-selector" class="dropdown-menu">
+            <a data-lang="de" class="dropdown-item" href="#">Deutsch</a>
+            <a data-lang="en" class="dropdown-item" href="#">English</a>
         </div>
     </div>
 </div>
