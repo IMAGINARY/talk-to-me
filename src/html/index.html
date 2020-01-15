@@ -35,13 +35,6 @@
             .then(() => console.log("Speech recognition models loaded."));
 
         async function init() {
-            const waveformCanvas = document.querySelector('#waveform-viz');
-            const waveformCtx = waveformCanvas.getContext("2d");
-            const spectrogramCanvas = document.querySelector('#spectrogram-viz');
-            const spectrogramCtx = spectrogramCanvas.getContext("2d");
-            const transcriptionCanvas = document.querySelector('#transcription-viz');
-            const transcriptionCtx = transcriptionCanvas.getContext("2d");
-
             const audioContext = new AudioContext({sampleRate: 16000});
             const micInputNode = await Recorder.getMicrophoneAudioSource(audioContext);
             const recorderInputNode = new MicrophoneFilterNode(audioContext, {bypass: true});
@@ -55,9 +48,9 @@
             });
             const samples = recorder.samples;
 
-            const waveformVisualizer = new WaveformVisualizer(waveformCanvas, samples);
-            const spectrogramVisualizer = new SpectrogramVisualizer(spectrogramCanvas);
-            const transcriptionVisualizer = new TranscriptionVisualizer(transcriptionCanvas);
+            const waveformVisualizer = new WaveformVisualizer(document.querySelector('#waveform-viz'), samples);
+            const spectrogramVisualizer = new SpectrogramVisualizer(document.querySelector('#spectrogram-viz'));
+            const transcriptionVisualizer = new TranscriptionVisualizer(document.querySelector('#transcription-viz'));
 
             function decodePredictionExt(predictionExt) {
                 const letterActivations = predictionExt.layers[11];
