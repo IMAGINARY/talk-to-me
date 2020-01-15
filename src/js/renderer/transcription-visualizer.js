@@ -1,3 +1,6 @@
+const assert = require('assert');
+const ops = require("ndarray-ops");
+
 class TranscriptionVisualizer {
     constructor(canvas, options) {
         assert(typeof canvas !== "undefined");

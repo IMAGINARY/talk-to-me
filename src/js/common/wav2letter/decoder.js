@@ -1,3 +1,4 @@
+const ndarray = require("ndarray");
 const ops = require("ndarray-ops");
 const pack = require("ndarray-pack");
 const unpack = require("ndarray-unpack");

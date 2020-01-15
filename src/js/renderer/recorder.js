@@ -1,4 +1,5 @@
 const assert = require('assert');
+const EventEmitter = require('events');
 const FixedSizeBuffer = require("../common/util/FixedSizeBuffer.js");
 
 class Recorder extends EventEmitter {

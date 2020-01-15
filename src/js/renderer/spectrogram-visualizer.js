@@ -1,3 +1,4 @@
+const assert = require('assert');
 const ops = require('ndarray-ops');
 const colormap = require('colormap');
 

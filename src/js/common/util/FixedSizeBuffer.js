@@ -1,3 +1,5 @@
+const EventEmitter = require('events');
+
 const dtypes = {
     "int8": typeof Int8Array === "undefined" ? undefined : Int8Array,
     "int16": typeof Int16Array === "undefined" ? undefined : Int16Array,
