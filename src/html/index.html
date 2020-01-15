@@ -29,6 +29,7 @@
         const Recorder = require("../js/renderer/recorder.js");
         const WaveformVisualizer = require("../js/renderer/waveform-visualizer.js");
         const SpectrogramVisualizer = require("../js/renderer/spectrogram-visualizer.js");
+        const TranscriptionVisualizer = require("../js/renderer/transcription-visualizer.js");
 
         Promise.all(['en', 'de'].map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
             .then(() => console.log("Speech recognition models loaded."));
@@ -40,36 +41,6 @@
             const spectrogramCtx = spectrogramCanvas.getContext("2d");
             const transcriptionCanvas = document.querySelector('#transcription-viz');
             const transcriptionCtx = transcriptionCanvas.getContext("2d");
-
-            function setTranscriptionTexts(indices, probabilities, alphabet, numBest) {
-                transcriptionCtx.clearRect(0, 0, transcriptionCanvas.width, transcriptionCanvas.height);
-
-                transcriptionCtx.font = "16px monospace";
-
-                const lineHeight = 16;
-                const charWidth = transcriptionCanvas.width / indices.shape[0];
-                for (let position = 0; position < indices.shape[0]; ++position) {
-                    const bestK = indices.pick(position).hi(numBest);
-                    const sup = ops.sup(probabilities.pick(position));
-                    for (let lineNum = 0; lineNum < bestK.shape[0]; ++lineNum) {
-                        const charIndex = bestK.get(lineNum);
-                        const char = alphabet[charIndex];
-                        const opacity = probabilities.get(position, charIndex) / sup;
-                        transcriptionCtx.fillStyle = `rgba(0,0,0,${opacity})`;
-                        transcriptionCtx.fillText(char, position * charWidth, lineHeight * (numBest - lineNum));
-                        console.log(char, opacity);
-                    }
-                    console.log("-");
-                }
-            }
-
-            function addLettersForPredictionExt(predictionExt) {
-                const letterActivations = predictionExt.layers[11];
-                const decoded = wav2letter.decoder.decodeGreedyAll(letterActivations);
-                const letterProbabilities = ndarray(new Float32Array(letterActivations.shape[0] * letterActivations.shape[1]), letterActivations.shape);
-                opsExt.sigmoid(letterProbabilities, letterActivations);
-                setTranscriptionTexts(decoded, letterProbabilities, predictionExt.letters, 4);
-            }
 
             const audioContext = new AudioContext({sampleRate: 16000});
             const micInputNode = await Recorder.getMicrophoneAudioSource(audioContext);
@@ -86,18 +57,37 @@
 
             const waveformVisualizer = new WaveformVisualizer(waveformCanvas, samples);
             const spectrogramVisualizer = new SpectrogramVisualizer(spectrogramCanvas);
+            const transcriptionVisualizer = new TranscriptionVisualizer(transcriptionCanvas);
+
+            function decodePredictionExt(predictionExt) {
+                const letterActivations = predictionExt.layers[11];
+                const decoded = wav2letter.decoder.decodeGreedyAll(letterActivations);
+                const letterProbabilities = ndarray(new Float32Array(letterActivations.shape[0] * letterActivations.shape[1]), letterActivations.shape);
+                opsExt.sigmoid(letterProbabilities, letterActivations);
+                return {
+                    indices: decoded,
+                    probabilities: letterProbabilities,
+                    alphabet: predictionExt.letters,
+                };
+            }
 
             samples.on('full', async data => {
                 window.waveform = data;
                 window.predictionExt = await wav2letter.predictExt({waveform: data, lang: language});
-                addLettersForPredictionExt(window.predictionExt);
                 spectrogramVisualizer.draw(window.predictionExt.logMelSpectrogram);
+                const decodedPredictionExt = decodePredictionExt(window.predictionExt);
+                transcriptionVisualizer.draw(
+                    decodedPredictionExt.indices,
+                    decodedPredictionExt.probabilities,
+                    decodedPredictionExt.alphabet,
+                    4
+                );
             });
 
             function reset() {
                 samples.clear();
                 spectrogramVisualizer.clear();
-                transcriptionCtx.clearRect(0, 0, transcriptionCanvas.width, transcriptionCanvas.height);
+                transcriptionVisualizer.clear();
             }
 
             const recordButton = $("#record-button");
