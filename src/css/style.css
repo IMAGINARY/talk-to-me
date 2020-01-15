@@ -11,8 +11,6 @@ body {
     background-color: #202020;
     text-align: center;
     color: #F0F0F0;
-    display: flex;
-    flex-direction: row-reverse;
     position: absolute;
     width: 100%;
     height: 100%;
@@ -20,16 +18,19 @@ body {
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
-#waveform-viz {
-    width: 100%;
+#content {
+    flex-wrap: nowrap;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-end;
+    align-content: center;
+    margin: auto auto 0 auto;
+    height: 100%;
 }
 
-#spectrogram-viz {
+#viz-container > * {
     width: 100%;
-}
-
-#transcription-viz {
-    width: 100%;
+    max-width: 1024px;
 }
 
 .transcription-wrapper {
@@ -53,6 +54,10 @@ body {
     margin-top: auto;
 }
 
+.flex-spacer {
+    flex-grow: 1;
+}
+
 #waveform {
     flex-grow: 1;
     border-radius: 20px;
@@ -61,6 +66,8 @@ body {
     margin: auto 20px 0 20px;
     text-align: center;
     width: 60%;
+    max-width: 1024px;
+    box-sizing: border-box;
 }
 
 #audio-controls {
