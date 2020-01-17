@@ -19,6 +19,7 @@ class TranscriptionVisualizer {
             this.clear();
 
         this._context.font = "16px monospace";
+        this._context.textAlign = "center";
 
         const lineHeight = 16;
         const charWidth = this._canvas.width / indices.shape[0];
@@ -30,10 +31,8 @@ class TranscriptionVisualizer {
                 const char = alphabet[charIndex];
                 const opacity = probabilities.get(position, charIndex) / sup;
                 this._context.fillStyle = `rgba(0,0,0,${opacity})`;
-                this._context.fillText(char, position * charWidth, lineHeight * (numBest - lineNum));
-                console.log(char, opacity);
+                this._context.fillText(char, (position+0.5) * charWidth, lineHeight * (numBest - lineNum));
             }
-            console.log("-");
         }
 
         this._context.restore();
