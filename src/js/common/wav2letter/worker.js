@@ -29,7 +29,19 @@ function assertLang(lang) {
 async function getModel(lang) {
     assertLang(lang);
     if (models[lang].tfModel === null) {
-        models[lang].tfModel = await tf.loadLayersModel(models[lang].url);
+        const loadedModel = await tf.loadLayersModel(models[lang].url);
+
+        // Construct new model with additional normalization and activation layer added at the end
+        // to convert logits to probabilities
+        const batchNormalizationLayer = tf.layers.batchNormalization(-1);
+        const sigmoidLayer = tf.layers.activation({activation: 'sigmoid'});
+
+        // Replace the original output layer with the new activation layer
+        const outputs = loadedModel.outputs.slice(0, loadedModel.outputs.length - 1);
+        const newOutput = sigmoidLayer.apply(batchNormalizationLayer.apply(loadedModel.outputs[loadedModel.outputs.length - 1]));
+        outputs.push(newOutput);
+
+        models[lang].tfModel = tf.model({inputs: loadedModel.inputs, outputs: outputs});
         tf_predictExtSync(models[lang], new Float32Array(0));
         console.log(`Model for ${lang} loaded successfully.`);
     }

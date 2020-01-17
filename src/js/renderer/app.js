@@ -35,13 +35,11 @@ async function init() {
     const transcriptionVisualizer = new TranscriptionVisualizer(document.querySelector('#transcription-viz'));
 
     function decodePredictionExt(predictionExt) {
-        const letterActivations = predictionExt.layers[11];
+        const letterActivations = predictionExt.layers[predictionExt.layers.length - 1];
         const decoded = wav2letter.decoder.decodeGreedyAll(letterActivations);
-        const letterProbabilities = ndarray(new Float32Array(letterActivations.shape[0] * letterActivations.shape[1]), letterActivations.shape);
-        opsExt.sigmoid(letterProbabilities, letterActivations);
         return {
             indices: decoded,
-            probabilities: letterProbabilities,
+            probabilities: letterActivations,
             alphabet: predictionExt.letters,
         };
     }
