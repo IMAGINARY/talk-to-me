@@ -67,7 +67,8 @@ body {
     text-align: center;
     width: 60%;
     max-width: 1024px;
-    box-sizing: border-box;
+    box-sizing: content-box;
+    line-height: 0px;
 }
 
 #audio-controls {
@@ -107,4 +108,20 @@ body {
     width: 100%;
     border: none;
     border-collapse: collapse;
+}
+
+#cursor-container {
+    position: relative;
+}
+
+#cursor {
+    pointer-events: none;
+    box-sizing: content-box;
+    position: absolute;
+    width: 10px;
+    height: calc(256px + 256px + 72px);
+    bottom: 0px;
+    left: 100px;
+    border: 2px solid black;
+    border-radius: 10px;
 }

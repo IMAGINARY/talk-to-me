@@ -55,13 +55,52 @@ async function init() {
             decodedPredictionExt.alphabet,
             4
         );
+        let timeSlot = 0;
+        for (let t = decodedPredictionExt.indices.shape[0] - 1; t >= 0; --t) {
+            const letterIndex = decodedPredictionExt.indices.get(t, 0);
+            const letter = decodedPredictionExt.alphabet[letterIndex];
+            if (letter.match(/[a-z]/) !== null)
+                timeSlot = t;
+        }
+
+        // TODO: wrap into module
+        setCursorPosition(timeSlot, decodedPredictionExt.indices.shape[0]);
+        $("#cursor").show();
     });
 
     function reset() {
         samples.clear();
         spectrogramVisualizer.clear();
         transcriptionVisualizer.clear();
+
+        // TODO: wrap into module
+        $("#cursor").hide();
     }
+
+    function setCursorPosition(letterIndex, numLetters) {
+        const cursorWidth = 16;
+        const rect = $vizContainer.get(0).getBoundingClientRect();
+        const discreteLeft = ((letterIndex + 0.5) / numLetters) * rect.width - cursorWidth / 2.0;
+        $("#cursor").css('left', `${discreteLeft}px`);
+    }
+
+    const moveCb = evt => {
+        const numLetters = 100; // TODO: Don't hard-code!
+
+        const rect = $vizContainer.get(0).getBoundingClientRect();
+        const left = Math.max(0, Math.min(evt.clientX - rect.left, rect.width));
+        const lerp = left / rect.width;
+        const letterIndex = Math.floor(lerp * numLetters);
+
+        setCursorPosition(letterIndex, numLetters);
+    };
+    const $vizContainer = $('#viz-container');
+    $vizContainer.on('pointerdown', evt => {
+        moveCb(evt);
+        $vizContainer.on('pointermove', evt => moveCb(evt));
+    }).on('pointerup', function () {
+        $vizContainer.unbind('pointermove');
+    });
 
     const recordButton = $("#record-button");
     const playButton = $("#play-button");
@@ -89,6 +128,8 @@ async function init() {
         language = e.currentTarget.getAttribute("data-lang");
         reset();
     });
+
+    reset();
 }
 
 module.exports = {init: init};
