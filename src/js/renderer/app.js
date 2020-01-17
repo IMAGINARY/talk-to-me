@@ -10,6 +10,7 @@ const Recorder = require("./recorder.js");
 const WaveformVisualizer = require("./waveform-visualizer.js");
 const SpectrogramVisualizer = require("./spectrogram-visualizer.js");
 const TranscriptionVisualizer = require("./transcription-visualizer.js");
+const NetworkVisualizer = require("./network-visualizer.js");
 
 Promise.all(['en', 'de'].map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
     .then(() => console.log("Speech recognition models loaded."));
@@ -33,6 +34,7 @@ async function init() {
     const waveformVisualizer = new WaveformVisualizer(document.querySelector('#waveform-viz'), samples);
     const spectrogramVisualizer = new SpectrogramVisualizer(document.querySelector('#spectrogram-viz'));
     const transcriptionVisualizer = new TranscriptionVisualizer(document.querySelector('#transcription-viz'));
+    const networkVisualizer = new NetworkVisualizer(document.querySelector('#network-viz'));
 
     function decodePredictionExt(predictionExt) {
         const letterActivations = predictionExt.layers[predictionExt.layers.length - 1];
@@ -63,6 +65,9 @@ async function init() {
                 timeSlot = t;
         }
 
+        networkVisualizer.layers = predictionExt.layers;
+        networkVisualizer.draw(timeSlot);
+
         // TODO: wrap into module
         setCursorPosition(timeSlot, decodedPredictionExt.indices.shape[0]);
         $("#cursor").show();
@@ -72,6 +77,7 @@ async function init() {
         samples.clear();
         spectrogramVisualizer.clear();
         transcriptionVisualizer.clear();
+        networkVisualizer.clear();
 
         // TODO: wrap into module
         $("#cursor").hide();
@@ -93,6 +99,7 @@ async function init() {
         const letterIndex = Math.floor(lerp * numLetters);
 
         setCursorPosition(letterIndex, numLetters);
+        networkVisualizer.draw(letterIndex);
     };
     const $vizContainer = $('#viz-container');
     $vizContainer.on('pointerdown', evt => {
