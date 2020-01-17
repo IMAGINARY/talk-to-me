@@ -47,7 +47,7 @@ async function init() {
     samples.on('full', async data => {
         window.waveform = data;
         window.predictionExt = await wav2letter.predictExt({waveform: data, lang: language});
-        spectrogramVisualizer.draw(window.predictionExt.logMelSpectrogram);
+        spectrogramVisualizer.draw(window.predictionExt.layers[0]);
         const decodedPredictionExt = decodePredictionExt(window.predictionExt);
         transcriptionVisualizer.draw(
             decodedPredictionExt.indices,

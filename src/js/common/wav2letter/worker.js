@@ -41,6 +41,9 @@ async function getModel(lang) {
         const newOutput = sigmoidLayer.apply(batchNormalizationLayer.apply(loadedModel.outputs[loadedModel.outputs.length - 1]));
         outputs.push(newOutput);
 
+        // Add the input layer to the output for sake of completeness
+        outputs.unshift(loadedModel.inputs[0]);
+
         models[lang].tfModel = tf.model({inputs: loadedModel.inputs, outputs: outputs});
         tf_predictExtSync(models[lang], new Float32Array(0));
         console.log(`Model for ${lang} loaded successfully.`);
@@ -140,7 +143,6 @@ function tf_predictExtSync(model, waveform16kHzFloat32) {
         .map(layer => layer.squeeze(0));
 
     return {
-        logMelSpectrogram: logMelSpectrogram,
         layers: allActivations,
         letters: model.letters,
         lang: model.lang,
@@ -156,7 +158,6 @@ async function tf_predictExt(params) {
 async function predictExt(params) {
     const tfPrediction = await tf_predictExt(params);
     return {
-        logMelSpectrogram: await tensorToNDArray(tfPrediction.logMelSpectrogram),
         layers: await Promise.all(tfPrediction.layers.map(tensorToNDArray)),
         letters: tfPrediction.letters,
         lang: tfPrediction.lang,
