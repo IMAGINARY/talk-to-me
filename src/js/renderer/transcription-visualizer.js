@@ -25,7 +25,7 @@ class TranscriptionVisualizer {
         const charWidth = this._canvas.width / indices.shape[0];
         for (let position = 0; position < indices.shape[0]; ++position) {
             const bestK = indices.pick(position).hi(numBest);
-            const sup = ops.sup(probabilities.pick(position));
+            const sup = ops.sup(probabilities.pick(position)); // TODO: avoid division by zero
             for (let lineNum = 0; lineNum < bestK.shape[0]; ++lineNum) {
                 const charIndex = bestK.get(lineNum);
                 const char = alphabet[charIndex];
