@@ -11,6 +11,31 @@ class Recorder extends EventEmitter {
         }
     }
 
+    _addNodesForRecording() {
+        this._gain = new GainNode(this._audioContext, {gain: 0});
+        const rampTime = 0.01;
+        this._gain.gain.linearRampToValueAtTime(1.0, this._audioContext.currentTime + rampTime);
+        this._gain.gain.linearRampToValueAtTime(1.0, this._audioContext.currentTime + this._duration / 1000.0 - rampTime);
+        this._gain.gain.linearRampToValueAtTime(0.0, this._audioContext.currentTime + this._duration / 1000.0);
+
+        this._processor = this._audioContext.createScriptProcessor(1024, 1, 1);
+        this._processor.addEventListener('audioprocess', this._appendAudioData);
+
+        this._source.connect(this._gain);
+        this._gain.connect(this._processor);
+        this._processor.connect(this._audioContext.destination);
+    }
+
+    _removeNodesForRecording() {
+        this._source.disconnect(this._gain);
+        this._gain.disconnect(this._processor);
+        this._processor.disconnect(this._audioContext.destination);
+
+        this._processor.removeEventListener('audioprocess', this._appendAudioData);
+        this._gain = null;
+        this._processor = null;
+    }
+
     constructor(options) {
         super();
         this._audioContext = options.audioContext;
@@ -23,18 +48,32 @@ class Recorder extends EventEmitter {
         // automatically stop recording whenever the buffer is filled
         this._samples.on('full', this.stopRecording.bind(this));
 
+        // properly restart recording if buffer is emptied while recording
+        this._samples.on('empty', () => {
+            if (this.state === Recorder.states.RECORDING) {
+                this.startRecording();
+            }
+        });
+
         this._source = options.source;
         this._destination = options.destination;
-        this._processor = this._audioContext.createScriptProcessor(1024, 1, 1);
-        this._processor.onaudioprocess = e => this._samples.push(e.inputBuffer.getChannelData(0));
-        this._source.connect(this._processor);
+
+        // add dummy node to keep audio flowing
+        // otherwise, newly added nodes might pick up unprocessed audio from previous recording
+        this._dummyGain = new GainNode(this._audioContext, {gain: 0});
+        this._source.connect(this._dummyGain);
+        this._dummyGain.connect(this._audioContext.destination);
+
+        this._appendAudioData = e => {
+            if (this._state === Recorder.states.RECORDING)
+                this._samples.push(e.inputBuffer.getChannelData(0));
+        };
 
         this._playbackStartedAt = this._audioContext.currentTime;
         this._audioBufferSource = null;
         this._playbackEndedListener = this.stopPlayback.bind(this);
 
         this._state = Recorder.states.IDLE;
-
     }
 
     get state() {
@@ -71,8 +110,7 @@ class Recorder extends EventEmitter {
 
         assert(this.state === Recorder.states.IDLE);
 
-        this._samples.clear();
-        this._processor.connect(this._destination);
+        this._addNodesForRecording();
 
         this._setState(Recorder.states.RECORDING);
         this.emit('recording-started');
@@ -80,7 +118,7 @@ class Recorder extends EventEmitter {
 
     stopRecording() {
         if (this.state === Recorder.states.RECORDING) {
-            this._processor.disconnect();
+            this._removeNodesForRecording();
             this._setState(Recorder.states.IDLE);
             this.emit("recording-stopped");
         }
