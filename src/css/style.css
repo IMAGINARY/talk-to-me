@@ -12,8 +12,8 @@ body {
     text-align: center;
     color: #F0F0F0;
     position: absolute;
-    width: 100%;
-    height: 100%;
+    width: 1920px;
+    height: 1080px;
     padding: 20px;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
