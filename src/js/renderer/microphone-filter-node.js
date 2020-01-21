@@ -56,7 +56,7 @@ class MicrophoneFilterNode extends CompositeAudioNode {
 }
 
 // Inject the new class into AudioContext prototype.
-AudioContext.prototype.createMyCompositeNode =
+AudioContext.prototype.createMicrophoneFilterNode =
     OfflineAudioContext.prototype.createMicrophoneFilterNode = function (options) {
         return new MicrophoneFilterNode(this, options);
     };
