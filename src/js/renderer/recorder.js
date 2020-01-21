@@ -11,31 +11,6 @@ class Recorder extends EventEmitter {
         }
     }
 
-    _addNodesForRecording() {
-        this._gain = new GainNode(this._audioContext, {gain: 0});
-        const rampTime = 0.01;
-        this._gain.gain.linearRampToValueAtTime(1.0, this._audioContext.currentTime + rampTime);
-        this._gain.gain.linearRampToValueAtTime(1.0, this._audioContext.currentTime + this._duration / 1000.0 - rampTime);
-        this._gain.gain.linearRampToValueAtTime(0.0, this._audioContext.currentTime + this._duration / 1000.0);
-
-        this._processor = this._audioContext.createScriptProcessor(1024, 1, 1);
-        this._processor.addEventListener('audioprocess', this._appendAudioData);
-
-        this._source.connect(this._gain);
-        this._gain.connect(this._processor);
-        this._processor.connect(this._audioContext.destination);
-    }
-
-    _removeNodesForRecording() {
-        this._source.disconnect(this._gain);
-        this._gain.disconnect(this._processor);
-        this._processor.disconnect(this._audioContext.destination);
-
-        this._processor.removeEventListener('audioprocess', this._appendAudioData);
-        this._gain = null;
-        this._processor = null;
-    }
-
     constructor(options) {
         super();
         this._audioContext = options.audioContext;
@@ -58,20 +33,18 @@ class Recorder extends EventEmitter {
         this._source = options.source;
         this._destination = options.destination;
 
-        // add dummy node to keep audio flowing
-        // otherwise, newly added nodes might pick up unprocessed audio from previous recording
-        this._dummyGain = new GainNode(this._audioContext, {gain: 0});
-        this._source.connect(this._dummyGain);
-        this._dummyGain.connect(this._audioContext.destination);
-
         this._appendAudioData = e => {
             if (this._state === Recorder.states.RECORDING)
                 this._samples.push(e.inputBuffer.getChannelData(0));
         };
+        this._processor = this._audioContext.createScriptProcessor(1024, 1, 1);
+        this._processor.addEventListener('audioprocess', this._appendAudioData);
 
-        this._playbackStartedAt = this._audioContext.currentTime;
-        this._audioBufferSource = null;
-        this._playbackEndedListener = this.stopPlayback.bind(this);
+        this._source.connect(this._processor);
+        this._processor.connect(this._audioContext.destination);
+
+        this._player = new Player(this._destination, this.audioBuffer);
+        this._player.on('ended', this.stopPlayback.bind(this));
 
         this._state = Recorder.states.IDLE;
     }
@@ -98,7 +71,7 @@ class Recorder extends EventEmitter {
 
     get playbackProgress() {
         if (this.state === Recorder.states.PLAYING) {
-            return Math.min((this._audioContext.currentTime - this._playbackStartedAt) / this.duration, 1.0);
+            return Math.min((this._player.progress * 1000.0) / this.duration, 1.0);
         } else {
             return 0.0;
         }
@@ -110,15 +83,12 @@ class Recorder extends EventEmitter {
 
         assert(this.state === Recorder.states.IDLE);
 
-        this._addNodesForRecording();
-
         this._setState(Recorder.states.RECORDING);
         this.emit('recording-started');
     }
 
     stopRecording() {
         if (this.state === Recorder.states.RECORDING) {
-            this._removeNodesForRecording();
             this._setState(Recorder.states.IDLE);
             this.emit("recording-stopped");
         }
@@ -129,17 +99,8 @@ class Recorder extends EventEmitter {
         this.stopRecording();
 
         assert(this.state === Recorder.states.IDLE);
-        assert(this._audioBufferSource === null);
 
-        const audioBufferSource = this._audioContext.createBufferSource();
-        audioBufferSource.buffer = this._audioBuffer;
-        audioBufferSource.connect(this._destination);
-        audioBufferSource.addEventListener("ended", this._playbackEndedListener);
-
-        this._audioBufferSource = audioBufferSource;
-
-        audioBufferSource.start();
-        this._playbackStartedAt = this._audioContext.currentTime;
+        this._player.play();
 
         this._setState(Recorder.states.PLAYING);
         this.emit("playback-started");
@@ -147,12 +108,8 @@ class Recorder extends EventEmitter {
 
     stopPlayback() {
         if (this.state === Recorder.states.PLAYING) {
-            if (this._audioBufferSource !== null) {
-                this._audioBufferSource.stop();
-                this._audioBufferSource.removeEventListener("ended", this._playbackEndedListener);
-                this._audioBufferSource.disconnect();
-                this._audioBufferSource = null;
-            }
+            this._player.stop();
+
             this._setState(Recorder.states.IDLE);
             this.emit('playback-stopped');
         }
@@ -179,5 +136,81 @@ Recorder.states = {
     "PLAYING": 2,
 };
 Object.freeze(Recorder.states);
+
+
+class Player extends EventEmitter {
+    constructor(destination, audioBuffer) {
+        super();
+
+        this._destination = destination;
+        this._audioContext = destination.context;
+        this._audioBuffer = audioBuffer;
+
+        this._duration = this._audioBuffer.length / this._audioContext.sampleRate;
+        this._offset = 0;
+
+        this._rampTime = 0.1;
+
+        this._playbackStarted = 0;
+
+        this._emitEnded = () => this.emit('ended');
+
+        // sentinel objects to avoid additional state tracking
+        this._ramp = new GainNode(this._audioContext, {gain: 0.0});
+        this._audioBufferSource = this._audioContext.createBufferSource();
+        this._audioBufferSource.start()
+    }
+
+    get progress() {
+        return this._offset;
+    }
+
+    play() {
+        this._playbackStarted = this._audioContext.currentTime;
+        this._pause();
+
+        const remainingDuration = this._duration - this._offset;
+        const ramp = new GainNode(this._audioContext, {gain: 0});
+        ramp.gain.linearRampToValueAtTime(1.0, this._audioContext.currentTime + this._rampTime);
+        ramp.gain.setValueAtTime(1.0, this._audioContext.currentTime + remainingDuration - this._rampTime);
+        ramp.gain.linearRampToValueAtTime(Number.EPSILON, this._audioContext.currentTime + remainingDuration);
+        ramp.connect(this._destination);
+
+        const audioBufferSource = this._audioContext.createBufferSource();
+        audioBufferSource.buffer = this._audioBuffer;
+        audioBufferSource.connect(ramp);
+        audioBufferSource.addEventListener('ended', () => {
+            audioBufferSource.disconnect();
+            ramp.disconnect();
+        });
+        audioBufferSource.addEventListener('ended', this._emitEnded);
+
+        audioBufferSource.start(this._audioContext.currentTime, this._offset);
+
+        this._ramp = ramp;
+        this._audioBufferSource = audioBufferSource;
+
+        this.emit('playing', this._offset);
+    }
+
+    _pause() {
+        this._offset += this._audioContext.currentTime - this._playbackStarted;
+        this._ramp.gain.cancelAndHoldAtTime(this._audioContext.currentTime);
+        this._ramp.gain.linearRampToValueAtTime(Number.EPSILON, this._audioContext.currentTime + this._rampTime);
+        this._ramp.gain.setValueAtTime(0.0, this._audioContext.currentTime + this._rampTime);
+        this._audioBufferSource.removeEventListener('ended', this._emitEnded);
+        this._audioBufferSource.stop(this._audioContext.currentTime + this._rampTime);
+    }
+
+    pause() {
+        this._pause();
+        this.emit('paused', this._offset);
+    }
+
+    stop() {
+        this.pause();
+        this._offset = 0;
+    }
+}
 
 module.exports = Recorder;
