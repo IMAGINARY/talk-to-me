@@ -33,6 +33,8 @@ const alphamap = (() => {
 function convertToCanvasImageSource(logMelSpectrogramData) {
     // TODO: avoid creating a new canvas every time
     const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = logMelSpectrogramData.shape[0];
+    tempCanvas.height = logMelSpectrogramData.shape[1];
     const tempCtx = tempCanvas.getContext("2d");
 
     const min = ops.inf(logMelSpectrogramData);
