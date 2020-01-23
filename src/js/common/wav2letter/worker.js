@@ -34,11 +34,11 @@ async function getModel(lang) {
         // Construct new model with additional normalization and activation layer added at the end
         // to convert logits to probabilities
         const batchNormalizationLayer = tf.layers.batchNormalization(-1);
-        const sigmoidLayer = tf.layers.activation({activation: 'sigmoid'});
+        const activationLayer = tf.layers.activation({activation: 'softmax'});
 
         // Replace the original output layer with the new activation layer
         const outputs = loadedModel.outputs.slice(0, loadedModel.outputs.length - 1);
-        const newOutput = sigmoidLayer.apply(batchNormalizationLayer.apply(loadedModel.outputs[loadedModel.outputs.length - 1]));
+        const newOutput = activationLayer.apply(batchNormalizationLayer.apply(loadedModel.outputs[loadedModel.outputs.length - 1]));
         outputs.push(newOutput);
 
         // Add the input layer to the output for sake of completeness
