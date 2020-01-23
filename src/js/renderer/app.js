@@ -5,6 +5,8 @@ const $ = require('jquery');
 
 const wav2letter = require("../common/wav2letter/wav2letter.js");
 
+const loadAudioFile = require("./loadAudioFile.js");
+
 const MicrophoneFilterNode = require("./microphone-filter-node.js");
 const Recorder = require("./recorder.js");
 const WaveformVisualizer = require("./waveform-visualizer.js");
@@ -35,6 +37,11 @@ async function init() {
     const spectrogramVisualizer = new SpectrogramVisualizer(document.querySelector('#spectrogram-viz'));
     const transcriptionVisualizer = new TranscriptionVisualizer(document.querySelector('#transcription-viz'));
     const networkVisualizer = new NetworkVisualizer(document.querySelector('#network-viz'));
+
+    async function loadDemoAudio() {
+        const demoAudioBuffer = await loadAudioFile(audioContext, new URL('../../audio/helloiamai_16kHz_16bit_short.wav', window.location.href));
+        recorder.recordFromBuffer(demoAudioBuffer);
+    }
 
     function decodePredictionExt(predictionExt) {
         const letterActivations = predictionExt.layers[predictionExt.layers.length - 1];
@@ -137,6 +144,7 @@ async function init() {
     });
 
     reset();
+    await loadDemoAudio();
 }
 
 module.exports = {init: init};
