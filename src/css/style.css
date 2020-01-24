@@ -143,6 +143,7 @@ body {
 }
 
 #cursor {
+    visibility: hidden;
     pointer-events: none;
     box-sizing: content-box;
     position: absolute;
