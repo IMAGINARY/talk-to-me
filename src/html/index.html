@@ -15,47 +15,50 @@
     </script>
 </head>
 <body>
-<div id="content">
-    <div id="main">
-        <div class="flex-spacer"></div>
-        <div id="waveform">
-            <div id="viz-container">
-                <canvas id="network-viz" width="1024" height="512"></canvas>
-                <canvas id="transcription-viz" width="1024" height="72"></canvas>
-                <canvas id="spectrogram-viz" width="1024" height="256"></canvas>
-                <canvas id="waveform-viz" width="1024" height="256"></canvas>
+<div id="scroll-area">
+    <div id="content">
+        <div id="main">
+            <div class="flex-spacer"></div>
+            <div id="waveform">
+                <div id="viz-container">
+                    <canvas id="transcription-viz" width="1024" height="72"></canvas>
+                    <canvas id="network-viz" width="1024" height="256"></canvas>
+                    <canvas id="spectrogram-viz" width="1024" height="256"></canvas>
+                    <canvas id="waveform-viz" width="1024" height="64"></canvas>
+                </div>
+                <div id="cursor-container">
+                    <div id="cursor"></div>
+                </div>
             </div>
-            <div id="cursor-container">
-                <div id="cursor"></div>
+            <div id="audio-controls">
+                <button id="record-button" type="button" class="btn btn-secondary btn-circle btn-xl"
+                        data-toggle="button">
+                    <i class="fas fa-microphone fa-3x">
+                    </i>
+                </button>
+                <button id="play-button" type="button" class="btn btn-secondary btn-circle btn-xl" data-toggle="button">
+                    <i class="fas fa-play fa-2x"
+                       style="transform: translateX(0.225ex);">
+                    </i>
+                </button>
+                <button id="restart-button" type="button" class="btn btn-secondary btn-circle btn-xl">
+                    <i class="fas fa-redo-alt fa-2x">
+                    </i>
+                </button>
             </div>
+            <div class="flex-spacer"></div>
         </div>
-        <div id="audio-controls">
-            <button id="record-button" type="button" class="btn btn-secondary btn-circle btn-xl" data-toggle="button">
-                <i class="fas fa-microphone fa-3x">
-                </i>
-            </button>
-            <button id="play-button" type="button" class="btn btn-secondary btn-circle btn-xl" data-toggle="button">
-                <i class="fas fa-play fa-2x"
-                   style="transform: translateX(0.225ex);">
-                </i>
-            </button>
-            <button id="restart-button" type="button" class="btn btn-secondary btn-circle btn-xl">
-                <i class="fas fa-redo-alt fa-2x">
-                </i>
-            </button>
-        </div>
-        <div class="flex-spacer"></div>
-    </div>
-    <div id="language-controls">
-        <div class="btn-group dropup">
-            <button id="language-button" type="button" class="btn btn-secondary btn-lg dropdown-toggle"
-                    data-toggle="dropdown"
-                    aria-haspopup="true" aria-expanded="false">
-                <i class="fas fa-language fa-lg"></i>
-            </button>
-            <div id="language-selector" class="dropdown-menu">
-                <a data-lang="de" class="dropdown-item" href="#">Deutsch</a>
-                <a data-lang="en" class="dropdown-item" href="#">English</a>
+        <div id="language-controls">
+            <div class="btn-group dropup">
+                <button id="language-button" type="button" class="btn btn-secondary btn-lg dropdown-toggle"
+                        data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-language fa-lg"></i>
+                </button>
+                <div id="language-selector" class="dropdown-menu">
+                    <a data-lang="de" class="dropdown-item" href="#">Deutsch</a>
+                    <a data-lang="en" class="dropdown-item" href="#">English</a>
+                </div>
             </div>
         </div>
     </div>

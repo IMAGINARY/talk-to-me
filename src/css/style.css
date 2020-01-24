@@ -13,9 +13,21 @@ body {
     color: #F0F0F0;
     position: absolute;
     width: 1920px;
-    height: 1080px;
-    padding: 20px;
+    min-height: 1080px;
+    height: 100%;
+    box-sizing: content-box;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    border-right: 1px solid white;
+    overflow-x: hidden;
+}
+
+#scroll-area {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    left: 0px;
+    overflow-y: scroll;
+    max-height: 100%;
 }
 
 #content {
@@ -25,12 +37,27 @@ body {
     align-items: flex-end;
     align-content: center;
     margin: auto auto 0 auto;
-    height: 100%;
+    padding: 20px;
+}
+
+#viz-container {
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
 }
 
 #viz-container > * {
-    width: 100%;
-    max-width: 1024px;
+    display: inline-block;
+    margin-top: 5px;
+}
+
+#viz-container > *:first-child {
+    margin-top: inherit;
+}
+
+#viz-container > canvas {
+    margin-left: 11px;
+    margin-right: 11px;
 }
 
 .transcription-wrapper {
@@ -59,14 +86,12 @@ body {
 }
 
 #waveform {
-    flex-grow: 1;
+    flex-grow: 0;
     border-radius: 20px;
     padding: 10px 25px 10px 25px;
     background-color: #FFFF20;
     margin: auto 20px 0 20px;
     text-align: center;
-    width: 60%;
-    max-width: 1024px;
     box-sizing: content-box;
     line-height: 0px;
 }
@@ -112,6 +137,9 @@ body {
 
 #cursor-container {
     position: relative;
+    box-sizing: content-box;
+    margin-left: 11px;
+    margin-right: 11px;
 }
 
 #cursor {
@@ -119,9 +147,8 @@ body {
     box-sizing: content-box;
     position: absolute;
     width: 10px;
-    height: calc(256px + 256px + 72px);
+    height: calc(64px + 256px + 256px + 72px + 3 * 5px );
     bottom: 0px;
-    left: 100px;
     border: 2px solid black;
     border-radius: 10px;
 }

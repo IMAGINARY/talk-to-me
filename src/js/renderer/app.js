@@ -92,7 +92,7 @@ async function init() {
 
     function setCursorPosition(letterIndex, numLetters) {
         const cursorWidth = 16;
-        const rect = $vizContainer.get(0).getBoundingClientRect();
+        const rect = $("#waveform-viz").get(0).getBoundingClientRect();
         const discreteLeft = ((letterIndex + 0.5) / numLetters) * rect.width - cursorWidth / 2.0;
         $("#cursor").css('left', `${discreteLeft}px`);
     }
