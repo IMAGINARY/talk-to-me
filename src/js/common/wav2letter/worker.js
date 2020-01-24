@@ -10,13 +10,13 @@ const models = {
     "en": {
         lang: "en",
         url: 'file://' + path.resolve(__dirname, '../../../../models/english/model.json'),
-        letters: "␣'abcdefghijklmnopqrstuvwxyz²³ ",
+        letters: "␣'abcdefghijklmnopqrstuvwxyz²³·",
         tfModel: null,
     },
     "de": {
         lang: "de",
         url: 'file://' + path.resolve(__dirname, '../../../../models/german/model.json'),
-        letters: "␣'abcdefghijklmnopqrstuvwxyzßäöü²³ ",
+        letters: "␣'abcdefghijklmnopqrstuvwxyzßäöü²³·",
         tfModel: null,
 
     }
