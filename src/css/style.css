@@ -153,3 +153,33 @@ body {
     border: 2px solid black;
     border-radius: 10px;
 }
+
+#network-viz {
+    display: none;
+}
+
+#letter-probabilities > svg .grid * {
+    stroke: rgb(0, 0, 0);
+}
+
+#letter-probabilities > svg .grid {
+    opacity: 0.1;
+}
+
+#letter-probabilities > svg rect {
+    fill: black;
+}
+
+#letter-probabilities > svg text {
+    font-size: 9px;
+    font-family: monospace;
+    text-anchor: middle;
+}
+
+#letter-probabilities > svg text.legend {
+    fill: black;
+}
+
+#letter-probabilities > svg text.letters {
+    fill: #FFFF20;
+}

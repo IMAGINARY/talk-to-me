@@ -38,6 +38,8 @@ async function init() {
     const transcriptionVisualizer = new TranscriptionVisualizer(document.querySelector('#transcription-viz'));
     const networkVisualizer = new NetworkVisualizer(document.querySelector('#network-viz'));
 
+    //setInterval(() => networkVisualizer.currentLayer = (networkVisualizer.currentLayer + 1) % networkVisualizer.layers.length, 1000);
+
     async function loadDemoAudio() {
         const demoAudioBuffer = await loadAudioFile(audioContext, new URL('../../audio/helloiamai_16kHz_16bit_short.wav', window.location.href));
         recorder.recordFromBuffer(demoAudioBuffer);
@@ -73,7 +75,7 @@ async function init() {
         }
 
         networkVisualizer.layers = predictionExt.layers;
-        networkVisualizer.draw(timeSlot);
+        networkVisualizer.currentLayer = predictionExt.layers.length - 1;
 
         // TODO: wrap into module
         setCursorPosition(timeSlot, decodedPredictionExt.indices.shape[0]);
@@ -106,7 +108,7 @@ async function init() {
         const letterIndex = Math.floor(lerp * numLetters);
 
         setCursorPosition(letterIndex, numLetters);
-        networkVisualizer.draw(letterIndex);
+        //networkVisualizer.draw(letterIndex);
     };
     const $vizContainer = $('#viz-container');
     $vizContainer.on('pointerdown', evt => {
