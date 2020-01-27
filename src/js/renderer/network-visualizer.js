@@ -98,6 +98,13 @@ function visualizeLetterProbabilities(letterProbabilties, alphabet) {
                 })
                 .text(char)
         }
+        diagram.append("text")
+            .attr("class", ".legend")
+            .attrs({
+                x: (letterProbabilties.shape[0] + 0.5) * cellSize,
+                y: (l + 1 - 0.25) * cellSize,
+            })
+            .text(char)
     }
 }
 
