@@ -34,10 +34,10 @@ async function init() {
     });
     const samples = recorder.samples;
 
-    const waveformVisualizer = new WaveformVisualizer(document.querySelector('#waveform-viz'), samples);
-    const spectrogramVisualizer = new SpectrogramVisualizer(document.querySelector('#spectrogram-viz'));
-    const transcriptionVisualizer = new TranscriptionVisualizer(document.querySelector('#transcription-viz'));
-    const networkVisualizer = new NetworkVisualizer(document.querySelector('#network-viz'));
+    const waveformVisualizer = new WaveformVisualizer(document.querySelector('#waveform-canvas'), samples);
+    const spectrogramVisualizer = new SpectrogramVisualizer(document.querySelector('#spectrogram-canvas'));
+    const transcriptionVisualizer = new TranscriptionVisualizer(document.querySelector('#decoding-canvas'));
+    const networkVisualizer = new NetworkVisualizer(document.querySelector('#network-canvas'));
 
     //setInterval(() => networkVisualizer.currentLayer = (networkVisualizer.currentLayer + 1) % networkVisualizer.layers.length, 1000);
 

@@ -33,11 +33,48 @@
             <div class="flex-spacer"></div>
             <div id="waveform">
                 <div id="viz-container">
-                    <canvas id="transcription-viz" width="1024" height="72"></canvas>
-                    <div id="letter-probabilities"></div>
-                    <canvas id="network-viz" width="1024" height="256"></canvas>
-                    <canvas id="spectrogram-viz" width="1024" height="256"></canvas>
-                    <canvas id="waveform-viz" width="1024" height="64"></canvas>
+                    <div id="decoding-viz">
+                        <div class="explanation-container">
+                            <div class="explanation">
+                                A <u>decoder</u> walks through the table of probabilities to find the most likely path
+                                to form words and sentences.
+                            </div>
+                        </div>
+                        <div class="needs-margin">
+                            <canvas id="decoding-canvas" class="full-width" width="1024" height="72"></canvas>
+                        </div>
+                    </div>
+                    <div id="network-viz">
+                        <div class="explanation-container">
+                            <div class="explanation">
+                                The spectrogram is given to a <u>neural network</u> that tries to derive a probability
+                                for each letter and time step.
+                            </div>
+                        </div>
+                        <canvas id="network-canvas" class="full-width needs-margin" width="1024" height="256"></canvas>
+                        <div id="letter-probabilities"></div>
+                    </div>
+                    <div id="spectrogram-viz">
+                        <div class="explanation-container">
+                            <div class="explanation">
+                                The sound is transformed into a <u>spectrogram</u>, which shows the spectrum of
+                                frequencies for each time step.
+                            </div>
+                        </div>
+                        <div class="needs-margin">
+                            <canvas id="spectrogram-canvas" class="full-width" width="1024" height="256"></canvas>
+                        </div>
+                    </div>
+                    <div id="waveform-viz">
+                        <div class="explanation-container">
+                            <div class="explanation">
+                                This is the <u>waveform</u> of your voice.
+                            </div>
+                        </div>
+                        <div class="needs-margin">
+                            <canvas id="waveform-canvas" class="full-width" width="1024" height="64"></canvas>
+                        </div>
+                    </div>
                 </div>
                 <div id="cursor-container">
                     <div id="cursor"></div>
