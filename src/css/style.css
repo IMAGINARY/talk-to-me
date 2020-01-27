@@ -172,7 +172,7 @@ body {
 
 #letter-probabilities > svg text {
     font-size: 9px;
-    font-family: monospace;
+    font-family: 'Inconsolata';
     text-anchor: middle;
 }
 

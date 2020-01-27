@@ -18,7 +18,7 @@ class TranscriptionVisualizer {
         if (this.clearBeforeDrawing)
             this.clear();
 
-        this._context.font = "16px monospace";
+        this._context.font = "16px Inconsolata";
         this._context.textAlign = "center";
 
         const lineHeight = 16;

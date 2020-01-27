@@ -3,6 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Talk to Me</title>
+    <!-- preload Inconsolata, otherwise it might not be ready when drawing to a canvas for the first time -->
+    <link rel="preload" href="../../node_modules/@openfonts/inconsolata_all/files/inconsolata-all-400.woff" as="font"
+          type="font/woff">
+    <link rel="preload" href="../../node_modules/@openfonts/inconsolata_all/files/inconsolata-all-400.woff2" as="font"
+          type="font/woff">
+    <link rel="preload" href="../../node_modules/@openfonts/inconsolata_all/files/inconsolata-all-700.woff" as="font"
+          type="font/woff">
+    <link rel="preload" href="../../node_modules/@openfonts/inconsolata_all/files/inconsolata-all-700.woff2" as="font"
+          type="font/woff">
+    <link rel="preload" href="../../node_modules/@openfonts/inconsolata_all/index.css" as="style">
+
+    <link href="../../node_modules/@openfonts/inconsolata_all/index.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="../../node_modules/@fortawesome/fontawesome-free/css/all.css">
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap-reboot.min.css">
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
