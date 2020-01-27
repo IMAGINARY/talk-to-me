@@ -139,7 +139,8 @@ class NetworkVisualizer {
         assert(layers.length >= 2, "Network needs at least input and output layers");
         this._layers = layers;
         this._currentLayer = 0;
-        visualizeLetterProbabilities(this.layers[layers.length - 1], "␣'abcdefghijklmnopqrstuvwxyz²³·");
+        // TODO: extends to allow other languages
+        visualizeLetterProbabilities(this.layers[layers.length - 1], "␣'ABCDEFGHIJKLMNOPQRSTUVWXYZ²³·");
         this.scheduleRedraw();
     }
 

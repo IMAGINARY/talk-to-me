@@ -4,6 +4,7 @@ const opsExt = require('../common/ndarray-ops-ext.js');
 const $ = require('jquery');
 
 const wav2letter = require("../common/wav2letter/wav2letter.js");
+const {toUpperCase} = require("../common/util/string-utils.js");
 
 const loadAudioFile = require("./loadAudioFile.js");
 
@@ -58,6 +59,7 @@ async function init() {
     samples.on('full', async data => {
         window.waveform = data;
         window.predictionExt = await wav2letter.predictExt({waveform: data, lang: language});
+        window.predictionExt.letters = toUpperCase(window.predictionExt.letters);
         spectrogramVisualizer.draw(window.predictionExt.layers[0]);
         const decodedPredictionExt = decodePredictionExt(window.predictionExt);
         transcriptionVisualizer.draw(
