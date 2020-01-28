@@ -1,43 +1,9 @@
 const assert = require('assert');
-const ndarray = require("ndarray")
-const ops = require("ndarray-ops");
+const ndarray = require("ndarray");
+const ImageUtils = require('../common/util/image-utils.js');
 
 const d3 = require('d3');
 require('d3-selection-multi');
-
-const alphamap = (() => {
-    const palette = Array.from({length: 256}, (_, i) => [0, 0, 0, i]);
-    return value => {
-        const constrainedValue = value < 0.0 ? 0.0 : (value > 1.0 ? 1.0 : value);
-        const index = Math.floor(255 * constrainedValue);
-        return palette[index];
-    };
-})();
-
-function convertToCanvasImageSource(data2D) {
-    // TODO: avoid creating a new canvas every time
-    const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = data2D.shape[0];
-    tempCanvas.height = data2D.shape[1];
-    const tempCtx = tempCanvas.getContext("2d");
-
-    const min = ops.inf(data2D);
-    const max = ops.sup(data2D);
-    const range = Math.max(max - min, Number.EPSILON);
-
-    const imageData = tempCtx.createImageData(data2D.shape[0], data2D.shape[1]);
-    for (let y = 0; y < imageData.height; ++y) {
-        for (let x = 0; x < imageData.width; ++x) {
-            const value = data2D.get(x, y);
-            const normalizedValue = (value - min) / range;
-            const color = alphamap(normalizedValue);
-            imageData.data.set(color, 4 * (y * imageData.width + x));
-        }
-    }
-    tempCtx.putImageData(imageData, 0, 0);
-
-    return tempCanvas;
-}
 
 function visualizeLetterProbabilities(letterProbabilties, alphabet) {
     const cellSize = 11;
@@ -123,7 +89,10 @@ class NetworkVisualizer {
         ];
         this._currentLayer = 0;
 
-        this.clearBeforeDrawing = typeof options.clearBeforeDrawing === "undefined" ? true : options.clearBeforeDrawing;
+        this._drawOptions = {
+            clearBeforeDrawing: typeof options.clearBeforeDrawing === "undefined" ? true : options.clearBeforeDrawing,
+            flipV: true,
+        };
 
         this._requestAnimationFrameCB = this.redraw.bind(this);
 
@@ -162,24 +131,10 @@ class NetworkVisualizer {
     }
 
     redraw() {
-        this._context.save();
-        if (this.clearBeforeDrawing)
-            this.clear();
-
         if (this._layers.length > 0) {
-
-            this._context.imageSmoothingEnabled = true;
-            this._context.strokeStyle = `rgba(0, 0, 0, 1)`;
-
             const layer = this.layers[this._currentLayer];
-
-            const xScale = this._canvas.width / layer.shape[0];
-            const yScale = this._canvas.height / layer.shape[1];
-            this._context.translate(0, this._canvas.height);
-            this._context.scale(xScale, -yScale);
-            this._context.drawImage(convertToCanvasImageSource(layer), 0, 0);
+            ImageUtils.draw2DArrayToCanvas(layer, ImageUtils.alphamap, this._canvas, this._drawOptions);
         }
-        this._context.restore();
     }
 
     clear() {
