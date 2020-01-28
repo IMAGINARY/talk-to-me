@@ -5,13 +5,13 @@ const $ = require('jquery');
 
 const wav2letter = require("../common/wav2letter/wav2letter.js");
 const {toUpperCase} = require("../common/util/string-utils.js");
+const ImageUtils = require('../common/util/image-utils.js');
 
 const loadAudioFile = require("./loadAudioFile.js");
 
 const MicrophoneFilterNode = require("./microphone-filter-node.js");
 const Recorder = require("./recorder.js");
 const WaveformVisualizer = require("./waveform-visualizer.js");
-const SpectrogramVisualizer = require("./spectrogram-visualizer.js");
 const TranscriptionVisualizer = require("./transcription-visualizer.js");
 const NetworkVisualizer = require("./network-visualizer.js");
 
@@ -35,7 +35,7 @@ async function init() {
     const samples = recorder.samples;
 
     const waveformVisualizer = new WaveformVisualizer(document.querySelector('#waveform-canvas'), samples);
-    const spectrogramVisualizer = new SpectrogramVisualizer(document.querySelector('#spectrogram-canvas'));
+    const spectrogramCanvas = document.querySelector('#spectrogram-canvas');
     const transcriptionVisualizer = new TranscriptionVisualizer(document.querySelector('#decoding-canvas'));
     const networkVisualizer = new NetworkVisualizer(document.querySelector('#network-canvas'));
 
@@ -60,7 +60,10 @@ async function init() {
         window.waveform = data;
         window.predictionExt = await wav2letter.predictExt({waveform: data, lang: language});
         window.predictionExt.letters = toUpperCase(window.predictionExt.letters);
-        spectrogramVisualizer.draw(window.predictionExt.layers[0]);
+        ImageUtils.draw2DArrayToCanvas(window.predictionExt.layers[0], ImageUtils.alphamap, spectrogramCanvas, {
+            clearBeforeDrawing: true,
+            flipV: true
+        });
         const decodedPredictionExt = decodePredictionExt(window.predictionExt);
         transcriptionVisualizer.draw(
             decodedPredictionExt.indices,
@@ -86,7 +89,7 @@ async function init() {
 
     function reset() {
         samples.clear();
-        spectrogramVisualizer.clear();
+        ImageUtils.clearCanvas(spectrogramCanvas);
         transcriptionVisualizer.clear();
         networkVisualizer.clear();
 

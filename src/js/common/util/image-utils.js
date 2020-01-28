@@ -109,6 +109,15 @@ function draw2DArrayToCanvas(data2D, colormap, canvas, options) {
     return canvas;
 }
 
+/**
+ * Clear the entire canvas.
+ * @param canvas
+ */
+function clearCanvas(canvas) {
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+}
+
 // maps a value between 0 and 1 to RGB color array
 const heatmap = (() => {
     const palette = colormap({
@@ -141,6 +150,7 @@ module.exports = {
     convert2DArrayToCanvasImageSource: convert2DArrayToCanvasImageSource,
     convert2DArrayToCanvas: convert2DArrayToCanvas,
     draw2DArrayToCanvas: draw2DArrayToCanvas,
+    clearCanvas: clearCanvas,
     heatmap: heatmap,
     alphamap: alphamap,
 };
