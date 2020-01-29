@@ -10,6 +10,9 @@ const colormap = require('colormap');
  *      If {false}, no normalization is applied.
  *      If {true}, the range [min, max] is linearly mapped to [0, 1].
  *      Otherwise the argument will be assumed to be a function {Number} -> {Number} that computes the normalization.
+ * @param {boolean} [options.flipH=false] Flip the image horizontally within the viewport.
+ * @param {boolean} [options.flipV=false] Flip the image vertically within the viewport.
+ * @param {boolean} [options.transpose=false] Transpose the data before drawing.
  * @returns {CanvasImageSource}
  */
 function convert2DArrayToCanvasImageSource(data2D, colormap, options) {
@@ -18,6 +21,9 @@ function convert2DArrayToCanvasImageSource(data2D, colormap, options) {
 
     const defaultOptions = {
         normalize: false,
+        flipH: false,
+        flipV: false,
+        transpose: false,
     };
 
     options = Object.assign(defaultOptions, options);
@@ -26,6 +32,11 @@ function convert2DArrayToCanvasImageSource(data2D, colormap, options) {
     canvas.width = data2D.shape[0];
     canvas.height = data2D.shape[1];
     const context = canvas.getContext("2d");
+    context.imageSmoothingEnabled = false;
+
+    // transpose
+    if (options.transpose)
+        data2D = data2D.transpose(1, 0);
 
     // normalize
     let normalizeFunc;
@@ -45,12 +56,17 @@ function convert2DArrayToCanvasImageSource(data2D, colormap, options) {
         normalizeFunc = options.normalize;
     }
 
+    // flipX
+    const mapIndexX = options.flipH ? x => data2D.shape[0] - 1 - x : x => x;
+
+    // flipY
+    const mapIndexY = options.flipV ? y => data2D.shape[1] - 1 - y : y => y;
 
     const imageData = context.createImageData(data2D.shape[0], data2D.shape[1]);
 
     for (let y = 0; y < imageData.height; ++y) {
         for (let x = 0; x < imageData.width; ++x) {
-            const value = data2D.get(x, y);
+            const value = data2D.get(mapIndexX(x), mapIndexY(y));
             const normalizedValue = normalizeFunc(value);
             const color = colormap(normalizedValue);
             imageData.data.set(color, 4 * (y * imageData.width + x));
@@ -61,7 +77,6 @@ function convert2DArrayToCanvasImageSource(data2D, colormap, options) {
     return canvas;
 }
 
-
 /**
  * Converts a 2D ndarray into a HTMLCanvasElement using a color map.
  * @param data2D {ndarray} A two-dimensional array.
@@ -70,6 +85,9 @@ function convert2DArrayToCanvasImageSource(data2D, colormap, options) {
  *      If {false}, no normalization is applied.
  *      If {true}, the range [min, max] is linearly mapped to [0, 1].
  *      Otherwise the argument will be assumed to be a function {Number} -> {Number} that computes the normalization.
+ * @param {boolean} [options.flipH=false] Flip the image horizontally within the viewport.
+ * @param {boolean} [options.flipV=false] Flip the image vertically within the viewport.
+ * @param {boolean} [options.transpose=false] Transpose the data before drawing.
  * @returns {HTMLCanvasElement}
  */
 function convert2DArrayToCanvas(data2D, colormap, options) {
@@ -111,9 +129,6 @@ function draw2DArrayToCanvas(data2D, colormap, canvas, options) {
 
     options = Object.assign(defaultOptions, options);
 
-    if (options.transpose)
-        data2D = data2D.transpose(1, 0);
-
     const viewport = options.viewport;
 
     context.save();
@@ -125,14 +140,6 @@ function draw2DArrayToCanvas(data2D, colormap, canvas, options) {
     const yScale = viewport.height / data2D.shape[1];
     context.translate(viewport.x, viewport.y);
     context.scale(xScale, yScale);
-    if (options.flipH) {
-        context.translate(data2D.shape[0], 0);
-        context.scale(-1, 1);
-    }
-    if (options.flipV) {
-        context.translate(0, data2D.shape[1]);
-        context.scale(1, -1);
-    }
 
     const imageSource = convert2DArrayToCanvasImageSource(data2D, colormap, options);
     context.drawImage(imageSource, 0, 0);
