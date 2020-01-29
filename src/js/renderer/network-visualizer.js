@@ -165,6 +165,7 @@ class NetworkVisualizer {
                 hide: false,
                 draggable: true,
             },
+            mousewheelControl: true,
         });
 
         global.swiper = swiper;
