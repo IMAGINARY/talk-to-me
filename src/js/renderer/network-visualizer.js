@@ -111,7 +111,7 @@ class NetworkVisualizer {
                 .addClass('swiper-slide')
                 .addClass('needs-padding')
                 .append($layerCanvas);
-            $swiperWrapper.append($slide);
+            $swiperWrapper.prepend($slide);
         }
 
         // add letter probability diagram
@@ -119,7 +119,7 @@ class NetworkVisualizer {
         const $slide = $('<div></div>')
             .addClass('swiper-slide')
             .append(svg);
-        $swiperWrapper.append($slide);
+        $swiperWrapper.prepend($slide);
 
         // add pagination bullets
         const $swiperPagination = $('<div></div>')
@@ -145,6 +145,7 @@ class NetworkVisualizer {
         const swiper = new Swiper(this._swiperContainer, {
             direction: 'vertical',
             centeredSlides: true,
+            initialSlide: layers.length - 2,
             slidesPerView: 1,
             effect: 'fade',
             fadeEffect: {
@@ -152,6 +153,7 @@ class NetworkVisualizer {
             },
             autoplay: {
                 delay: 100,
+                reverseDirection: true,
                 stopOnLastSlide: true,
             },
             pagination: {
