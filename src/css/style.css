@@ -16,7 +16,7 @@ body {
     min-height: 1080px;
     height: 100%;
     box-sizing: content-box;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-family: 'Inconsolata';
     border-right: 1px solid white;
     overflow-x: hidden;
 }
@@ -83,9 +83,28 @@ body {
     font-style: italic;
 }
 
-#viz-container .network-container .swiper-container {
+.network-container .swiper-container {
     width: 100%;
     height: 512px;
+    overflow: visible;
+}
+
+.network-container .swiper-pagination {
+    right: -15px;
+}
+
+.network-container .swiper-pagination-bullet {
+    color: #000;
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.network-container .swiper-pagination-bullet-active {
+    color: #fff;
+    background: rgba(0, 0, 0, 0.9);;
+}
+
+.network-container  .swiper-container-vertical>.swiper-pagination-bullets .swiper-pagination-bullet {
+    margin: 16px 0;
 }
 
 .full-width {

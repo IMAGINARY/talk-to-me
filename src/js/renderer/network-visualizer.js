@@ -115,7 +115,14 @@ class NetworkVisualizer {
             .append(svg);
         $swiperWrapper.append($slide);
 
-        $(this._swiperContainer).append($swiperWrapper);
+        // add pagination bullets
+        const $swiperPagination = $('<div></div>')
+            .addClass("swiper-pagination");
+
+        $(this._swiperContainer).append(
+            $swiperWrapper,
+            $swiperPagination,
+        );
 
         // the letter probability diagram defines the overall size
         console.log(svg, this._swiperContainer);
@@ -125,6 +132,7 @@ class NetworkVisualizer {
 
         // init slider
         const swiper = new Swiper(this._swiperContainer, {
+            direction: 'vertical',
             centeredSlides: true,
             slidesPerView: 1,
             effect: 'fade',
@@ -134,6 +142,10 @@ class NetworkVisualizer {
             autoplay: {
                 delay: 100,
                 stopOnLastSlide: true,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
             },
         });
 
