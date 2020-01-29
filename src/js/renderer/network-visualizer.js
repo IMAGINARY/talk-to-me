@@ -38,15 +38,19 @@ function visualizeLetterProbabilities(letterProbabilties, alphabet, cellSize) {
             .attrs({x1: 0, y1: y * cellSize, x2: width, y2: y * cellSize});
     }
 
+    const legendLeft = true;
+    const legendRight = false;
     for (let l = 0; l < letterProbabilties.shape[1]; ++l) {
         const char = alphabet[l];
-        diagram.append("text")
-            .attr("class", ".legend")
-            .attrs({
-                x: -0.5 * cellSize,
-                y: (l + 1 - 0.25) * cellSize,
-            })
-            .text(char)
+        if (legendLeft) {
+            diagram.append("text")
+                .attr("class", ".legend")
+                .attrs({
+                    x: -0.5 * cellSize,
+                    y: (l + 1 - 0.25) * cellSize,
+                })
+                .text(char);
+        }
         for (let t = 0; t < letterProbabilties.shape[0]; ++t) {
             const opacity = letterProbabilties.get(t, l);
             diagram.append("rect")
@@ -65,13 +69,15 @@ function visualizeLetterProbabilities(letterProbabilties, alphabet, cellSize) {
                 })
                 .text(char)
         }
-        diagram.append("text")
-            .attr("class", ".legend")
-            .attrs({
-                x: (letterProbabilties.shape[0] + 0.5) * cellSize,
-                y: (l + 1 - 0.25) * cellSize,
-            })
-            .text(char)
+        if (legendRight) {
+            diagram.append("text")
+                .attr("class", ".legend")
+                .attrs({
+                    x: (letterProbabilties.shape[0] + 0.5) * cellSize,
+                    y: (l + 1 - 0.25) * cellSize,
+                })
+                .text(char);
+        }
     }
 
     return svg.node();
@@ -119,9 +125,14 @@ class NetworkVisualizer {
         const $swiperPagination = $('<div></div>')
             .addClass("swiper-pagination");
 
+        // add scrollbar
+        const $swiperScrollbar = $('<div></div>')
+            .addClass("swiper-scrollbar");
+
         $(this._swiperContainer).append(
             $swiperWrapper,
             $swiperPagination,
+            $swiperScrollbar,
         );
 
         // the letter probability diagram defines the overall size
@@ -145,7 +156,14 @@ class NetworkVisualizer {
             },
             pagination: {
                 el: '.swiper-pagination',
-                clickable: true,
+                renderBullet: function (index, className) {
+                    return '<span class="' + className + '">' + (index + 1) + '</span>';
+                },
+            },
+            scrollbar: {
+                el: '.swiper-scrollbar',
+                hide: false,
+                draggable: true,
             },
         });
 

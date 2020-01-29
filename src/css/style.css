@@ -90,21 +90,30 @@ body {
 }
 
 .network-container .swiper-pagination {
-    right: -15px;
+    right: -19px;
 }
 
 .network-container .swiper-pagination-bullet {
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    font-size: 12px;
+    opacity: 1;
     color: #000;
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.network-container .swiper-container-vertical > .swiper-pagination-bullets .swiper-pagination-bullet {
+    display: none;
+}
+
+.network-container .swiper-container-vertical > .swiper-pagination-bullets .swiper-pagination-bullet-active {
+    display: block;
 }
 
 .network-container .swiper-pagination-bullet-active {
-    color: #fff;
-    background: rgba(0, 0, 0, 0.9);;
-}
-
-.network-container  .swiper-container-vertical>.swiper-pagination-bullets .swiper-pagination-bullet {
-    margin: 16px 0;
+    display: block;
 }
 
 .full-width {
