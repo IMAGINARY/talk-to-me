@@ -6,27 +6,52 @@ const colormap = require('colormap');
  * Converts a 2D ndarray into a CanvasImageSource using a color map.
  * @param data2D {ndarray} A two-dimensional array.
  * @param colormap {function} Function that maps a float value in [0, 1] to a RGBA {uint8} array.
+ * @param {boolean|function} [options.normalize=false] Normalize the values before color mapping.
+ *      If {false}, no normalization is applied.
+ *      If {true}, the range [min, max] is linearly mapped to [0, 1].
+ *      Otherwise the argument will be assumed to be a function {Number} -> {Number} that computes the normalization.
  * @returns {CanvasImageSource}
  */
-function convert2DArrayToCanvasImageSource(data2D, colormap) {
+function convert2DArrayToCanvasImageSource(data2D, colormap, options) {
     assert(data2D.shape.length === 2, "ndarray must be two-dimensional.");
     assert(data2D.shape[0] > 0 && data2D.shape[1] > 0, "ndarray dimensions must be >= 0");
+
+    const defaultOptions = {
+        normalize: false,
+    };
+
+    options = Object.assign(defaultOptions, options);
 
     const canvas = document.createElement("canvas");
     canvas.width = data2D.shape[0];
     canvas.height = data2D.shape[1];
     const context = canvas.getContext("2d");
 
-    const min = ops.inf(data2D);
-    const max = ops.sup(data2D);
-    const range = Math.max(max - min, Number.EPSILON);
+    // normalize
+    let normalizeFunc;
+    if (typeof options.normalize === "boolean") {
+        if (options.normalize) {
+            // default normalization function: map [min, max] range to [0, 1]
+            const min = ops.inf(data2D);
+            const max = ops.sup(data2D);
+            const range = Math.max(max - min, Number.EPSILON);
+            normalizeFunc = v => (v - min) / range;
+        } else {
+            // do not normalize: use identify function
+            normalizeFunc = v => v;
+        }
+    } else {
+        assert(typeof options.normalize === "function", "Normalization function required.")
+        normalizeFunc = options.normalize;
+    }
+
 
     const imageData = context.createImageData(data2D.shape[0], data2D.shape[1]);
 
     for (let y = 0; y < imageData.height; ++y) {
         for (let x = 0; x < imageData.width; ++x) {
             const value = data2D.get(x, y);
-            const normalizedValue = (value - min) / range;
+            const normalizedValue = normalizeFunc(value);
             const color = colormap(normalizedValue);
             imageData.data.set(color, 4 * (y * imageData.width + x));
         }
@@ -41,13 +66,17 @@ function convert2DArrayToCanvasImageSource(data2D, colormap) {
  * Converts a 2D ndarray into a HTMLCanvasElement using a color map.
  * @param data2D {ndarray} A two-dimensional array.
  * @param colormap {function} Function that maps a float value in [0, 1] to a RGBA {uint8} array.
+ * @param {boolean|function} [options.normalize=false] Normalize the values before color mapping.
+ *      If {false}, no normalization is applied.
+ *      If {true}, the range [min, max] is linearly mapped to [0, 1].
+ *      Otherwise the argument will be assumed to be a function {Number} -> {Number} that computes the normalization.
  * @returns {HTMLCanvasElement}
  */
-function convert2DArrayToCanvas(data2D, colormap) {
+function convert2DArrayToCanvas(data2D, colormap, options) {
     // For now this is just a pass-through function, because convert2DArrayToCanvasImageSource already returns a
     // HTMLCanvasElement. But when the implementation of convert2DArrayToCanvasImageSource changes to return some other
     // subtype of CanvasImageSource, this wrapper needs to be adjusted.
-    return convert2DArrayToCanvasImageSource(data2D, colormap);
+    return convert2DArrayToCanvasImageSource(data2D, colormap, options);
 }
 
 /**
@@ -59,6 +88,10 @@ function convert2DArrayToCanvas(data2D, colormap) {
  * @param {{x: number, y: number, width: number, height: number}} [options.viewport={x: 0, y: 0, width: canvas.width, height: canvas.height}] The canvas viewport to draw the data to.
  * @param {boolean} [options.isImageimageSmoothingEnabled=false] Smooth the data when scaling up or down.
  * @param {boolean} [options.clearBeforeDrawing=false] Clear the viewport before drawing.
+ * @param {boolean|function} [options.normalize=false] Normalize the values before color mapping.
+ *      If {false}, no normalization is applied.
+ *      If {true}, the range [min, max] is linearly mapped to [0, 1].
+ *      Otherwise the argument will be assumed to be a function {Number} -> {Number} that computes the normalization.
  * @param {boolean} [options.flipH=false] Flip the image horizontally within the viewport.
  * @param {boolean} [options.flipV=false] Flip the image vertically within the viewport.
  * @param {boolean} [options.transpose=false] Transpose the data before drawing.
@@ -101,7 +134,7 @@ function draw2DArrayToCanvas(data2D, colormap, canvas, options) {
         context.scale(1, -1);
     }
 
-    const imageSource = convert2DArrayToCanvasImageSource(data2D, colormap);
+    const imageSource = convert2DArrayToCanvasImageSource(data2D, colormap, options);
     context.drawImage(imageSource, 0, 0);
 
     context.restore();

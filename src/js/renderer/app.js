@@ -62,7 +62,8 @@ async function init() {
         window.predictionExt.letters = toUpperCase(window.predictionExt.letters);
         ImageUtils.draw2DArrayToCanvas(window.predictionExt.layers[0], ImageUtils.alphamap, spectrogramCanvas, {
             clearBeforeDrawing: true,
-            flipV: true
+            flipV: true,
+            normalize: true,
         });
         const decodedPredictionExt = decodePredictionExt(window.predictionExt);
         transcriptionVisualizer.draw(
