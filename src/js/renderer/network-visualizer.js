@@ -1,12 +1,13 @@
 const assert = require('assert');
-const ndarray = require("ndarray");
 const ImageUtils = require('../common/util/image-utils.js');
 
+const $ = require('jquery');
+const Swiper = require('swiper');
 const d3 = require('d3');
 require('d3-selection-multi');
 
-function visualizeLetterProbabilities(letterProbabilties, alphabet) {
-    const cellSize = 11;
+function visualizeLetterProbabilities(letterProbabilties, alphabet, cellSize) {
+    // TODO: Adjust font sizes relative to cellSize
 
     const margin = {top: 1, right: cellSize, bottom: 1, left: cellSize},
         width = letterProbabilties.shape[0] * cellSize,
@@ -14,8 +15,8 @@ function visualizeLetterProbabilities(letterProbabilties, alphabet) {
         totalWidth = width + margin.left + margin.right,
         totalHeight = height + margin.top + margin.bottom;
 
-    const base = d3.select("#letter-probabilities");
-    const svg = base.append("svg")
+    const svg = d3.create('svg')
+        .attr("class", "letter-probability-viz")
         .attr("width", totalWidth)
         .attr("height", totalHeight);
 
@@ -72,73 +73,77 @@ function visualizeLetterProbabilities(letterProbabilties, alphabet) {
             })
             .text(char)
     }
+
+    return svg.node();
 }
 
 class NetworkVisualizer {
-    constructor(canvas, options) {
-        assert(typeof canvas !== "undefined");
-        this._canvas = canvas;
-        this._context = this._canvas.getContext('2d');
+    constructor(domElement) {
+        this._parent = domElement;
+        this._swiperContainer = document.createElement('div');
+        this._swiperContainer.classList.add('swiper-container');
+        this._parent.append(this._swiperContainer);
+    }
 
-        if (typeof options === "undefined")
-            options = {};
+    setLayers(layers, alphabet) {
+        assert(layers.length >= 2, "Network needs at least input and output layers");
 
-        this._layers = [
-            ndarray(new Float32Array(1), [1, 1]), // dummy input layer
-            ndarray(new Float32Array(1), [1, 1]), // dummy output layer
-        ];
-        this._currentLayer = 0;
+        // clear parent element
+        this.clear();
 
-        this._drawOptions = {
-            clearBeforeDrawing: typeof options.clearBeforeDrawing === "undefined" ? true : options.clearBeforeDrawing,
+        // add new slides
+        const layerConversionOptions = {
+            normalize: true,
             flipV: true,
         };
-
-        this._requestAnimationFrameCB = this.redraw.bind(this);
-
-        let currentLayer = 0;
-        this.scheduleRedraw();
-    }
-
-    get layers() {
-        return this._layers;
-    }
-
-    set layers(layers) {
-        assert(layers.length >= 2, "Network needs at least input and output layers");
-        this._layers = layers;
-        this._currentLayer = 0;
-        // TODO: extends to allow other languages
-        visualizeLetterProbabilities(this.layers[layers.length - 1], "␣'ABCDEFGHIJKLMNOPQRSTUVWXYZ²³·");
-        this.scheduleRedraw();
-    }
-
-    set currentLayer(index) {
-        assert(index >= 0 && index < this._layers.length, `Layer index is ${index}, but must be in the range [0, ${this._layers.length - 1}]`);
-        if (this._currentLayer !== index) {
-            this._currentLayer = index;
-            this.scheduleRedraw();
+        const $swiperWrapper = $('<div></div>').addClass('swiper-wrapper');
+        for (let l = 1; l < layers.length - 1; ++l) {
+            const $layerCanvas = $(ImageUtils.convert2DArrayToCanvas(layers[l], ImageUtils.alphamap, layerConversionOptions))
+                .addClass('full-size')
+                .css('image-rendering', "pixelated");
+            const $slide = $('<div></div>')
+                .addClass('swiper-slide')
+                .addClass('needs-padding')
+                .append($layerCanvas);
+            $swiperWrapper.append($slide);
         }
-    }
 
-    get currentLayer() {
-        return this._currentLayer;
-    }
+        // add letter probability diagram
+        const svg = visualizeLetterProbabilities(layers[layers.length - 1], alphabet, 11);
+        const $slide = $('<div></div>')
+            .addClass('swiper-slide')
+            .append(svg);
+        $swiperWrapper.append($slide);
 
-    scheduleRedraw() {
-        cancelAnimationFrame(this._requestAnimationFrameCB);
-        requestAnimationFrame(this._requestAnimationFrameCB);
-    }
+        $(this._swiperContainer).append($swiperWrapper);
 
-    redraw() {
-        if (this._layers.length > 0) {
-            const layer = this.layers[this._currentLayer];
-            ImageUtils.draw2DArrayToCanvas(layer, ImageUtils.alphamap, this._canvas, this._drawOptions);
-        }
+        // the letter probability diagram defines the overall size
+        console.log(svg, this._swiperContainer);
+        $(this._swiperContainer)
+            .css("width", `${svg.getAttribute("width")}px`)
+            .css("height", `${svg.getAttribute("height")}px`);
+
+        // init slider
+        const swiper = new Swiper(this._swiperContainer, {
+            centeredSlides: true,
+            slidesPerView: 1,
+            effect: 'fade',
+            fadeEffect: {
+                crossFade: true
+            },
+            autoplay: {
+                delay: 100,
+                stopOnLastSlide: true,
+            },
+        });
+
+        global.swiper = swiper;
     }
 
     clear() {
-        this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        if (typeof this._swiperContainer.swiper !== "undefined")
+            this._swiperContainer.swiper.destroy();
+        $(this._swiperContainer).empty();
     }
 }
 

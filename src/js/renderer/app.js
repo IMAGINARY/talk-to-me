@@ -37,7 +37,7 @@ async function init() {
     const waveformVisualizer = new WaveformVisualizer(document.querySelector('#waveform-canvas'), samples);
     const spectrogramCanvas = document.querySelector('#spectrogram-canvas');
     const transcriptionVisualizer = new TranscriptionVisualizer(document.querySelector('#decoding-canvas'));
-    const networkVisualizer = new NetworkVisualizer(document.querySelector('#network-canvas'));
+    const networkVisualizer = new NetworkVisualizer(document.querySelector('#network-viz .network-container'));
 
     //setInterval(() => networkVisualizer.currentLayer = (networkVisualizer.currentLayer + 1) % networkVisualizer.layers.length, 1000);
 
@@ -80,8 +80,7 @@ async function init() {
                 timeSlot = t;
         }
 
-        networkVisualizer.layers = predictionExt.layers;
-        networkVisualizer.currentLayer = predictionExt.layers.length - 1;
+        networkVisualizer.setLayers(predictionExt.layers, window.predictionExt.letters);
 
         // TODO: wrap into module
         setCursorPosition(timeSlot, decodedPredictionExt.indices.shape[0]);
