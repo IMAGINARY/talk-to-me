@@ -11,25 +11,125 @@ body {
     background-color: #202020;
     text-align: center;
     color: #F0F0F0;
+    position: absolute;
+    width: 1920px;
+    min-height: 1080px;
+    height: 100%;
+    box-sizing: content-box;
+    font-family: 'Inconsolata';
+    border-right: 1px solid white;
+    overflow-x: hidden;
+}
+
+#scroll-area {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    left: 0px;
+    overflow-y: scroll;
+    max-height: 100%;
+}
+
+#content {
+    flex-wrap: nowrap;
     display: flex;
     flex-direction: row-reverse;
+    align-items: flex-end;
+    align-content: center;
+    margin: auto auto 0 auto;
+    padding: 20px;
+}
+
+#viz-container {
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+}
+
+#viz-container > * {
+    position: relative;
+    display: inline-block;
+    margin-top: 5px;
+}
+
+#viz-container > *:first-child {
+    margin-top: inherit;
+}
+
+#viz-container .needs-margin {
+    margin-left: 11px;
+    margin-right: 11px;
+}
+
+#viz-container .needs-padding {
+    padding-left: 11px;
+    padding-right: 11px;
+}
+
+#viz-container .explanation-container {
+    display: flex;
     position: absolute;
+    width: 200px;
+    height: 100%;
+    left: -240px;
+    line-height: normal;
+    text-align: left;
+}
+
+.explanation-container > .explanation {
+    margin-top: auto;
+    margin-bottom: auto;
+    font-family: 'Inconsolata';
+    font-style: italic;
+}
+
+.network-container .swiper-container {
+    width: 100%;
+    height: 512px;
+    overflow: visible;
+}
+
+.network-container .swiper-pagination {
+    right: -19px;
+}
+
+.network-container .swiper-pagination-bullet {
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    font-size: 12px;
+    opacity: 1;
+    color: #000;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.network-container .swiper-container-vertical > .swiper-pagination-bullets .swiper-pagination-bullet {
+    display: none;
+}
+
+.network-container .swiper-container-vertical > .swiper-pagination-bullets .swiper-pagination-bullet-active {
+    display: block;
+}
+
+.network-container .swiper-pagination-bullet-active {
+    display: block;
+}
+
+.full-width {
+    box-sizing: content-box;
+    width: 100%;
+}
+
+.full-height {
+    box-sizing: content-box;
+    height: 100%;
+}
+
+.full-size {
+    box-sizing: content-box;
     width: 100%;
     height: 100%;
-    padding: 20px;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-}
-
-#waveform-viz {
-    width: 100%;
-}
-
-#spectrogram-viz {
-    width: 100%;
-}
-
-#transcription-viz {
-    width: 100%;
 }
 
 .transcription-wrapper {
@@ -53,14 +153,19 @@ body {
     margin-top: auto;
 }
 
-#waveform {
+.flex-spacer {
     flex-grow: 1;
+}
+
+#waveform {
+    flex-grow: 0;
     border-radius: 20px;
     padding: 10px 25px 10px 25px;
     background-color: #FFFF20;
     margin: auto 20px 0 20px;
     text-align: center;
-    width: 60%;
+    box-sizing: content-box;
+    line-height: 0px;
 }
 
 #audio-controls {
@@ -100,4 +205,53 @@ body {
     width: 100%;
     border: none;
     border-collapse: collapse;
+}
+
+#cursor-container {
+    position: relative;
+    box-sizing: content-box;
+    margin-left: 11px;
+    margin-right: 11px;
+}
+
+#cursor {
+    visibility: hidden;
+    pointer-events: none;
+    box-sizing: content-box;
+    position: absolute;
+    width: 10px;
+    height: calc(64px + 256px + 256px + 72px + 3 * 5px);
+    bottom: 0px;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+#network-canvas {
+    display: none;
+}
+
+svg.letter-probability-viz .grid * {
+    stroke: rgb(0, 0, 0);
+}
+
+svg.letter-probability-viz .grid {
+    opacity: 0.1;
+}
+
+svg.letter-probability-viz rect {
+    fill: black;
+}
+
+svg.letter-probability-viz text {
+    font-size: 9px;
+    font-family: 'Inconsolata';
+    text-anchor: middle;
+}
+
+svg.letter-probability-vizg text.legend {
+    fill: black;
+}
+
+svg.letter-probability-viz text.letters {
+    fill: #FFFF20;
 }

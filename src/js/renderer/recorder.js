@@ -87,6 +87,16 @@ class Recorder extends EventEmitter {
         this.emit('recording-started');
     }
 
+    recordFromBuffer(audioBuffer) {
+        this.stopPlayback();
+        this.stopRecording();
+        this.startRecording();
+
+        this._samples.push(audioBuffer.getChannelData(0));
+
+        this.stopRecording();
+    }
+
     stopRecording() {
         if (this.state === Recorder.states.RECORDING) {
             this._setState(Recorder.states.IDLE);

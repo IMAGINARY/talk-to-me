@@ -16,17 +16,21 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.12.0",
+    "@openfonts/inconsolata_all": "^1.44.0",
     "@tensorflow/tfjs-node": "^1.5.1",
     "bootstrap": "^4.4.1",
     "colormap": "^2.3.1",
     "cwise": "^1.0.10",
+    "d3": "^5.15.0",
+    "d3-selection-multi": "^1.0.1",
     "electron-reload": "^1.5.0",
     "jquery": "^3.4.1",
     "ndarray": "^1.0.19",
     "ndarray-ops": "^1.2.2",
     "ndarray-pack": "^1.2.1",
     "ndarray-unpack": "^1.0.0",
-    "popper.js": "^1.16.0"
+    "popper.js": "^1.16.0",
+    "swiper": "^5.3.0"
   },
   "scripts": {
     "postinstall": "electron-builder install-app-deps",

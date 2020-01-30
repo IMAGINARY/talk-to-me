@@ -10,13 +10,13 @@ const models = {
     "en": {
         lang: "en",
         url: 'file://' + path.resolve(__dirname, '../../../../models/english/model.json'),
-        letters: '  abcdefghijklmnopqrstuvwxyz   ',
+        letters: "␣'abcdefghijklmnopqrstuvwxyz²³·",
         tfModel: null,
     },
     "de": {
         lang: "de",
         url: 'file://' + path.resolve(__dirname, '../../../../models/german/model.json'),
-        letters: '  abcdefghijklmnopqrstuvwxyzßäöü   ',
+        letters: "␣'abcdefghijklmnopqrstuvwxyzßäöü²³·",
         tfModel: null,
 
     }
@@ -29,7 +29,22 @@ function assertLang(lang) {
 async function getModel(lang) {
     assertLang(lang);
     if (models[lang].tfModel === null) {
-        models[lang].tfModel = await tf.loadLayersModel(models[lang].url);
+        const loadedModel = await tf.loadLayersModel(models[lang].url);
+
+        // Construct new model with additional normalization and activation layer added at the end
+        // to convert logits to probabilities
+        const batchNormalizationLayer = tf.layers.batchNormalization(-1);
+        const activationLayer = tf.layers.activation({activation: 'softmax'});
+
+        // Replace the original output layer with the new activation layer
+        const outputs = loadedModel.outputs.slice(0, loadedModel.outputs.length - 1);
+        const newOutput = activationLayer.apply(batchNormalizationLayer.apply(loadedModel.outputs[loadedModel.outputs.length - 1]));
+        outputs.push(newOutput);
+
+        // Add the input layer to the output for sake of completeness
+        outputs.unshift(loadedModel.inputs[0]);
+
+        models[lang].tfModel = tf.model({inputs: loadedModel.inputs, outputs: outputs});
         tf_predictExtSync(models[lang], new Float32Array(0));
         console.log(`Model for ${lang} loaded successfully.`);
     }
@@ -128,7 +143,6 @@ function tf_predictExtSync(model, waveform16kHzFloat32) {
         .map(layer => layer.squeeze(0));
 
     return {
-        logMelSpectrogram: logMelSpectrogram,
         layers: allActivations,
         letters: model.letters,
         lang: model.lang,
@@ -144,7 +158,6 @@ async function tf_predictExt(params) {
 async function predictExt(params) {
     const tfPrediction = await tf_predictExt(params);
     return {
-        logMelSpectrogram: await tensorToNDArray(tfPrediction.logMelSpectrogram),
         layers: await Promise.all(tfPrediction.layers.map(tensorToNDArray)),
         letters: tfPrediction.letters,
         lang: tfPrediction.lang,

@@ -3,14 +3,12 @@ const util = require('./util.js');
 function coercePredictResult(remotePrediction) {
     const prediction = Object.assign({}, remotePrediction);
     prediction.letterActivations = util.ndDataToNDArray(remotePrediction.letterActivations);
-    prediction.logMelSpectrogram = util.ndDataToNDArray(remotePrediction.logMelSpectrogram);
     return prediction;
 }
 
 function coercePredictExtResult(remotePrediction) {
     const prediction = Object.assign({}, remotePrediction);
     prediction.layers = remotePrediction.layers.map(util.ndDataToNDArray);
-    prediction.logMelSpectrogram = util.ndDataToNDArray(remotePrediction.logMelSpectrogram);
     return prediction;
 }
 
