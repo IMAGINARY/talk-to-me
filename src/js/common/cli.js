@@ -19,10 +19,6 @@ const argv = yargs
         default: true,
         description: 'Run in fullscreen mode. The window will be moved to the given display, if provided.',
     })
-    .option('display', {
-        type: 'number',
-        description: 'Move the window to the given (system dependent) display.'
-    })
     .option('kiosk', {
         type: 'boolean',
         default: false,
