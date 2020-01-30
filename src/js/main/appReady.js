@@ -1,4 +1,4 @@
-const {BrowserWindow, ipcMain} = require('electron');
+const {BrowserWindow, Menu} = require('electron');
 const path = require('path');
 
 function createWindow() {
@@ -10,6 +10,10 @@ function createWindow() {
             nodeIntegration: true
         }
     });
+
+    // remove the menu bar
+    Menu.setApplicationMenu(null);
+    win.setMenu(null);
 
     // and load the index.html of the app.
     win.loadFile(path.resolve(__dirname, '../../html/index.html'));
