@@ -37,7 +37,7 @@ async function init() {
     const samples = recorder.samples;
 
     const waveformVisualizer = new WaveformVisualizer(document.querySelector('#waveform-canvas'), samples);
-    const spectrogramCanvas = document.querySelector('#spectrogram-canvas');
+    const $spectrogramCanvasContainer = $('#spectrogram-viz .canvas-container');
     const transcriptionVisualizer = new TranscriptionVisualizer(document.querySelector('#decoding-canvas'));
     const networkVisualizer = new NetworkVisualizer(document.querySelector('#network-viz .network-container'));
 
@@ -62,11 +62,16 @@ async function init() {
         window.waveform = data;
         window.predictionExt = await wav2letter.predictExt({waveform: data, lang: language});
         window.predictionExt.letters = toUpperCase(window.predictionExt.letters);
-        ImageUtils.draw2DArrayToCanvas(window.predictionExt.layers[0], ImageUtils.alphamap, spectrogramCanvas, {
+
+        // Visualize spectrogram
+        const spectrogramCanvas = ImageUtils.convert2DArrayToCanvas(window.predictionExt.layers[0], ImageUtils.alphamap, {
             clearBeforeDrawing: true,
             flipV: true,
             normalize: true,
         });
+        $spectrogramCanvasContainer.empty();
+        $spectrogramCanvasContainer.append(spectrogramCanvas);
+
         const decodedPredictionExt = decodePredictionExt(window.predictionExt);
         transcriptionVisualizer.draw(
             decodedPredictionExt.indices,
@@ -91,7 +96,7 @@ async function init() {
 
     function reset() {
         samples.clear();
-        ImageUtils.clearCanvas(spectrogramCanvas);
+        $spectrogramCanvasContainer.empty();
         transcriptionVisualizer.clear();
         networkVisualizer.clear();
 
