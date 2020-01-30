@@ -1,5 +1,6 @@
 const ndarray = require('ndarray');
 const opsExt = require('../common/ndarray-ops-ext.js');
+const cli = require('../common/cli.js');
 
 const $ = require('jquery');
 
@@ -19,6 +20,7 @@ Promise.all(['en', 'de'].map(lang => wav2letter.transcribe({waveform: new Float3
     .then(() => console.log("Speech recognition models loaded."));
 
 async function init() {
+    const argv = cli.argv;
     await $.ready;
 
     const audioContext = new AudioContext({sampleRate: 16000});
@@ -151,7 +153,8 @@ async function init() {
     });
 
     reset();
-    await loadDemoAudio();
+    if (argv.demo)
+        await loadDemoAudio();
 }
 
 module.exports = {init: init};

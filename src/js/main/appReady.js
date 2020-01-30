@@ -1,15 +1,26 @@
-const {BrowserWindow, Menu} = require('electron');
+const {BrowserWindow, Menu, screen} = require('electron');
 const path = require('path');
 
-function createWindow() {
-    // Create the browser window.
-    const win = new BrowserWindow({
-        width: 800,
-        height: 600,
+const cli = require('../common/cli.js');
+
+function createWindow(argv) {
+    const options = {
+        fullscreen: argv.fullscreen !== false,
+        kiosk: argv.kiosk,
         webPreferences: {
             nodeIntegration: true
         }
-    });
+    };
+
+    if (typeof argv.fullscreen === "number") {
+        const displays = screen.getAllDisplays();
+        const display = displays[Math.min(Math.max(0, argv.fullscreen), displays.length - 1)];
+        const bounds = display.bounds;
+        Object.assign(options, bounds);
+    }
+
+    // Create the browser window.
+    const win = new BrowserWindow(options);
 
     // remove the menu bar
     Menu.setApplicationMenu(null);
@@ -23,8 +34,8 @@ function createWindow() {
 
 let win;
 
-function appReady() {
-    win = createWindow();
+function appReady(argv) {
+    win = createWindow(argv);
 }
 
 module.exports = appReady;
