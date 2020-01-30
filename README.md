@@ -18,7 +18,15 @@ Launch the software:
 yarn run start
 ```
 
-# Pushing to the repository
+## Building packages for redistribution
+
+Run
+```
+yarn run dist
+```
+and check the `dist` folder for the build results.
+
+## Pushing to the repository
 
 Model files, test and training data are managed via `dvc`. Two remotes are set up for this repository.
 The default remote is for pulling only. The `s3remote` points to the same location, but allows pushing as well.

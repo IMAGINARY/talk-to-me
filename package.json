@@ -11,6 +11,7 @@
     "node": ">=12.0.0 <12.11.0"
   },
   "devDependencies": {
+    "cross-env": "^6.0.3",
     "electron": "^7.1.8",
     "electron-builder": "^22.2.0"
   },
@@ -34,6 +35,47 @@
   },
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
-    "start": "electron ."
+    "start": "electron .",
+    "pack": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build --dir",
+    "dist": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build",
+    "pack-debug": "cross-env DEBUG=electron-builder CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build --dir",
+    "dist-debug": "cross-env DEBUG=electron-builder CSC_IDENTITY_AUTO_DISCOVERY=true electron-builder build"
+  },
+  "build": {
+    "appId": "org.imaginary.talk-to-me",
+    "productName": "Talk to me",
+    "files": [
+      "!audio${/*}",
+      "!models${/*}"
+    ],
+    "extraResources": [
+      "models/**/*",
+      "!models/**/*.dvc",
+      "!models/**/.gitignore"
+    ],
+    "linux": {
+      "executableName": "talk-to-me",
+      "target": [
+        "deb",
+        "rpm",
+        "AppImage"
+      ],
+      "asarUnpack": [
+        "node_modules/**/*.node",
+        "node_modules/**/*.so",
+        "node_modules/**/*.so.*"
+      ],
+      "category": "Education",
+      "packageCategory": "education"
+    },
+    "mac": {
+      "category": "public.app-category.education",
+      "target": [
+        "dmg"
+      ],
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "gatekeeperAssess": true
+    }
   }
 }

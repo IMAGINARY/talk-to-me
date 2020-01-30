@@ -6,19 +6,31 @@ const ndarray = require("ndarray")
 
 const melFilter = require('./mel-filter.js');
 
+function getModuleBaseDir() {
+    const isPackaged = (() => {
+        try {
+            return require("electron").app.isPackaged;
+        } catch (err) {
+            // there is no electron module
+            return false;
+        }
+    })();
+    return path.resolve(__dirname, isPackaged ? "../../../../../models" : "../../../../models");
+}
+
+const modelBaseDir = getModuleBaseDir();
 const models = {
     "en": {
         lang: "en",
-        url: 'file://' + path.resolve(__dirname, '../../../../models/english/model.json'),
+        url: 'file://' + path.resolve(modelBaseDir, 'english/model.json'),
         letters: "␣'abcdefghijklmnopqrstuvwxyz²³·",
         tfModel: null,
     },
     "de": {
         lang: "de",
-        url: 'file://' + path.resolve(__dirname, '../../../../models/german/model.json'),
+        url: 'file://' + path.resolve(modelBaseDir, 'german/model.json'),
         letters: "␣'abcdefghijklmnopqrstuvwxyzßäöü²³·",
         tfModel: null,
-
     }
 };
 
