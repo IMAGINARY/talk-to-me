@@ -32,7 +32,7 @@ async function init() {
         audioContext: audioContext,
         source: recorderInputNode,
         destination: audioContext.destination,
-        duration: 2 * 1000 /* 2s */,
+        duration: 2.5 * 1000 /* 2.5s */,
     });
     const samples = recorder.samples;
 
