@@ -22,9 +22,11 @@ function createWindow(argv) {
     // Create the browser window.
     const win = new BrowserWindow(options);
 
-    // remove the menu bar
-    Menu.setApplicationMenu(null);
-    win.setMenu(null);
+    if (!argv.menu) {
+        // remove the menu bar
+        Menu.setApplicationMenu(null);
+        win.setMenu(null);
+    }
 
     // and load the index.html of the app.
     win.loadFile(path.resolve(__dirname, '../../html/index.html'));
