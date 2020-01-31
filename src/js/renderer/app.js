@@ -78,10 +78,49 @@ async function init() {
         };
     }
 
+    class AnimationQueue {
+        constructor() {
+            this._queue = [];
+            this._running = Promise.resolve();
+        }
+
+        push(item) {
+            this._queue.push(item);
+        }
+
+        async play() {
+            await this._running;
+            this._running = this._play();
+            await this._running;
+        }
+
+        async _play() {
+            while (this._queue.length > 0) {
+                const item = this._queue.shift();
+                await item();
+            }
+        }
+
+        async wait() {
+            await this._running;
+        }
+
+        clear() {
+            this._queue.length = 0;
+        }
+    }
+
+    const aq = new AnimationQueue();
+
     samples.on('full', async data => {
         window.waveform = data;
         window.predictionExt = await wav2letter.predictExt({waveform: data, lang: language});
         window.predictionExt.letters = toUpperCase(window.predictionExt.letters);
+
+        // briefly show the viz containers to allow certain layout calculations
+        $decodingViz.show();
+        $networkViz.show();
+        $spectrogramViz.show();
 
         // Visualize spectrogram
         const spectrogramCanvas = ImageUtils.convert2DArrayToCanvas(window.predictionExt.layers[0], ImageUtils.alphamap, {
@@ -116,7 +155,23 @@ async function init() {
         }
 
         networkVisualizer.setLayers(predictionExt.layers, window.predictionExt.letters);
-        networkVisualizer.autoplay();
+
+        // hide the viz containers before starting animations
+        $decodingViz.hide();
+        $networkViz.hide();
+        $spectrogramViz.hide();
+
+        const animDurationMs = 500;
+        const delayMs = 2000;
+        const delayAnim = () => new Promise(resolve => setTimeout(resolve, delayMs));
+
+        aq.push(() => new Promise(resolve => $spectrogramViz.slideDown(animDurationMs, resolve)));
+        aq.push(delayAnim);
+        aq.push(() => new Promise(resolve => $networkViz.slideDown(animDurationMs, resolve)));
+        aq.push(() => networkVisualizer.autoplay());
+        aq.push(delayAnim);
+        aq.push(() => new Promise(resolve => $decodingViz.slideDown(animDurationMs, resolve)));
+        aq.play();
 
         // TODO: wrap into module
         setCursorPosition(timeSlot, decodedPredictionExt.indices.shape[0]);
@@ -127,10 +182,16 @@ async function init() {
         recorder.stopRecording();
         recorder.stopPlayback();
 
+        aq.clear();
+
         samples.clear();
         $spectrogramCanvasContainer.empty();
         $transcriptionContainer.empty();
         networkVisualizer.clear();
+
+        $decodingViz.hide();
+        $networkViz.hide();
+        $spectrogramViz.hide();
 
         untoggleButton(recordButton);
         untoggleButton(playButton);
