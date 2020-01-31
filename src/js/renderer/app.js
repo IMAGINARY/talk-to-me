@@ -168,8 +168,11 @@ async function init() {
 
     let language = "en";
     $("#language-selector > a").on('click', e => {
-        language = e.currentTarget.getAttribute("data-lang");
-        reset();
+        const newLanguage = e.currentTarget.getAttribute("data-lang");
+        if (newLanguage !== language) {
+            language = newLanguage;
+            reset();
+        }
     });
 
     reset();
