@@ -110,10 +110,16 @@ async function init() {
     });
 
     function reset() {
+        recorder.stopRecording();
+        recorder.stopPlayback();
+
         samples.clear();
         $spectrogramCanvasContainer.empty();
         transcriptionVisualizer.clear();
         networkVisualizer.clear();
+
+        untoggleButton(recordButton);
+        untoggleButton(playButton);
 
         // TODO: wrap into module
         $("#cursor").hide();
@@ -149,6 +155,11 @@ async function init() {
     const playButton = $("#play-button");
     const restartButton = $("#restart-button");
 
+    function untoggleButton($button) {
+        if ($button.hasClass('active'))
+            $button.button('toggle');
+    }
+
     playButton.hide();
 
     samples.on('full', () => {
@@ -156,6 +167,8 @@ async function init() {
         playButton.show();
     });
     samples.on('empty', () => {
+        untoggleButton(recordButton);
+        untoggleButton(playButton);
         playButton.hide();
         recordButton.show();
     });
