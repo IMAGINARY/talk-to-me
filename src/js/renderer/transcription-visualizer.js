@@ -13,12 +13,16 @@ class TranscriptionVisualizer {
         this.clearBeforeDrawing = typeof options.clearBeforeDrawing === "undefined" ? true : options.clearBeforeDrawing;
     }
 
-    draw(indices, probabilities, alphabet, numBest) {
+    draw(indices, probabilities, alphabet, numBest, cellWidth, fontSizePx) {
         this._context.save();
+
+        this._canvas.width = indices.shape[0] * cellWidth;
+        this._canvas.height = fontSizePx * numBest;
+
         if (this.clearBeforeDrawing)
             this.clear();
 
-        this._context.font = "16px Inconsolata";
+        this._context.font = `${fontSizePx}px Inconsolata`;
         this._context.textAlign = "center";
 
         const lineHeight = 16;

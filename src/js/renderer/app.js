@@ -50,7 +50,7 @@ async function init() {
     $waveformCanvas.attr("width", LETTER_CELL_SIZE * W2L_OUTPUT_LENGTH);
     const waveformVisualizer = new WaveformVisualizer($waveformCanvas.get(0), samples);
     const $spectrogramCanvasContainer = $('#spectrogram-viz .canvas-container');
-    const transcriptionVisualizer = new TranscriptionVisualizer(document.querySelector('#decoding-canvas'));
+    const $transcriptionContainer = $('#decoding-viz .canvas-container');
     const networkVisualizer = new NetworkVisualizer(
         document.querySelector('#network-viz .network-container'),
         {cellSize: LETTER_CELL_SIZE}
@@ -87,13 +87,21 @@ async function init() {
         $spectrogramCanvasContainer.empty();
         $spectrogramCanvasContainer.append(spectrogramCanvas);
 
+        const fontSizePx = 16;
+        const numBest = 4;
         const decodedPredictionExt = decodePredictionExt(window.predictionExt);
-        transcriptionVisualizer.draw(
+        const transcriptionCanvas = document.createElement('canvas');
+        new TranscriptionVisualizer(transcriptionCanvas).draw(
             decodedPredictionExt.indices,
             decodedPredictionExt.probabilities,
             decodedPredictionExt.alphabet,
-            4
+            numBest,
+            LETTER_CELL_SIZE,
+            fontSizePx,
         );
+        $transcriptionContainer.empty();
+        $transcriptionContainer.append(transcriptionCanvas);
+
         let timeSlot = 0;
         for (let t = decodedPredictionExt.indices.shape[0] - 1; t >= 0; --t) {
             const letterIndex = decodedPredictionExt.indices.get(t, 0);
@@ -115,7 +123,7 @@ async function init() {
 
         samples.clear();
         $spectrogramCanvasContainer.empty();
-        transcriptionVisualizer.clear();
+        $transcriptionContainer.empty();
         networkVisualizer.clear();
 
         untoggleButton(recordButton);
