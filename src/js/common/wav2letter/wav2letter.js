@@ -42,6 +42,7 @@ if (useWorkerThread) {
         const workerModule = `require(${JSON.stringify(workerPath)})`;
         await steve.registerMethod('transcribe', workerModule + ".transcribe");
         await steve.registerMethod('unload', workerModule + ".unloadModel");
+        await steve.registerMethod('computeOutputLength', workerModule + ".computeOutputLength");
         await steve.registerMethod('predict', workerModule + ".predict");
         await steve.registerMethod('predictExt', workerModule + ".predictExt");
         return steve;
@@ -52,6 +53,7 @@ if (useWorkerThread) {
     module.exports = {
         transcribe: async params => (await stevePromise).getExecutor().transcribe(params),
         unload: async params => (await stevePromise).getExecutor().unload(params),
+        computeOutputLength: async params => await (await stevePromise).getExecutor().computeOutputLength(params),
         predict: async params => coercePredictResult(await (await stevePromise).getExecutor().predict(params)),
         predictExt: async params => coercePredictExtResult(await (await stevePromise).getExecutor().predictExt(params)),
         decoder: require("./decoder.js"),
@@ -64,6 +66,7 @@ if (useWorkerThread) {
     module.exports = {
         transcribe: worker.transcribe,
         unload: worker.unload,
+        computeOutputLength: worker.computeOutputLength,
         predict: worker.predict,
         predictExt: worker.predictExt,
         decoder: require("./decoder.js"),

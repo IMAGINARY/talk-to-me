@@ -189,8 +189,18 @@ async function tensorToNDArray(tensor) {
     return ndarray(await tensor.data(), tensor.shape);
 }
 
+async function computeOutputLength(numSamples) {
+    const dummyParams = {
+        lang: 'en',
+        waveform: new Float32Array(numSamples),
+    };
+    const tfPrediction = await tf_predictExt(dummyParams);
+    return tfPrediction.layers[tfPrediction.layers.length - 1].shape[0];
+}
+
 module.exports = {
     transcribe: transcribe,
+    computeOutputLength: computeOutputLength,
     predict: predict,
     predictExt: predictExt,
     unloadModel: unloadModel,
