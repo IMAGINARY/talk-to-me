@@ -136,7 +136,6 @@ class NetworkVisualizer {
         );
 
         // the letter probability diagram defines the overall size
-        console.log(svg, this._swiperContainer);
         $(this._swiperContainer)
             .css("width", `${svg.getAttribute("width")}px`)
             .css("height", `${svg.getAttribute("height")}px`);
