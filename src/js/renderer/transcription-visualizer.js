@@ -17,7 +17,7 @@ class TranscriptionVisualizer {
         this._context.save();
 
         this._canvas.width = indices.shape[0] * cellWidth;
-        this._canvas.height = fontSizePx * numBest;
+        this._canvas.height = fontSizePx * ( numBest + 0.25 );
 
         if (this.clearBeforeDrawing)
             this.clear();
@@ -25,7 +25,7 @@ class TranscriptionVisualizer {
         this._context.font = `${fontSizePx}px Inconsolata`;
         this._context.textAlign = "center";
 
-        const lineHeight = 16;
+        const lineHeight = fontSizePx;
         const charWidth = this._canvas.width / indices.shape[0];
         for (let position = 0; position < indices.shape[0]; ++position) {
             const bestK = indices.pick(position).hi(numBest);
