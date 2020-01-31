@@ -42,6 +42,11 @@ async function init() {
     });
     const samples = recorder.samples;
 
+    const $decodingViz = $("#decoding-viz");
+    const $networkViz = $("#network-viz");
+    const $spectrogramViz = $("#spectrogram-viz");
+    const $waveformViz = $("#waveform-viz");
+
     const W2L_OUTPUT_LENGTH = await w2lOutputLengthPromise;
     const LETTER_CELL_SIZE = Number(getComputedStyle(document.documentElement)
         .getPropertyValue('--cell-size')
@@ -111,6 +116,7 @@ async function init() {
         }
 
         networkVisualizer.setLayers(predictionExt.layers, window.predictionExt.letters);
+        networkVisualizer.autoplay();
 
         // TODO: wrap into module
         setCursorPosition(timeSlot, decodedPredictionExt.indices.shape[0]);

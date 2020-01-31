@@ -173,8 +173,23 @@ class NetworkVisualizer {
             },
             mousewheelControl: true,
         });
+        swiper.autoplay.stop();
 
         global.swiper = swiper;
+    }
+
+    async autoplay() {
+        if (typeof this._swiperContainer.swiper !== "undefined" && this._swiperContainer.swiper !== null) {
+            const swiper = this._swiperContainer.swiper;
+            swiper.autoplay.stop();
+            swiper.slideTo(swiper.slides.length - 1, 0, false);
+            await new Promise(resolve => {
+                swiper.once('autoplayStop', resolve);
+                swiper.autoplay.start();
+            });
+        } else {
+            await Promise.resolve();
+        }
     }
 
     clear() {
