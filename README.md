@@ -20,7 +20,7 @@ yarn run start
 
 ## Building packages for redistribution
 
-Run
+First, install the [build tools](https://www.electron.build/multi-platform-build) for your platform. Then, run
 ```
 yarn run dist
 ```
