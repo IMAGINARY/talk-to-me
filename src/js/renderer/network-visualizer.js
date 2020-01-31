@@ -178,7 +178,7 @@ class NetworkVisualizer {
     }
 
     clear() {
-        if (typeof this._swiperContainer.swiper !== "undefined")
+        if (typeof this._swiperContainer.swiper !== "undefined" && this._swiperContainer.swiper !== null)
             this._swiperContainer.swiper.destroy();
         $(this._swiperContainer).empty();
     }
