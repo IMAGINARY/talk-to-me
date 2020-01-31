@@ -84,11 +84,16 @@ function visualizeLetterProbabilities(letterProbabilties, alphabet, cellSize) {
 }
 
 class NetworkVisualizer {
-    constructor(domElement) {
+    constructor(domElement, options) {
         this._parent = domElement;
         this._swiperContainer = document.createElement('div');
         this._swiperContainer.classList.add('swiper-container');
         this._parent.append(this._swiperContainer);
+
+        const defaultOptions = {
+            cellSize: 11,
+        };
+        this._options = Object.assign(defaultOptions, options);
     }
 
     setLayers(layers, alphabet) {
@@ -115,7 +120,7 @@ class NetworkVisualizer {
         }
 
         // add letter probability diagram
-        const svg = visualizeLetterProbabilities(layers[layers.length - 1], alphabet, 11);
+        const svg = visualizeLetterProbabilities(layers[layers.length - 1], alphabet, this._options.cellSize);
         const $slide = $('<div></div>')
             .addClass('swiper-slide')
             .append(svg);

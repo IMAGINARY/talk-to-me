@@ -1,5 +1,4 @@
 const MIN_AMPLITUDE = 0.1;
-const NUM_BUCKETS = 1024;
 
 class WaveformVisualizer {
     constructor(canvas, samples) {
@@ -8,9 +7,20 @@ class WaveformVisualizer {
         this.samples = samples;
         this.samples.on('empty', () => this._clear());
         this.samples.on('data', (data, newLength, oldLength) => this._receiveSamples(data, oldLength));
-        this.buckets = new Float32Array(NUM_BUCKETS);
+        this.buckets = new Float32Array(this.canvas.width);
 
         this._requestAnimationFrameCB = this._redraw.bind(this);
+
+        const callback = (mutationsList, observer) => {
+            for (let mutation of mutationsList) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'width') {
+                    requestAnimationFrame(this._requestAnimationFrameCB);
+                    break;
+                }
+            }
+        };
+        this._observer = new MutationObserver(callback);
+        this._observer.observe(this.canvas, {attributes: true});
     }
 
     _clear() {
@@ -27,7 +37,10 @@ class WaveformVisualizer {
     }
 
     _redraw(timestampMs) {
-        console.log(timestampMs);
+        if (this.buckets.length != this.canvas.width) {
+            this.buckets = new Float32Array(this.canvas.width);
+            this._receiveSamples(this.samples.data.subarray(0, this.samples.length), 0);
+        }
 
         // compute maximum aplitude
         const maxAmplitude = this.buckets.reduce((max, cur) => Math.max(max, Math.abs(cur)), MIN_AMPLITUDE);

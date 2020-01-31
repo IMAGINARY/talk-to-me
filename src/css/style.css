@@ -5,6 +5,7 @@
     --controls-bg-color: var(--main-bg-color);
     --controls-separator-color: #000000;
     --main-padding: 20px;
+    --cell-size: 11px;
 }
 
 * {
@@ -61,13 +62,13 @@ body {
 }
 
 #viz-container .needs-margin {
-    margin-left: 11px;
-    margin-right: 11px;
+    margin-left: var(--cell-size);
+    margin-right: var(--cell-size);
 }
 
 #viz-container .needs-padding {
-    padding-left: 11px;
-    padding-right: 11px;
+    padding-left: var(--cell-size);
+    padding-right: var(--cell-size)
 }
 
 #viz-container .explanation-container {
@@ -217,8 +218,8 @@ body {
 #cursor-container {
     position: relative;
     box-sizing: content-box;
-    margin-left: 11px;
-    margin-right: 11px;
+    margin-left: var(--cell-size);
+    margin-right: var(--cell-size);
 }
 
 #cursor {

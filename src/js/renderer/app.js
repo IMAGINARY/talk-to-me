@@ -16,14 +16,20 @@ const WaveformVisualizer = require("./waveform-visualizer.js");
 const TranscriptionVisualizer = require("./transcription-visualizer.js");
 const NetworkVisualizer = require("./network-visualizer.js");
 
-Promise.all(['en', 'de'].map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
+const SAMPLE_RATE = 16000;
+const AUDIO_DURATION_SEC = 2.5;
+
+const modelLoadedPromise = Promise.all(['en', 'de']
+    .map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
     .then(() => console.log("Speech recognition models loaded."));
+const w2lOutputLengthPromise = modelLoadedPromise
+    .then(() => wav2letter.computeOutputLength(AUDIO_DURATION_SEC * SAMPLE_RATE));
 
 async function init() {
     const argv = cli.argv;
     await $.ready;
 
-    const audioContext = new AudioContext({sampleRate: 16000});
+    const audioContext = new AudioContext({sampleRate: SAMPLE_RATE});
     const micInputNode = await Recorder.getMicrophoneAudioSource(audioContext);
     const recorderInputNode = new MicrophoneFilterNode(audioContext, {bypass: true});
     micInputNode.connect(recorderInputNode);
@@ -32,14 +38,23 @@ async function init() {
         audioContext: audioContext,
         source: recorderInputNode,
         destination: audioContext.destination,
-        duration: 2.5 * 1000 /* 2.5s */,
+        duration: AUDIO_DURATION_SEC * 1000,
     });
     const samples = recorder.samples;
 
-    const waveformVisualizer = new WaveformVisualizer(document.querySelector('#waveform-canvas'), samples);
+    const W2L_OUTPUT_LENGTH = await w2lOutputLengthPromise;
+    const LETTER_CELL_SIZE = Number(getComputedStyle(document.documentElement)
+        .getPropertyValue('--cell-size')
+        .replace(/px$/, ""));
+    const $waveformCanvas = $('#waveform-canvas');
+    $waveformCanvas.attr("width", LETTER_CELL_SIZE * W2L_OUTPUT_LENGTH);
+    const waveformVisualizer = new WaveformVisualizer($waveformCanvas.get(0), samples);
     const $spectrogramCanvasContainer = $('#spectrogram-viz .canvas-container');
     const transcriptionVisualizer = new TranscriptionVisualizer(document.querySelector('#decoding-canvas'));
-    const networkVisualizer = new NetworkVisualizer(document.querySelector('#network-viz .network-container'));
+    const networkVisualizer = new NetworkVisualizer(
+        document.querySelector('#network-viz .network-container'),
+        {cellSize: LETTER_CELL_SIZE}
+    );
 
     //setInterval(() => networkVisualizer.currentLayer = (networkVisualizer.currentLayer + 1) % networkVisualizer.layers.length, 1000);
 
