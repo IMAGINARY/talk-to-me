@@ -177,7 +177,6 @@ body {
     line-height: 0px;
 }
 
-
 #controls {
     position: relative;
     background-color: var(--controls-bg-color);
@@ -186,14 +185,9 @@ body {
     border-top: 2px solid var(--controls-separator-color);
     padding-left: var(--main-padding);
     padding-right: var(--main-padding);
-}
-
-.align-left {
-    float: left;
-}
-
-.align-right {
-    float: right;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 #language-controls {

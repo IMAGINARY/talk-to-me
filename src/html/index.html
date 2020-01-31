@@ -80,9 +80,21 @@
     </div>
 </div>
 <div id="controls">
-    <div id="language-controls" class="align-left">
+    <div id="audio-controls">
+        <button id="record-button" type="button" class="btn btn-secondary btn-circle btn-md"
+                data-toggle="button">
+            <i class="fas fa-microphone fa-3x">
+            </i>
+        </button>
+        <button id="play-button" type="button" class="btn btn-secondary btn-circle btn-md" data-toggle="button">
+            <i class="fas fa-play fa-2x"
+               style="transform: translateX(0.225ex);">
+            </i>
+        </button>
+    </div>
+    <div id="language-controls">
         <div class="btn-group dropup">
-            <button id="language-button" type="button" class="btn btn-secondary btn-lg dropdown-toggle"
+            <button id="language-button" type="button" class="btn btn-secondary btn-md dropdown-toggle"
                     data-toggle="dropdown"
                     aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-language fa-lg"></i>
@@ -93,23 +105,10 @@
             </div>
         </div>
     </div>
-    <div id="audio-controls" class="align-right">
-        <button id="record-button" type="button" class="btn btn-secondary btn-circle btn-xl"
-                data-toggle="button">
-            <i class="fas fa-microphone fa-3x">
-            </i>
-        </button>
-        <button id="play-button" type="button" class="btn btn-secondary btn-circle btn-xl" data-toggle="button">
-            <i class="fas fa-play fa-2x"
-               style="transform: translateX(0.225ex);">
-            </i>
-        </button>
-        <button id="restart-button" type="button" class="btn btn-secondary btn-circle btn-xl">
-            <i class="fas fa-redo-alt fa-2x">
-            </i>
-        </button>
-    </div>
-    <div style="clear: both;"></div>
+    <button id="restart-button" type="button" class="btn btn-secondary btn-circle btn-md">
+        <i class="fas fa-redo-alt fa-2x">
+        </i>
+    </button>
 </div>
 </body>
 </html>
