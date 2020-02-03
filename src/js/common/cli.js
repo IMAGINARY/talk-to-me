@@ -1,3 +1,4 @@
+const processArgv = [...process.argv];
 try {
     const electron = require("electron");
     if (electron.remote) {
@@ -6,6 +7,10 @@ try {
         return;
     } else {
         // If running in Electron main process, proceed like with regular nodejs modules.
+        if (!electron.app.isPackaged)
+            // Needed for proper parsing in packaged and non-packaged mode.
+            // See https://yargs.js.org/docs/#api-argv
+            processArgv.splice(1, 1);
     }
 } catch (err) {
     // If there is no Electron module, there is nothing to do.
@@ -40,7 +45,7 @@ async function argv() {
             description: t('description.demo'),
         })
         .version()
-        .argv;
+        .parse(processArgv);
     return argv;
 }
 
