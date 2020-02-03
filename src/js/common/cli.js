@@ -21,7 +21,7 @@ async function argv() {
         .option('fullscreen', {
             alias: 'f',
             type: 'number',
-            default: true,
+            default: false,
             description: t('description.fullscreen'),
         })
         .option('kiosk', {
