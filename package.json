@@ -4,8 +4,10 @@
   "description": "An automatic speech recognition exhibit based on the wav2letter model",
   "main": "src/js/main/main.js",
   "repository": "https://github.com/IMAGINARY/talk-to-me",
-  "author": "Christian Stussak",
-  "email": "christian.stussak@imaginary.org",
+  "author": {
+    "name": "Christian Stussak",
+    "email": "christian.stussak@imaginary.org"
+  },
   "license": "Apache-2.0",
   "private": false,
   "engines": {
