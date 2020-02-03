@@ -44,6 +44,8 @@ async function argv() {
     return argv;
 }
 
+const argvPromise = argv();
+
 module.exports = {
-    argv: async () => await argv(),
+    argv: async () => await argvPromise,
 };
