@@ -12,29 +12,40 @@ try {
 }
 
 const yargs = require('yargs');
-const argv = yargs
-    .option('fullscreen', {
-        alias: 'f',
-        type: 'number',
-        default: true,
-        description: 'Run in fullscreen mode. The window will be moved to the given display, if provided.',
-    })
-    .option('kiosk', {
-        type: 'boolean',
-        default: false,
-        description: 'Run in kiosk mode (caution: it might be difficult to quit the app).',
-    })
-    .option('menu', {
-        type: 'boolean',
-        default: false,
-        description: 'Enable a menu and certain shortcuts useful for debugging.'
-    })
-    .option('demo', {
-        type: 'boolean',
-        default: false,
-        description: 'Load a demo audio file.'
-    })
-    .version()
-    .argv;
+const getI18Next = require('./i18n.js');
 
-module.exports = {argv: argv};
+async function argv() {
+    const i18next = await getI18Next();
+    const t = i18next.getFixedT(null, 'cli');
+    const argv = yargs
+        .option('fullscreen', {
+            alias: 'f',
+            type: 'number',
+            default: true,
+            description: t('description.fullscreen'),
+        })
+        .option('kiosk', {
+            type: 'boolean',
+            default: false,
+            description: t('description.kiosk'),
+        })
+        .option('menu', {
+            type: 'boolean',
+            default: false,
+            description: t('description.menu'),
+        })
+        .option('demo', {
+            type: 'boolean',
+            default: false,
+            description: t('description.demo'),
+        })
+        .version()
+        .argv;
+    return argv;
+}
+
+const argvPromise = argv();
+
+module.exports = {
+    argv: async () => await argvPromise,
+};

@@ -1,6 +1,8 @@
 const ndarray = require('ndarray');
 const opsExt = require('../common/ndarray-ops-ext.js');
 const cli = require('../common/cli.js');
+const getI18Next = require('../common/i18n.js');
+const langmap = require('langmap');
 
 const $ = require('jquery');
 
@@ -19,14 +21,16 @@ const NetworkVisualizer = require("./network-visualizer.js");
 const SAMPLE_RATE = 16000;
 const AUDIO_DURATION_SEC = 2.5;
 
-const modelLoadedPromise = Promise.all(['en', 'de']
+const supportedLanguages = ['en', 'de'];
+const modelLoadedPromise = Promise.all(supportedLanguages
     .map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
     .then(() => console.log("Speech recognition models loaded."));
 const w2lOutputLengthPromise = modelLoadedPromise
     .then(() => wav2letter.computeOutputLength(AUDIO_DURATION_SEC * SAMPLE_RATE));
 
 async function init() {
-    const argv = cli.argv;
+    const argv = await cli.argv();
+    const i18next = await getI18Next();
     await $.ready;
 
     const audioContext = new AudioContext({sampleRate: SAMPLE_RATE});
@@ -114,7 +118,7 @@ async function init() {
 
     samples.on('full', async data => {
         window.waveform = data;
-        window.predictionExt = await wav2letter.predictExt({waveform: data, lang: language});
+        window.predictionExt = await wav2letter.predictExt({waveform: data, lang: i18next.language});
         window.predictionExt.letters = toUpperCase(window.predictionExt.letters);
 
         // briefly show the viz containers to allow certain layout calculations
@@ -254,14 +258,38 @@ async function init() {
     playButton.on('click', () => recorder.startPlayback());
     restartButton.on('click', reset);
 
-    let language = "en";
+    function addSupportedLanguages() {
+        for (let l of supportedLanguages) {
+            const nativeName = langmap[l]["nativeName"];
+            const $div = $("<a></a>")
+                .attr("data-lang", l)
+                .attr("href", "#")
+                .addClass("dropdown-item")
+                .text(nativeName);
+            $("#language-selector").append($div);
+        }
+    }
+
+    async function setLanguage(lang) {
+        await i18next.changeLanguage(lang);
+        const t = i18next.getFixedT(null, 'frontend');
+        const elemsToLocalize = [
+            {querySelector: "#decoding-viz .explanation", key: "short-expl.decoder"},
+            {querySelector: "#network-viz .explanation", key: "short-expl.network"},
+            {querySelector: "#spectrogram-viz .explanation", key: "short-expl.spectrogram"},
+            {querySelector: "#waveform-viz .explanation", key: "short-expl.waveform"},
+        ];
+        elemsToLocalize.forEach(elem => $(elem.querySelector).html(t(elem.key)));
+        reset();
+    }
+
+    addSupportedLanguages();
     $("#language-selector > a").on('click', e => {
         const newLanguage = e.currentTarget.getAttribute("data-lang");
-        if (newLanguage !== language) {
-            language = newLanguage;
-            reset();
-        }
+        if (newLanguage !== i18next.language)
+            setLanguage(newLanguage);
     });
+    setLanguage(i18next.language);
 
     reset();
     if (argv.demo)

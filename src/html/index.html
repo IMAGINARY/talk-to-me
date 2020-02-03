@@ -35,39 +35,28 @@
                 <div id="viz-container">
                     <div id="decoding-viz">
                         <div class="explanation-container">
-                            <div class="explanation">
-                                A <u>decoder</u> walks through the table of probabilities to find the most likely path
-                                to form words and sentences.
-                            </div>
+                            <div class="explanation"></div>
                         </div>
                         <div class="canvas-container needs-margin">
                         </div>
                     </div>
                     <div id="network-viz">
                         <div class="explanation-container">
-                            <div class="explanation">
-                                The spectrogram is given to a <u>neural network</u> that tries to derive a probability
-                                for each letter and time step.
-                            </div>
+                            <div class="explanation"></div>
                         </div>
                         <div class="network-container">
                         </div>
                     </div>
                     <div id="spectrogram-viz">
                         <div class="explanation-container">
-                            <div class="explanation">
-                                The sound is transformed into a <u>spectrogram</u>, which shows the spectrum of
-                                frequencies for each time step.
-                            </div>
+                            <div class="explanation"></div>
                         </div>
                         <div class="canvas-container needs-margin">
                         </div>
                     </div>
                     <div id="waveform-viz">
                         <div class="explanation-container">
-                            <div class="explanation">
-                                This is the <u>waveform</u> of your voice.
-                            </div>
+                            <div class="explanation"></div>
                         </div>
                         <div class="needs-margin">
                             <canvas id="waveform-canvas" height="64"></canvas>
@@ -99,8 +88,7 @@
                 <i class="fas fa-language fa-lg"></i>
             </button>
             <div id="language-selector" class="dropdown-menu">
-                <a data-lang="de" class="dropdown-item" href="#">Deutsch</a>
-                <a data-lang="en" class="dropdown-item" href="#">English</a>
+                <!-- supported languages will be filled in via JS -->
             </div>
         </div>
     </div>

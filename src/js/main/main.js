@@ -1,16 +1,32 @@
 const cli = require('../common/cli.js');
 
-const {app} = require('electron')
-const path = require('path');
-require('electron-reload')(path.join(__dirname, '../..'));
+let gcSentinel;
 
-const wav2letter = require("../common/wav2letter/wav2letter.js");
+async function main(argv) {
+    if (argv.help || argv.version)
+        return; // prevent electron stuff from being loaded (otherwise windows might pop up for --help and --version)
 
-const appReady = require("./appReady.js");
+    const {app} = require('electron')
+    const path = require('path');
+    require('electron-reload')(path.join(__dirname, '../..'));
 
-app.on('ready', () => appReady(cli.argv));
+    const wav2letter = require("../common/wav2letter/wav2letter.js");
 
-app.on('window-all-closed', async () => {
-    await wav2letter.terminate();
-    app.quit();
-});
+    const appReady = require("./appReady.js");
+
+    app.on('window-all-closed', async () => {
+        await wav2letter.terminate();
+        app.quit();
+    });
+
+    await app.whenReady();
+    appReady(argv);
+
+    gcSentinel = {
+        app: app,
+        wav2letter: wav2letter,
+    };
+}
+
+cli.argv()
+    .then(main);

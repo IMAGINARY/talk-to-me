@@ -1,0 +1,8 @@
+{
+  "short-expl": {
+    "decoder": "A <em>decoder</em> walks through the table of probabilities to find the most likely path to form words and sentences.",
+    "network": "The spectrogram is given to a <em>neural network</em> that tries to derive a probability for each letter and time step.",
+    "spectrogram": "The sound is transformed into a <em>spectrogram</em>, which shows the spectrum of frequencies for each time step.",
+    "waveform": "This is the <em>waveform</em> of your voice."
+  }
+}
