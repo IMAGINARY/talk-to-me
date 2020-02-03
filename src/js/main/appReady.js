@@ -37,8 +37,6 @@ function createWindow(argv) {
 let win;
 
 function appReady(argv) {
-    console.log("creating window");
-
     win = createWindow(argv);
 }
 
