@@ -1,4 +1,3 @@
-const assert = require('assert');
 const path = require('path');
 const i18next = require('i18next');
 const backend = require('i18next-node-fs-backend');

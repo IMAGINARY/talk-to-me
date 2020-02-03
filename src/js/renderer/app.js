@@ -1,3 +1,4 @@
+const assert = require('assert');
 const ndarray = require('ndarray');
 const opsExt = require('../common/ndarray-ops-ext.js');
 const cli = require('../common/cli.js');
@@ -117,8 +118,11 @@ async function init() {
     const aq = new AnimationQueue();
 
     samples.on('full', async data => {
+        const languages = i18next.languages.filter(l => supportedLanguages.includes(l));
+        assert(languages.length > 0, `No supported language in ${i18next.languages}. Must include one of ${supportedLanguages}.`);
+
         window.waveform = data;
-        window.predictionExt = await wav2letter.predictExt({waveform: data, lang: i18next.language});
+        window.predictionExt = await wav2letter.predictExt({waveform: data, lang: languages[0]});
         window.predictionExt.letters = toUpperCase(window.predictionExt.letters);
 
         // briefly show the viz containers to allow certain layout calculations
