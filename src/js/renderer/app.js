@@ -26,7 +26,7 @@ const w2lOutputLengthPromise = modelLoadedPromise
     .then(() => wav2letter.computeOutputLength(AUDIO_DURATION_SEC * SAMPLE_RATE));
 
 async function init() {
-    const argv = cli.argv;
+    const argv = await cli.argv();
     await $.ready;
 
     const audioContext = new AudioContext({sampleRate: SAMPLE_RATE});

@@ -1,16 +1,20 @@
 const cli = require('../common/cli.js');
 
-const {app} = require('electron')
-const path = require('path');
-require('electron-reload')(path.join(__dirname, '../..'));
+cli.argv().then(argv => main(argv));
 
-const wav2letter = require("../common/wav2letter/wav2letter.js");
+function main(argv) {
+    const {app} = require('electron')
+    const path = require('path');
+    require('electron-reload')(path.join(__dirname, '../..'));
 
-const appReady = require("./appReady.js");
+    const wav2letter = require("../common/wav2letter/wav2letter.js");
 
-app.on('ready', () => appReady(cli.argv));
+    const appReady = require("./appReady.js");
 
-app.on('window-all-closed', async () => {
-    await wav2letter.terminate();
-    app.quit();
-});
+    app.on('ready', async () => appReady(await cli.argv()));
+
+    app.on('window-all-closed', async () => {
+        await wav2letter.terminate();
+        app.quit();
+    });
+}
