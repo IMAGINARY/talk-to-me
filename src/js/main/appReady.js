@@ -4,6 +4,8 @@ const path = require('path');
 const cli = require('../common/cli.js');
 
 function createWindow(argv) {
+    console.log("creating window");
+
     const options = {
         fullscreen: argv.fullscreen !== false,
         kiosk: argv.kiosk,
@@ -37,6 +39,8 @@ function createWindow(argv) {
 let win;
 
 function appReady(argv) {
+    console.log("creating window");
+
     win = createWindow(argv);
 }
 
