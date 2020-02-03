@@ -8,7 +8,9 @@ async function main(argv) {
 
     const {app} = require('electron')
     const path = require('path');
-    require('electron-reload')(path.join(__dirname, '../..'));
+    if(!app.isPackaged)
+        // Only auto-reload if dev-mode, not when packaged
+        require('electron-reload')(path.join(__dirname, '../..'));
 
     const wav2letter = require("../common/wav2letter/wav2letter.js");
 
