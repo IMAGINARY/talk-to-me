@@ -4,6 +4,7 @@ const opsExt = require('../common/ndarray-ops-ext.js');
 const cli = require('../common/cli.js');
 const getI18Next = require('../common/i18n.js');
 const langmap = require('langmap');
+const IdleDetector = require('./idle-detector.js');
 
 const $ = require('jquery');
 
@@ -33,6 +34,10 @@ async function init() {
     const argv = await cli.argv();
     const i18next = await getI18Next();
     await $.ready;
+
+    const idleTimeoutMs = 5 * 60 * 1000;
+    const idleDetector = new IdleDetector();
+    idleDetector.setTimeout(reset, idleTimeoutMs);
 
     const audioContext = new AudioContext({sampleRate: SAMPLE_RATE});
     const micInputNode = await Recorder.getMicrophoneAudioSource(audioContext);
