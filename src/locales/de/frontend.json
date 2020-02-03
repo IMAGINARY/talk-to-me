@@ -2,7 +2,7 @@
   "short-expl": {
     "decoder": "Ein <em>Dekoder</em> läuft durch die Wahrscheinlichkeitstabelle um den besten Pfad zur Ableitung von Worten und Sätzen zu finden.",
     "network": "Das Spektrogram wird von einem <em>Neuronalen Netzwerk</em> verarbeitet, dass für jeden Zeitschritt und jeden Buchstaben eine Wahrscheinlichkeit bestimmt.",
-    "spectrogram": "Die Wellenform wird in ein <em>Spektrogram</em> überführt, das das Frequenzspektrum zu jedem Zeitschritt auszeigt.",
+    "spectrogram": "Die Wellenform wird in ein <em>Spektrogram</em> überführt, das das Frequenzspektrum zu jedem Zeitschritt aufzeigt.",
     "waveform": "Dies ist die <em>Wellenform</em> deiner Stimme."
   }
 }
