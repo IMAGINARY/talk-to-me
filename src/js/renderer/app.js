@@ -17,7 +17,7 @@ const loadAudioFile = require("./loadAudioFile.js");
 const MicrophoneFilterNode = require("./microphone-filter-node.js");
 const Recorder = require("./recorder.js");
 const WaveformVisualizer = require("./waveform-visualizer.js");
-const visualizeDecoder = require("./transcription-visualizer.js");
+const visualizeDecoding = require("./decoding-visualizer.js");
 const NetworkVisualizer = require("./network-visualizer.js");
 
 const SAMPLE_RATE = 16000;
@@ -147,7 +147,7 @@ async function init() {
         const fontSizePx = 16;
         const numBest = 4;
         const decodedPredictionExt = decodePredictionExt(window.predictionExt);
-        const decoderSvg = visualizeDecoder(
+        const decoderSvg = visualizeDecoding(
             decodedPredictionExt.indices,
             decodedPredictionExt.probabilities,
             decodedPredictionExt.alphabet,
