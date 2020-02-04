@@ -17,7 +17,7 @@ const loadAudioFile = require("./loadAudioFile.js");
 const MicrophoneFilterNode = require("./microphone-filter-node.js");
 const Recorder = require("./recorder.js");
 const WaveformVisualizer = require("./waveform-visualizer.js");
-const TranscriptionVisualizer = require("./transcription-visualizer.js");
+const visualizeDecoder = require("./transcription-visualizer.js");
 const NetworkVisualizer = require("./network-visualizer.js");
 
 const SAMPLE_RATE = 16000;
@@ -65,7 +65,7 @@ async function init() {
     $waveformCanvas.attr("width", LETTER_CELL_SIZE * W2L_OUTPUT_LENGTH);
     const waveformVisualizer = new WaveformVisualizer($waveformCanvas.get(0), samples);
     const $spectrogramCanvasContainer = $('#spectrogram-viz .canvas-container');
-    const $transcriptionContainer = $('#decoding-viz .canvas-container');
+    const $transcriptionContainer = $('#decoding-viz .decoding-container');
     const networkVisualizer = new NetworkVisualizer(
         document.querySelector('#network-viz .network-container'),
         {cellSize: LETTER_CELL_SIZE}
@@ -147,8 +147,7 @@ async function init() {
         const fontSizePx = 16;
         const numBest = 4;
         const decodedPredictionExt = decodePredictionExt(window.predictionExt);
-        const transcriptionCanvas = document.createElement('canvas');
-        new TranscriptionVisualizer(transcriptionCanvas).draw(
+        const decoderSvg = visualizeDecoder(
             decodedPredictionExt.indices,
             decodedPredictionExt.probabilities,
             decodedPredictionExt.alphabet,
@@ -157,7 +156,7 @@ async function init() {
             fontSizePx,
         );
         $transcriptionContainer.empty();
-        $transcriptionContainer.append(transcriptionCanvas);
+        $transcriptionContainer.append(decoderSvg);
 
         let timeSlot = 0;
         for (let t = decodedPredictionExt.indices.shape[0] - 1; t >= 0; --t) {

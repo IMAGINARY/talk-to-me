@@ -242,12 +242,14 @@ body {
     display: none;
 }
 
-svg.letter-probability-viz .grid * {
+#viz-container svg .grid {
     stroke: rgb(0, 0, 0);
+    opacity: 0.1;
 }
 
-svg.letter-probability-viz .grid {
-    opacity: 0.1;
+#viz-container svg text {
+    font-family: 'Inconsolata';
+    text-anchor: middle;
 }
 
 svg.letter-probability-viz rect {
@@ -256,14 +258,17 @@ svg.letter-probability-viz rect {
 
 svg.letter-probability-viz text {
     font-size: 9px;
-    font-family: 'Inconsolata';
-    text-anchor: middle;
 }
 
-svg.letter-probability-vizg text.legend {
+svg.letter-probability-viz text.legend {
     fill: black;
 }
 
 svg.letter-probability-viz text.letters {
     fill: #FFFF20;
+}
+
+svg.decoding-viz text {
+    font-size: 16px;
+    fill: black;
 }
