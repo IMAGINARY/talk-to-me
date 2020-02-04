@@ -44,6 +44,11 @@ async function argv() {
             default: false,
             description: t('description.demo'),
         })
+        .option('disable-animations', {
+            type: 'boolean',
+            default: false,
+            description: t('description.disableAnimations'),
+        })
         .version()
         .parse(processArgv);
     return argv;

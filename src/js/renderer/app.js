@@ -174,17 +174,25 @@ async function init() {
         $networkViz.hide();
         $spectrogramViz.hide();
 
-        const animDurationMs = 500;
-        const delayMs = 2000;
-        const delayAnim = () => new Promise(resolve => setTimeout(resolve, delayMs));
+        if (argv.disableAnimations) {
+            $spectrogramViz.show();
+            $networkViz.show();
+            networkVisualizer.goToLast(false);
+            $decodingViz.show();
+        } else {
+            const animDurationMs = 500;
+            const delayMs = 2000;
+            const delayAnim = () => new Promise(resolve => setTimeout(resolve, delayMs));
+            const slideDown = $elems => () => new Promise(resolve => $elems.slideDown(animDurationMs, resolve))
 
-        aq.push(() => new Promise(resolve => $spectrogramViz.slideDown(animDurationMs, resolve)));
-        aq.push(delayAnim);
-        aq.push(() => new Promise(resolve => $networkViz.slideDown(animDurationMs, resolve)));
-        aq.push(() => networkVisualizer.autoplay());
-        aq.push(delayAnim);
-        aq.push(() => new Promise(resolve => $decodingViz.slideDown(animDurationMs, resolve)));
-        aq.play();
+            aq.push(slideDown($spectrogramViz));
+            aq.push(delayAnim);
+            aq.push(slideDown($networkViz));
+            aq.push(() => networkVisualizer.autoplay());
+            aq.push(delayAnim);
+            aq.push(slideDown($decodingViz));
+            aq.play();
+        }
 
         // TODO: wrap into module
         setCursorPosition(timeSlot, decodedPredictionExt.indices.shape[0]);

@@ -192,6 +192,20 @@ class NetworkVisualizer {
         }
     }
 
+    goToFirst(animate) {
+        if (animate)
+            swiper.slideTo(swiper.slides.length - 1);
+        else
+            swiper.slideTo(swiper.slides.length - 1, 0);
+    }
+
+    goToLast(animate) {
+        if (animate)
+            swiper.slideTo(0);
+        else
+            swiper.slideTo(0, 0);
+    }
+
     clear() {
         if (typeof this._swiperContainer.swiper !== "undefined" && this._swiperContainer.swiper !== null)
             this._swiperContainer.swiper.destroy();
