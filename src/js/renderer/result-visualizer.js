@@ -81,57 +81,66 @@ function removeDuplicates_n(charArray) {
 
 function removePrefix_1(charArray, prefixChar) {
     const tmp = [...charArray];
-    while (tmp.length > 0 && tmp[0] === prefixChar) {
+    while (tmp.length > 0 && tmp[0].char === prefixChar) {
         tmp.shift();
     }
-    return positionByIndex_1(tmp);
+    return tmp;
 }
 
 function replace2_n(charArray) {
     const withoutPrefix2 = removePrefix_1(charArray, '²');
+    const withoutPrefix2PositionsUpdated = positionByIndex_1(withoutPrefix2);
 
     const withDuplicatesAnd2 = [];
-    let position = 0;
-    for (let i = 0; i < withoutPrefix2.length; ++i) {
-        if (withoutPrefix2[i].char === '²') {
-            const {char} = withDuplicatesAnd2[withDuplicatesAnd2.length - 1];
-            withDuplicatesAnd2.push(new Char(Char.createKey(), char, position - 1));
+    {
+        const input = withoutPrefix2PositionsUpdated;
+        let position = 0;
+        for (let i = 0; i < input.length; ++i) {
+            if (input[i].char === '²') {
+                const {char} = withDuplicatesAnd2[withDuplicatesAnd2.length - 1];
+                withDuplicatesAnd2.push(new Char(Char.createKey(), char, position - 1));
+            }
+            withDuplicatesAnd2.push(new Char(input[i].key, input[i].char, position++));
         }
-        withDuplicatesAnd2.push(new Char(withoutPrefix2[i].key, withoutPrefix2[i].char, position++));
     }
 
     const withDuplicates = positionByIndex_1(withDuplicatesAnd2.filter(c => c.char !== '²'));
 
-    return [withoutPrefix2, withDuplicatesAnd2, withDuplicates];
+    return [withoutPrefix2, withoutPrefix2PositionsUpdated, withDuplicatesAnd2, withDuplicates];
 }
 
 function replace3_n(charArray) {
     const withoutPrefix3 = removePrefix_1(charArray, '³');
+    const withoutPrefix3PositionsUpdated = positionByIndex_1(withoutPrefix3);
 
     const updatedPositions = Array(withoutPrefix3.length);
     {
+        const input = withoutPrefix3PositionsUpdated;
         let position = 0;
         for (let i = 0; i < updatedPositions.length; ++i) {
-            if (withoutPrefix3[i].char === '³')
+            if (input[i].char === '³')
                 ++position;
-            updatedPositions[i] = new Char(withoutPrefix3[i].key, withoutPrefix3[i].char, position++);
+            updatedPositions[i] = new Char(input[i].key, input[i].char, position++);
         }
     }
 
     const duplicatesAdded = [];
-    for (let i = 0; i < updatedPositions.length; ++i) {
-        if (updatedPositions[i].char === '³') {
-            const {char} = duplicatesAdded[duplicatesAdded.length - 1];
-            const position = updatedPositions[i].position - 2;
-            duplicatesAdded.push(new Char(Char.createKey(), char, position));
-            duplicatesAdded.push(new Char(Char.createKey(), char, position));
+    {
+        const input = updatedPositions;
+        for (let i = 0; i < input.length; ++i) {
+            if (input[i].char === '³') {
+                const {char} = duplicatesAdded[duplicatesAdded.length - 1];
+                const position = input[i].position - 2;
+                duplicatesAdded.push(new Char(Char.createKey(), char, position));
+                duplicatesAdded.push(new Char(Char.createKey(), char, position));
+            }
+            duplicatesAdded.push(input[i]);
         }
-        duplicatesAdded.push(updatedPositions[i]);
     }
 
     const positionedAnd3Removed = positionByIndex_1(duplicatesAdded.filter(c => c.char !== '³'));
 
-    return [withoutPrefix3, updatedPositions, duplicatesAdded, positionedAnd3Removed];
+    return [withoutPrefix3, withoutPrefix3PositionsUpdated, updatedPositions, duplicatesAdded, positionedAnd3Removed];
 }
 
 function positionByIndex_1(charArray) {
@@ -139,7 +148,9 @@ function positionByIndex_1(charArray) {
 }
 
 function convertBlankSymbolsToSpace_n(charArray) {
-    return [charArray.map(c => c.char === '␣' ? new Char(c.key, ' ', c.position) : c)];
+    const blankReplacedBySpaces = charArray.map(c => c.char === '␣' ? new Char(c.key, ' ', c.position) : c);
+    const leadingBlanksRemoved = positionByIndex_1(removePrefix_1(blankReplacedBySpaces, ' '));
+    return [blankReplacedBySpaces, leadingBlanksRemoved];
 }
 
 function getSteps(charArray) {
