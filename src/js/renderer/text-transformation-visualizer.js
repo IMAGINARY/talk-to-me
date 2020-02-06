@@ -1,7 +1,11 @@
+const assert = require('assert');
 const $ = require('jquery');
 const d3 = require('d3');
 require('d3-selection-multi');
 require('d3-transition');
+
+const last = array => array[array.length - 1];
+const last2 = array => last(last(array));
 
 class Char {
     static _lastKey = -1;
@@ -15,6 +19,12 @@ class Char {
     static createKey() {
         ++Char._lastKey;
         return "c" + Char._lastKey;
+    }
+
+    equals(otherChar) {
+        return this.key === otherChar.key
+            && this.char === otherChar.char
+            && this.position === otherChar.position;
     }
 }
 
@@ -64,19 +74,16 @@ function map32To33_n(charArray) {
     return [map32To33_1(charArray)];
 }
 
-function mergeDuplicates_n(charArray) {
-    const result = [...charArray];
-    for (let i = 1; i < result.length; ++i) {
-        if (result[i - 1].char === result[i].char)
-            result[i] = new Char(result[i].key, result[i].char, result[i - 1].position);
-    }
-    return [result];
-}
-
 function removeDuplicates_n(charArray) {
+    const duplicatesMerged = [...charArray];
+    for (let i = 1; i < duplicatesMerged.length; ++i) {
+        if (duplicatesMerged[i - 1].char === duplicatesMerged[i].char)
+            duplicatesMerged[i] = new Char(duplicatesMerged[i].key, duplicatesMerged[i].char, duplicatesMerged[i - 1].position);
+    }
+
     const duplicatesRemoved = charArray.filter((c, idx) => idx === 0 || c.char !== charArray[idx - 1].char);
     const positionsUpdated = duplicatesRemoved.map((c, idx) => c.position === idx ? c : new Char(c.key, c.char, idx));
-    return [duplicatesRemoved, positionsUpdated];
+    return [duplicatesMerged, duplicatesRemoved, positionsUpdated];
 }
 
 function removePrefix_1(charArray, prefixChar) {
@@ -153,20 +160,52 @@ function convertBlankSymbolsToSpace_n(charArray) {
     return [blankReplacedBySpaces, leadingBlanksRemoved];
 }
 
+function charArraysEqual(a, b) {
+    if (a.length === b.length) {
+        for (let i = 0; i < a.length; ++i) {
+            if (!a[i].equals(b[i]))
+                return false;
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function cleanUpSteps(bigSteps) {
+    // Condense small steps that do not change anything
+    const allSmallStepsCleaned = [];
+    for (let smallSteps of bigSteps) {
+        if (smallSteps.length > 0) {
+            const smallStepsCleaned = [smallSteps[0]];
+            for (let i = 1; i < smallSteps.length; ++i)
+                if (!charArraysEqual(last(smallStepsCleaned), smallSteps[i]))
+                    smallStepsCleaned.push(smallSteps[i]);
+            allSmallStepsCleaned.push(smallStepsCleaned);
+        }
+    }
+
+    // A big step that consists of only one small step that doesn't differ from the previous big step's last small step
+    // can be safely removed.
+    const bigStepsCleaned = [allSmallStepsCleaned[0]];
+    for (let i = 1; i < allSmallStepsCleaned.length; ++i) {
+        if (!(allSmallStepsCleaned[i].length === 1 && charArraysEqual(last(allSmallStepsCleaned[i - 1]), allSmallStepsCleaned[i][0])))
+            bigStepsCleaned.push(allSmallStepsCleaned[i]);
+    }
+    return bigStepsCleaned;
+}
+
 function getSteps(charArray) {
-    const last = array => array[array.length - 1];
+    const charArrays = [[charArray]];
+    charArrays.push(removeGarbage_n(last2(charArrays)));
+    charArrays.push(map32To33_n(last2(charArrays)));
+    charArrays.push(map23To33_n(last2(charArrays)));
+    charArrays.push(removeDuplicates_n(last2(charArrays)));
+    charArrays.push(replace2_n(last2(charArrays)));
+    charArrays.push(replace3_n(last2(charArrays)));
+    charArrays.push(convertBlankSymbolsToSpace_n(last2(charArrays)));
 
-    const charArrays = [charArray];
-    charArrays.push(...removeGarbage_n(last(charArrays)));
-    charArrays.push(...map32To33_n(last(charArrays)));
-    charArrays.push(...map23To33_n(last(charArrays)));
-    charArrays.push(...mergeDuplicates_n(last(charArrays)));
-    charArrays.push(...removeDuplicates_n(last(charArrays)));
-    charArrays.push(...replace2_n(last(charArrays)));
-    charArrays.push(...replace3_n(last(charArrays)));
-    charArrays.push(...convertBlankSymbolsToSpace_n(last(charArrays)));
-
-    return charArrays;
+    return cleanUpSteps(charArrays);
 }
 
 async function animateExit(d3ExitSelection, duration) {
@@ -245,6 +284,9 @@ async function animateStep(d3selection, duration, positionX, positionY, getPrevD
 
 class Animator {
     constructor(d3select, charArrays, positionX, positionY) {
+        assert(charArrays.length !== 0);
+        assert(charArrays[0].length === 1, "First set of states must only contain the single initial state.");
+        
         this._d3select = d3select;
         this._charArrays = charArrays;
         this._positionX = positionX;
@@ -254,7 +296,19 @@ class Animator {
         this._previousData = d3.local();
     }
 
-    async _step(charArray, duration) {
+    async _step_n_forward(charArrays, duration) {
+        for (let charArray of charArrays)
+            await this._step_1(charArray, duration);
+    }
+
+    async _step_n_backward(charArrays, duration) {
+        for (let i = charArrays.length - 1; i >= 0; --i)
+            await this._step_1(charArrays[i], duration);
+    }
+
+    async _step_1(charArray, duration) {
+        if (typeof duration === "undefined")
+            duration = 0;
         const d3selection = this._d3select()
             .each((d, i, nodes) => this._previousData.set(nodes[i], d))
             .data(charArray, c => c.key);
@@ -264,14 +318,15 @@ class Animator {
 
     async next(stepDuration) {
         if (!this.isLast) {
-            await this._step(this._charArrays[this.current + 1], stepDuration);
+            await this._step_n_forward(this._charArrays[this.current + 1], stepDuration);
             this._current += 1;
         }
     }
 
     async prev(stepDuration) {
         if (!this.isFirst) {
-            await this._step(this._charArrays[this.current - 1], stepDuration);
+            await this._step_n_backward(this._charArrays[this.current], stepDuration);
+            await this._step_1(last(this._charArrays[this.current - 1]), stepDuration);
             this._current -= 1;
         }
     }
@@ -363,6 +418,9 @@ class TextTransformationVisualizer {
         const {animator, element} = visualizeResult(charArray, this._options.cellWidth, this._options.fontSize);
         this._container.append(element);
         this._animator = animator;
+
+        // FIXME: do not store as a global reference!
+        global.animator = animator;
     }
 
     async autoplay() {
