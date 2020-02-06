@@ -193,6 +193,7 @@ class NetworkVisualizer {
     }
 
     goToFirst(animate) {
+        // FIXME: swiper refers to the global instance!
         if (animate)
             swiper.slideTo(swiper.slides.length - 1);
         else
@@ -200,6 +201,7 @@ class NetworkVisualizer {
     }
 
     goToLast(animate) {
+        // FIXME: swiper refers to the global instance!
         if (animate)
             swiper.slideTo(0);
         else
