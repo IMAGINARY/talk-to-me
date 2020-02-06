@@ -53,7 +53,7 @@ async function init() {
     });
     const samples = recorder.samples;
 
-    const $resultViz = $("#result-viz");
+    const $textTransformationViz = $("#text-transformation-viz");
     const $decodingViz = $("#decoding-viz");
     const $networkViz = $("#network-viz");
     const $spectrogramViz = $("#spectrogram-viz");
@@ -71,13 +71,13 @@ async function init() {
     const waveformVisualizer = new WaveformVisualizer($waveformCanvas.get(0), samples);
     const $spectrogramCanvasContainer = $('#spectrogram-viz .canvas-container');
     const $decodingContainer = $('#decoding-viz .decoding-container');
-    const $resultContainer = $('#result-viz .result-container');
+    const $textTransformationContainer = $('#text-transformation-viz .text-transformation-container');
     const networkVisualizer = new NetworkVisualizer(
         document.querySelector('#network-viz .network-container'),
         {cellSize: LETTER_CELL_SIZE}
     );
     const textTransformationVisualizer = new TextTransformationVisualizer(
-        document.querySelector('#result-viz .result-container'),
+        document.querySelector('#text-transformation-viz .text-transformation-container'),
         {cellSize: LETTER_CELL_SIZE, fontSize: FONT_SIZE}
     );
 
@@ -188,7 +188,7 @@ async function init() {
             $networkViz.show();
             networkVisualizer.goToLast(false);
             $decodingViz.show();
-            $resultViz.show();
+            $textTransformationViz.show();
             textTransformationVisualizer.goToLast(false);
         } else {
             const animDurationMs = 500;
@@ -225,7 +225,7 @@ async function init() {
         $decodingContainer.empty();
         textTransformationVisualizer.clear();
 
-        $resultViz.hide();
+        $textTransformationViz.hide();
         $decodingViz.hide();
         $networkViz.hide();
         $spectrogramViz.hide();
