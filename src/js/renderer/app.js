@@ -312,6 +312,7 @@ async function init() {
         await i18next.changeLanguage(lang);
         const t = i18next.getFixedT(null, 'frontend');
         const elemsToLocalize = [
+            {querySelector: "#text-transformation-viz .explanation", key: "short-expl.textTransformation"},
             {querySelector: "#decoding-viz .explanation", key: "short-expl.decoder"},
             {querySelector: "#network-viz .explanation", key: "short-expl.network"},
             {querySelector: "#spectrogram-viz .explanation", key: "short-expl.spectrogram"},
