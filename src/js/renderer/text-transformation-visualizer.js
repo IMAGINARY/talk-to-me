@@ -286,14 +286,19 @@ class Animator {
     constructor(d3select, charArrays, positionX, positionY) {
         assert(charArrays.length !== 0);
         assert(charArrays[0].length === 1, "First set of states must only contain the single initial state.");
-        
+
         this._d3select = d3select;
         this._charArrays = charArrays;
         this._positionX = positionX;
         this._positionY = positionY;
         this._current = 0;
+        this._target = 0;
 
         this._previousData = d3.local();
+
+        this._duration = 0;
+        this._animating = false;
+        this._animationPromise = Promise.resolve();
     }
 
     async _step_n_forward(charArrays, duration) {
@@ -317,28 +322,52 @@ class Animator {
     }
 
     async next(stepDuration) {
-        if (!this.isLast) {
-            await this._step_n_forward(this._charArrays[this.current + 1], stepDuration);
-            this._current += 1;
-        }
+        this.goTo(this._target + 1, stepDuration);
     }
 
     async prev(stepDuration) {
-        if (!this.isFirst) {
-            await this._step_n_backward(this._charArrays[this.current], stepDuration);
-            await this._step_1(last(this._charArrays[this.current - 1]), stepDuration);
+        this.goTo(this._target - 1, stepDuration);
+    }
+
+    async _moveOneBigStepTowardsTarget() {
+        if (this._current < this._target) {
+            // step forward
+            this._current += 1;
+            await this._step_n_forward(this._charArrays[this.current], this._duration);
+        } else if (this._current > this._target) {
+            // step backward
             this._current -= 1;
+            await this._step_n_backward(this._charArrays[this.current + 1], this._duration);
+            await this._step_1(last(this._charArrays[this.current]), this._duration);
+        } else {
+            // current === target, do nothing
+        }
+    }
+
+    async _moveTowardsTarget() {
+        while (this._current !== this._target)
+            await this._moveOneBigStepTowardsTarget();
+    }
+
+    async goTo(target, stepDuration) {
+        this._target = Math.min(Math.max(0, target), this.steps - 1);
+        this._duration = typeof stepDuration === "undefined" ? 0 : stepDuration;
+        if (!this._animating) {
+            this._animating = true;
+            this._animationPromise = this._moveTowardsTarget();
+            await this._animationPromise;
+            this._animating = false;
+        } else {
+            this.wait();
         }
     }
 
     async first(stepDuration) {
-        while (!this.isFirst)
-            await this.prev(stepDuration);
+        await this.goTo(0, stepDuration);
     }
 
     async last(stepDuration) {
-        while (!this.isLast)
-            await this.next(stepDuration);
+        await this.goTo(this.steps - 1, stepDuration);
     }
 
     get isFirst() {
@@ -353,8 +382,20 @@ class Animator {
         return this._current;
     }
 
+    get target() {
+        return this._target;
+    }
+
     get steps() {
         return this._charArrays.length;
+    }
+
+    get isAnimating() {
+        return this._animating;
+    }
+
+    async wait() {
+        await this._animationPromise;
     }
 }
 
