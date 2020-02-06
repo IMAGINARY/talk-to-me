@@ -18,6 +18,7 @@ const MicrophoneFilterNode = require("./microphone-filter-node.js");
 const Recorder = require("./recorder.js");
 const WaveformVisualizer = require("./waveform-visualizer.js");
 const visualizeDecoding = require("./decoding-visualizer.js");
+const TextTransformationVisualizer = require("./text-transformation-visualizer.js");
 const NetworkVisualizer = require("./network-visualizer.js");
 
 const SAMPLE_RATE = 16000;
@@ -52,6 +53,7 @@ async function init() {
     });
     const samples = recorder.samples;
 
+    const $textTransformationViz = $("#text-transformation-viz");
     const $decodingViz = $("#decoding-viz");
     const $networkViz = $("#network-viz");
     const $spectrogramViz = $("#spectrogram-viz");
@@ -61,14 +63,22 @@ async function init() {
     const LETTER_CELL_SIZE = Number(getComputedStyle(document.documentElement)
         .getPropertyValue('--cell-size')
         .replace(/px$/, ""));
+    const FONT_SIZE = Number(getComputedStyle(document.documentElement)
+        .getPropertyValue('--viz-font-size')
+        .replace(/px$/, ""));
     const $waveformCanvas = $('#waveform-canvas');
     $waveformCanvas.attr("width", LETTER_CELL_SIZE * W2L_OUTPUT_LENGTH);
     const waveformVisualizer = new WaveformVisualizer($waveformCanvas.get(0), samples);
     const $spectrogramCanvasContainer = $('#spectrogram-viz .canvas-container');
-    const $transcriptionContainer = $('#decoding-viz .decoding-container');
+    const $decodingContainer = $('#decoding-viz .decoding-container');
+    const $textTransformationContainer = $('#text-transformation-viz .text-transformation-container');
     const networkVisualizer = new NetworkVisualizer(
         document.querySelector('#network-viz .network-container'),
         {cellSize: LETTER_CELL_SIZE}
+    );
+    const textTransformationVisualizer = new TextTransformationVisualizer(
+        document.querySelector('#text-transformation-viz .text-transformation-container'),
+        {cellSize: LETTER_CELL_SIZE, fontSize: FONT_SIZE}
     );
 
     //setInterval(() => networkVisualizer.currentLayer = (networkVisualizer.currentLayer + 1) % networkVisualizer.layers.length, 1000);
@@ -131,6 +141,7 @@ async function init() {
         window.predictionExt.letters = toUpperCase(window.predictionExt.letters);
 
         // briefly show the viz containers to allow certain layout calculations
+        $textTransformationViz.hide();
         $decodingViz.show();
         $networkViz.show();
         $spectrogramViz.show();
@@ -144,7 +155,6 @@ async function init() {
         $spectrogramCanvasContainer.empty();
         $spectrogramCanvasContainer.append(spectrogramCanvas);
 
-        const fontSizePx = 16;
         const numBest = 4;
         const decodedPredictionExt = decodePredictionExt(window.predictionExt);
         const decoderSvg = visualizeDecoding(
@@ -153,10 +163,10 @@ async function init() {
             decodedPredictionExt.alphabet,
             numBest,
             LETTER_CELL_SIZE,
-            fontSizePx,
+            FONT_SIZE,
         );
-        $transcriptionContainer.empty();
-        $transcriptionContainer.append(decoderSvg);
+        $decodingContainer.empty();
+        $decodingContainer.append(decoderSvg);
 
         let timeSlot = 0;
         for (let t = decodedPredictionExt.indices.shape[0] - 1; t >= 0; --t) {
@@ -167,8 +177,10 @@ async function init() {
         }
 
         networkVisualizer.setLayers(predictionExt.layers, window.predictionExt.letters);
+        textTransformationVisualizer.setRaw(decodedPredictionExt.indices, decodedPredictionExt.alphabet);
 
         // hide the viz containers before starting animations
+        $textTransformationViz.hide();
         $decodingViz.hide();
         $networkViz.hide();
         $spectrogramViz.hide();
@@ -178,6 +190,8 @@ async function init() {
             $networkViz.show();
             networkVisualizer.goToLast(false);
             $decodingViz.show();
+            $textTransformationViz.show();
+            textTransformationVisualizer.goToLast(false);
         } else {
             const animDurationMs = 500;
             const delayMs = 2000;
@@ -187,9 +201,12 @@ async function init() {
             aq.push(slideDown($spectrogramViz));
             aq.push(delayAnim);
             aq.push(slideDown($networkViz));
-            aq.push(() => networkVisualizer.autoplay());
+            aq.push(async () => await networkVisualizer.autoplay());
             aq.push(delayAnim);
             aq.push(slideDown($decodingViz));
+            aq.push(delayAnim);
+            aq.push(slideDown($textTransformationViz));
+            aq.push(async () => await textTransformationVisualizer.autoplay());
             aq.play();
         }
 
@@ -206,9 +223,11 @@ async function init() {
 
         samples.clear();
         $spectrogramCanvasContainer.empty();
-        $transcriptionContainer.empty();
         networkVisualizer.clear();
+        $decodingContainer.empty();
+        textTransformationVisualizer.clear();
 
+        $textTransformationViz.hide();
         $decodingViz.hide();
         $networkViz.hide();
         $spectrogramViz.hide();
