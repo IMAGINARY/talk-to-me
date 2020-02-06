@@ -12,6 +12,7 @@ const wav2letter = require("../common/wav2letter/wav2letter.js");
 const {toUpperCase} = require("../common/util/string-utils.js");
 const ImageUtils = require('../common/util/image-utils.js');
 
+const isPackaged = require('../common/is-packaged.js');
 const loadAudioFile = require("./loadAudioFile.js");
 
 const MicrophoneFilterNode = require("./microphone-filter-node.js");
@@ -84,7 +85,9 @@ async function init() {
     //setInterval(() => networkVisualizer.currentLayer = (networkVisualizer.currentLayer + 1) % networkVisualizer.layers.length, 1000);
 
     async function loadDemoAudio() {
-        const demoAudioBuffer = await loadAudioFile(audioContext, new URL('../../audio/helloiamai_16kHz_16bit_short.wav', window.location.href));
+        const audioBaseUrl = new URL(isPackaged() ? "../../../audio/" : "../../audio/", window.location.href);
+        const audioUrl = new URL('helloiamai_16kHz_16bit_short.wav', audioBaseUrl);
+        const demoAudioBuffer = await loadAudioFile(audioContext, audioUrl);
         recorder.recordFromBuffer(demoAudioBuffer);
     }
 

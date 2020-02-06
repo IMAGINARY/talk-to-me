@@ -6,16 +6,10 @@ const ndarray = require("ndarray")
 
 const melFilter = require('./mel-filter.js');
 
+const isPackaged = require('../is-packaged.js');
+
 function getModuleBaseDir() {
-    const isPackaged = (() => {
-        try {
-            return require("electron").app.isPackaged;
-        } catch (err) {
-            // there is no electron module
-            return false;
-        }
-    })();
-    return path.resolve(__dirname, isPackaged ? "../../../../../models" : "../../../../models");
+    return path.resolve(__dirname, isPackaged() ? "../../../../../models" : "../../../../models");
 }
 
 const modelBaseDir = getModuleBaseDir();

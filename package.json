@@ -60,7 +60,10 @@
     "extraResources": [
       "models/**/*",
       "!models/**/*.dvc",
-      "!models/**/.gitignore"
+      "!models/**/.gitignore",
+      "audio/**/*",
+      "!audio/**/*.dvc",
+      "!audio/**/.gitignore"
     ],
     "linux": {
       "executableName": "talk-to-me",
