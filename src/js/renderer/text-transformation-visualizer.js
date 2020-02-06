@@ -243,34 +243,63 @@ async function animateStep(d3selection, duration, positionX, positionY, getPrevD
     await enterPromise;
 }
 
-async function animate(d3select, positionX, positionY) {
-    // compute the data set for each animation step
-    const charArrays = getSteps(d3select().data());
-    const charArraysRev = [...charArrays].reverse();
+class Animator {
+    constructor(d3select, charArrays, positionX, positionY) {
+        this._d3select = d3select;
+        this._charArrays = charArrays;
+        this._positionX = positionX;
+        this._positionY = positionY;
+        this._current = 0;
 
-    // animate
-    // Create a local variable for storing previous data.
-    const previousData = d3.local();
+        this._previousData = d3.local();
+    }
 
-    const next = async (charArray, duration) => {
-        const d3selection = d3select()
-            .each((d, i, nodes) => previousData.set(nodes[i], d))
+    async _step(charArray, duration) {
+        const d3selection = this._d3select()
+            .each((d, i, nodes) => this._previousData.set(nodes[i], d))
             .data(charArray, c => c.key);
 
-        await animateStep(d3selection, duration, positionX, positionY, node => previousData.get(node));
-    };
+        await animateStep(d3selection, duration, this._positionX, this._positionY, node => this._previousData.get(node));
+    }
 
-    const forwardDelay = 4000;
-    const backwardDelay = 4000;
-    const forwardDuration = 2000;
-    const backwardDuration = 200;
-    while (true) {
-        await d3.select({}).transition().delay(forwardDelay).end();
-        for (let charArray of charArrays)
-            await next(charArray, forwardDuration);
-        await d3.select({}).transition().delay(backwardDelay).end();
-        for (let charArray of charArraysRev)
-            await next(charArray, backwardDuration);
+    async next(stepDuration) {
+        if (!this.isLast) {
+            await this._step(this._charArrays[this.current + 1], stepDuration);
+            this._current += 1;
+        }
+    }
+
+    async prev(stepDuration) {
+        if (!this.isFirst) {
+            await this._step(this._charArrays[this.current - 1], stepDuration);
+            this._current -= 1;
+        }
+    }
+
+    async first(stepDuration) {
+        while (!this.isFirst)
+            await this.prev(stepDuration);
+    }
+
+    async last(stepDuration) {
+        while (!this.isLast)
+            await this.next(stepDuration);
+    }
+
+    get isFirst() {
+        return this.current === 0;
+    }
+
+    get isLast() {
+        return this.current === this.steps - 1;
+    }
+
+    get current() {
+        return this._current;
+    }
+
+    get steps() {
+        return this._charArrays.length;
     }
 }
 
@@ -308,10 +337,10 @@ function visualizeResult(charArray, cellWidth, fontSizePx) {
         })
         .text(c => c.char);
 
-    animate(d3select, positionX, positionY)
-        .then(); // jslint gets angry otherwise
-
-    return svg.node();
+    return {
+        element: svg.node(),
+        animator: new Animator(d3select, getSteps(charArray), positionX, positionY),
+    };
 }
 
 class TextTransformationVisualizer {
@@ -319,6 +348,7 @@ class TextTransformationVisualizer {
         this._parent = domElement;
         this._container = document.createElement('div');
         this._parent.append(this._container);
+        this._animator = null;
 
         const defaultOptions = {
             cellWidth: 11,
@@ -330,8 +360,24 @@ class TextTransformationVisualizer {
     setText(string) {
         const charArray = convertStringToCharArray(string);
         this.clear();
-        const svg = visualizeResult(charArray, this._options.cellWidth, this._options.fontSize);
-        this._container.append(svg);
+        const {animator, element} = visualizeResult(charArray, this._options.cellWidth, this._options.fontSize);
+        this._container.append(element);
+        this._animator = animator;
+    }
+
+    async autoplay() {
+        if (this._animator !== null)
+            await this._animator.last(1000);
+    }
+
+    async goToFirst(animate) {
+        if (this._animator !== null)
+            await this._animator.first(animate ? 1000 : 0);
+    }
+
+    async goToLast(animate) {
+        if (this._animator !== null)
+            await this._animator.last(animate ? 1000 : 0);
     }
 
     setRaw(indices, alphabet) {
@@ -340,6 +386,7 @@ class TextTransformationVisualizer {
 
     clear() {
         $(this._container).empty();
+        this._animator = null;
     }
 }
 

@@ -189,6 +189,7 @@ async function init() {
             networkVisualizer.goToLast(false);
             $decodingViz.show();
             $resultViz.show();
+            textTransformationVisualizer.goToLast(false);
         } else {
             const animDurationMs = 500;
             const delayMs = 2000;
@@ -203,6 +204,7 @@ async function init() {
             aq.push(slideDown($decodingViz));
             aq.push(delayAnim);
             aq.push(slideDown($resultViz));
+            aq.push(() => textTransformationVisualizer.autoplay());
             aq.play();
         }
 
