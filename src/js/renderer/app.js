@@ -18,7 +18,7 @@ const MicrophoneFilterNode = require("./microphone-filter-node.js");
 const Recorder = require("./recorder.js");
 const WaveformVisualizer = require("./waveform-visualizer.js");
 const visualizeDecoding = require("./decoding-visualizer.js");
-const visualizeResult = require("./text-transformation-visualizer.js");
+const TextTransformationVisualizer = require("./text-transformation-visualizer.js");
 const NetworkVisualizer = require("./network-visualizer.js");
 
 const SAMPLE_RATE = 16000;
@@ -63,6 +63,9 @@ async function init() {
     const LETTER_CELL_SIZE = Number(getComputedStyle(document.documentElement)
         .getPropertyValue('--cell-size')
         .replace(/px$/, ""));
+    const FONT_SIZE = Number(getComputedStyle(document.documentElement)
+        .getPropertyValue('--viz-font-size')
+        .replace(/px$/, ""));
     const $waveformCanvas = $('#waveform-canvas');
     $waveformCanvas.attr("width", LETTER_CELL_SIZE * W2L_OUTPUT_LENGTH);
     const waveformVisualizer = new WaveformVisualizer($waveformCanvas.get(0), samples);
@@ -72,6 +75,10 @@ async function init() {
     const networkVisualizer = new NetworkVisualizer(
         document.querySelector('#network-viz .network-container'),
         {cellSize: LETTER_CELL_SIZE}
+    );
+    const textTransformationVisualizer = new TextTransformationVisualizer(
+        document.querySelector('#result-viz .result-container'),
+        {cellSize: LETTER_CELL_SIZE, fontSize: FONT_SIZE}
     );
 
     //setInterval(() => networkVisualizer.currentLayer = (networkVisualizer.currentLayer + 1) % networkVisualizer.layers.length, 1000);
@@ -147,7 +154,6 @@ async function init() {
         $spectrogramCanvasContainer.empty();
         $spectrogramCanvasContainer.append(spectrogramCanvas);
 
-        const fontSizePx = 16;
         const numBest = 4;
         const decodedPredictionExt = decodePredictionExt(window.predictionExt);
         const decoderSvg = visualizeDecoding(
@@ -156,7 +162,7 @@ async function init() {
             decodedPredictionExt.alphabet,
             numBest,
             LETTER_CELL_SIZE,
-            fontSizePx,
+            FONT_SIZE,
         );
         $decodingContainer.empty();
         $decodingContainer.append(decoderSvg);
@@ -170,15 +176,7 @@ async function init() {
         }
 
         networkVisualizer.setLayers(predictionExt.layers, window.predictionExt.letters);
-
-        const resultSvg = visualizeResult(
-            decodedPredictionExt.indices,
-            decodedPredictionExt.alphabet,
-            LETTER_CELL_SIZE,
-            fontSizePx,
-        );
-        $resultContainer.empty();
-        $resultContainer.append(resultSvg);
+        textTransformationVisualizer.setRaw(decodedPredictionExt.indices, decodedPredictionExt.alphabet);
 
         // hide the viz containers before starting animations
         $decodingViz.hide();
@@ -221,10 +219,11 @@ async function init() {
 
         samples.clear();
         $spectrogramCanvasContainer.empty();
-        $decodingContainer.empty();
-        $resultContainer.empty();
         networkVisualizer.clear();
+        $decodingContainer.empty();
+        textTransformationVisualizer.clear();
 
+        $resultViz.hide();
         $decodingViz.hide();
         $networkViz.hide();
         $spectrogramViz.hide();

@@ -1,7 +1,7 @@
+const $ = require('jquery');
 const d3 = require('d3');
 require('d3-selection-multi');
 require('d3-transition');
-
 
 class Char {
     static _lastKey = -1;
@@ -274,13 +274,9 @@ async function animate(d3select, positionX, positionY) {
     }
 }
 
-function visualizeResult(indices, alphabet, cellWidth, fontSizePx) {
-    // TODO: Adjust font sizes relative to cellSize
-    const string = convertRawToString(indices, alphabet);
-    const charArray = convertStringToCharArray(string);
-
+function visualizeResult(charArray, cellWidth, fontSizePx) {
     const margin = {top: 1, right: cellWidth, bottom: 1, left: cellWidth},
-        width = indices.shape[0] * cellWidth,
+        width = charArray.length * cellWidth,
         height = fontSizePx,
         totalWidth = width + margin.left + margin.right,
         totalHeight = height + margin.top + margin.bottom;
@@ -294,7 +290,7 @@ function visualizeResult(indices, alphabet, cellWidth, fontSizePx) {
         .attr("transform", `translate(${cellWidth},1)`);
 
     const lineHeight = fontSizePx;
-    const charWidth = width / indices.shape[0];
+    const charWidth = width / charArray.length;
 
     const d3select = () => diagram.selectAll("text");
     const positionX = c => (c.position + 0.5) * charWidth;
@@ -318,4 +314,33 @@ function visualizeResult(indices, alphabet, cellWidth, fontSizePx) {
     return svg.node();
 }
 
-module.exports = visualizeResult;
+class TextTransformationVisualizer {
+    constructor(domElement, options) {
+        this._parent = domElement;
+        this._container = document.createElement('div');
+        this._parent.append(this._container);
+
+        const defaultOptions = {
+            cellWidth: 11,
+            fontSize: 16,
+        };
+        this._options = Object.assign(defaultOptions, options);
+    }
+
+    setText(string) {
+        const charArray = convertStringToCharArray(string);
+        this.clear();
+        const svg = visualizeResult(charArray, this._options.cellWidth, this._options.fontSize);
+        this._container.append(svg);
+    }
+
+    setRaw(indices, alphabet) {
+        this.setText(convertRawToString(indices, alphabet));
+    }
+
+    clear() {
+        $(this._container).empty();
+    }
+}
+
+module.exports = TextTransformationVisualizer;

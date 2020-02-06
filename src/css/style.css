@@ -6,6 +6,7 @@
     --controls-separator-color: #000000;
     --main-padding: 20px;
     --cell-size: 11px;
+    --viz-font-size: 16px;
 }
 
 * {
@@ -269,6 +270,6 @@ svg.letter-probability-viz text.letters {
 }
 
 svg.decoding-viz text {
-    font-size: 16px;
+    font-size: var(--viz-font-size);
     fill: black;
 }
