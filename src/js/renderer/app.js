@@ -141,6 +141,7 @@ async function init() {
         window.predictionExt.letters = toUpperCase(window.predictionExt.letters);
 
         // briefly show the viz containers to allow certain layout calculations
+        $textTransformationViz.hide();
         $decodingViz.show();
         $networkViz.show();
         $spectrogramViz.show();
@@ -179,6 +180,7 @@ async function init() {
         textTransformationVisualizer.setRaw(decodedPredictionExt.indices, decodedPredictionExt.alphabet);
 
         // hide the viz containers before starting animations
+        $textTransformationViz.hide();
         $decodingViz.hide();
         $networkViz.hide();
         $spectrogramViz.hide();
@@ -199,12 +201,12 @@ async function init() {
             aq.push(slideDown($spectrogramViz));
             aq.push(delayAnim);
             aq.push(slideDown($networkViz));
-            aq.push(() => networkVisualizer.autoplay());
+            aq.push(async () => await networkVisualizer.autoplay());
             aq.push(delayAnim);
             aq.push(slideDown($decodingViz));
             aq.push(delayAnim);
-            aq.push(slideDown($resultViz));
-            aq.push(() => textTransformationVisualizer.autoplay());
+            aq.push(slideDown($textTransformationViz));
+            aq.push(async () => await textTransformationVisualizer.autoplay());
             aq.play();
         }
 
