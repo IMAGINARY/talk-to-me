@@ -44,10 +44,11 @@ async function argv() {
             default: false,
             description: t('description.demo'),
         })
-        .option('disable-animations', {
+        .option('turbo', {
+            alias: 't',
             type: 'boolean',
             default: false,
-            description: t('description.disableAnimations'),
+            description: t('description.turbo'),
         })
         .version()
         .parse(processArgv);

@@ -196,7 +196,7 @@ async function init() {
         $networkViz.hide();
         $spectrogramViz.hide();
 
-        if (argv.disableAnimations) {
+        if (argv.turbo) {
             $spectrogramViz.show();
             $networkViz.show();
             networkVisualizer.goToLast(false);

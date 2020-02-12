@@ -4,6 +4,6 @@
     "kiosk": "Run in kiosk mode. Caution: It might be difficult to quit the app.",
     "menu": "Enable a menu and certain shortcuts useful for debugging.",
     "demo": "Load a demo audio file.",
-    "disableAnimations": "Disable animations."
+    "turbo": "Speed up respectively disable animations."
   }
 }
