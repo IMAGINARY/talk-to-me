@@ -5,7 +5,6 @@ const cli = require('../common/cli.js');
 
 function createWindow(argv) {
     const options = {
-        fullscreen: argv.fullscreen !== false,
         width: 1280,
         height: 720,
         useContentSize: true,
@@ -15,7 +14,11 @@ function createWindow(argv) {
         }
     };
 
+    if (argv.fullscreen === true)
+        options.fullscreen = true;
+
     if (typeof argv.fullscreen === "number") {
+        options.fullscreen = true;
         const displays = screen.getAllDisplays();
         const display = displays[Math.min(Math.max(0, argv.fullscreen), displays.length - 1)];
         const bounds = display.bounds;
