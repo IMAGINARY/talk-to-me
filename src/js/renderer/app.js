@@ -8,6 +8,7 @@ const IdleDetector = require('./idle-detector.js');
 const AutoViewport = require('./auto-viewport.js');
 
 const $ = require('jquery');
+const Hammer = require('hammerjs');
 
 const wav2letter = require("../common/wav2letter/wav2letter.js");
 const {toUpperCase} = require("../common/util/string-utils.js");
@@ -242,8 +243,8 @@ async function init() {
         $networkViz.hide();
         $spectrogramViz.hide();
 
-        untoggleButton(recordButton);
-        untoggleButton(playButton);
+        untoggleButton($recordButton);
+        untoggleButton($playButton);
 
         // TODO: wrap into module
         $("#cursor").hide();
@@ -275,33 +276,33 @@ async function init() {
         $vizContainer.unbind('pointermove');
     });
 
-    const recordButton = $("#record-button");
-    const playButton = $("#play-button");
-    const restartButton = $("#restart-button");
+    const $recordButton = $("#record-button");
+    const $playButton = $("#play-button");
+    const $restartButton = $("#restart-button");
 
     function untoggleButton($button) {
         if ($button.hasClass('active'))
             $button.button('toggle');
     }
 
-    playButton.hide();
+    $playButton.hide();
 
     samples.on('full', () => {
-        recordButton.hide();
-        playButton.show();
+        $recordButton.hide();
+        $playButton.show();
     });
     samples.on('empty', () => {
-        untoggleButton(recordButton);
-        untoggleButton(playButton);
-        playButton.hide();
-        recordButton.show();
+        untoggleButton($recordButton);
+        untoggleButton($playButton);
+        $playButton.hide();
+        $recordButton.show();
     });
-    recorder.on('recording-stopped', () => recordButton.button('toggle'));
-    recorder.on('playback-stopped', () => playButton.button('toggle'));
+    recorder.on('recording-stopped', () => $recordButton.button('toggle'));
+    recorder.on('playback-stopped', () => $playButton.button('toggle'));
 
-    recordButton.on('click', () => recorder.startRecording());
-    playButton.on('click', () => recorder.startPlayback());
-    restartButton.on('click', reset);
+    $recordButton.each((i, e) => new Hammer(e).on('tap', () => recorder.startRecording()));
+    $playButton.each((i, e) => new Hammer(e).on('tap', () => recorder.startPlayback()));
+    $restartButton.each((i, e) => new Hammer(e).on('tap', reset));
 
     function addSupportedLanguages() {
         for (let l of supportedLanguages) {
@@ -330,11 +331,12 @@ async function init() {
     }
 
     addSupportedLanguages();
-    $("#language-selector > a").on('click', e => {
-        const newLanguage = e.currentTarget.getAttribute("data-lang");
+    const $languageButtons = $("#language-selector > a");
+    $languageButtons.each((i, e) => new Hammer(e).on('tap', () => {
+        const newLanguage = e.getAttribute("data-lang");
         if (newLanguage !== i18next.language)
             setLanguage(newLanguage);
-    });
+    }));
     setLanguage(i18next.language);
 
     reset();
