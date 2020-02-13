@@ -15,7 +15,7 @@ const {toUpperCase} = require("../common/util/string-utils.js");
 const ImageUtils = require('../common/util/image-utils.js');
 
 const isPackaged = require('../common/is-packaged.js');
-const loadAudioFile = require("./loadAudioFile.js");
+const loadAudioFile = require("./load-audio-file.js");
 
 const MicrophoneFilterNode = require("./microphone-filter-node.js");
 const Recorder = require("./recorder.js");
