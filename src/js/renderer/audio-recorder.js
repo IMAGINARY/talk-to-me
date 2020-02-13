@@ -2,7 +2,7 @@ const assert = require('assert');
 const EventEmitter = require('events');
 const FixedSizeBuffer = require("../common/util/FixedSizeBuffer.js");
 
-class Recorder extends EventEmitter {
+class AudioRecorder extends EventEmitter {
     _setState(newState) {
         if (this.state !== newState) {
             const oldState = this.state;
@@ -25,7 +25,7 @@ class Recorder extends EventEmitter {
 
         // properly restart recording if buffer is emptied while recording
         this._samples.on('empty', () => {
-            if (this.state === Recorder.states.RECORDING) {
+            if (this.state === AudioRecorder.states.RECORDING) {
                 this.startRecording();
             }
         });
@@ -34,7 +34,7 @@ class Recorder extends EventEmitter {
         this._destination = options.destination;
 
         this._appendAudioData = e => {
-            if (this._state === Recorder.states.RECORDING)
+            if (this._state === AudioRecorder.states.RECORDING)
                 this._samples.push(e.inputBuffer.getChannelData(0));
         };
         this._processor = this._audioContext.createScriptProcessor(1024, 1, 1);
@@ -43,7 +43,7 @@ class Recorder extends EventEmitter {
         this._source.connect(this._processor);
         this._processor.connect(this._audioContext.destination);
 
-        this._state = Recorder.states.IDLE;
+        this._state = AudioRecorder.states.IDLE;
     }
 
     get state() {
@@ -69,9 +69,9 @@ class Recorder extends EventEmitter {
     startRecording() {
         this.stopRecording();
 
-        assert(this.state === Recorder.states.IDLE);
+        assert(this.state === AudioRecorder.states.IDLE);
 
-        this._setState(Recorder.states.RECORDING);
+        this._setState(AudioRecorder.states.RECORDING);
         this.emit('recording-started');
     }
 
@@ -85,8 +85,8 @@ class Recorder extends EventEmitter {
     }
 
     stopRecording() {
-        if (this.state === Recorder.states.RECORDING) {
-            this._setState(Recorder.states.IDLE);
+        if (this.state === AudioRecorder.states.RECORDING) {
+            this._setState(AudioRecorder.states.IDLE);
             this.emit("recording-stopped");
         }
     }
@@ -106,10 +106,10 @@ class Recorder extends EventEmitter {
     }
 }
 
-Recorder.states = {
+AudioRecorder.states = {
     "IDLE": 0,
     "RECORDING": 1,
 };
-Object.freeze(Recorder.states);
+Object.freeze(AudioRecorder.states);
 
-module.exports = Recorder;
+module.exports = AudioRecorder;

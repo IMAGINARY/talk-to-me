@@ -18,7 +18,7 @@ const isPackaged = require('../common/is-packaged.js');
 const loadAudioFile = require("./load-audio-file.js");
 
 const MicrophoneFilterNode = require("./microphone-filter-node.js");
-const Recorder = require("./recorder.js");
+const AudioRecorder = require("./audio-recorder.js");
 const AudioPlayer = require("./audio-player.js");
 const WaveformVisualizer = require("./waveform-visualizer.js");
 const visualizeDecoding = require("./decoding-visualizer.js");
@@ -51,11 +51,11 @@ async function init() {
     idleDetector.setTimeout(reset, idleTimeoutMs);
 
     const audioContext = new AudioContext({sampleRate: SAMPLE_RATE});
-    const micInputNode = await Recorder.getMicrophoneAudioSource(audioContext);
+    const micInputNode = await AudioRecorder.getMicrophoneAudioSource(audioContext);
     const recorderInputNode = new MicrophoneFilterNode(audioContext, {bypass: true});
     micInputNode.connect(recorderInputNode);
 
-    const recorder = new Recorder({
+    const recorder = new AudioRecorder({
         audioContext: audioContext,
         source: recorderInputNode,
         destination: audioContext.destination,
