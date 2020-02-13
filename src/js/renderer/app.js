@@ -19,6 +19,7 @@ const loadAudioFile = require("./load-audio-file.js");
 
 const MicrophoneFilterNode = require("./microphone-filter-node.js");
 const Recorder = require("./recorder.js");
+const AudioPlayer = require("./audio-player.js");
 const WaveformVisualizer = require("./waveform-visualizer.js");
 const visualizeDecoding = require("./decoding-visualizer.js");
 const TextTransformationVisualizer = require("./text-transformation-visualizer.js");
@@ -60,6 +61,7 @@ async function init() {
         destination: audioContext.destination,
         duration: AUDIO_DURATION_SEC * 1000,
     });
+    const audioPlayer = new AudioPlayer(audioContext.destination, recorder.audioBuffer);
     const samples = recorder.samples;
 
     const $textTransformationViz = $("#text-transformation-viz");
@@ -228,7 +230,7 @@ async function init() {
 
     function reset() {
         recorder.stopRecording();
-        recorder.stopPlayback();
+        audioPlayer.stop();
 
         aq.clear();
 
@@ -298,10 +300,11 @@ async function init() {
         $recordButton.show();
     });
     recorder.on('recording-stopped', () => $recordButton.button('toggle'));
-    recorder.on('playback-stopped', () => $playButton.button('toggle'));
+    audioPlayer.on('ended', () => $playButton.button('toggle'));
+    audioPlayer.on('paused', () => $playButton.button('toggle'));
 
     $recordButton.each((i, e) => new Hammer(e).on('tap', () => recorder.startRecording()));
-    $playButton.each((i, e) => new Hammer(e).on('tap', () => recorder.startPlayback()));
+    $playButton.each((i, e) => new Hammer(e).on('tap', () => audioPlayer.play()));
     $restartButton.each((i, e) => new Hammer(e).on('tap', reset));
 
     function addSupportedLanguages() {
