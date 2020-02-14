@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
 
-class AudioPlayer extends EventEmitter {
+class AudioPlayerNode extends EventEmitter {
     constructor(context, options) {
         super();
 
@@ -118,7 +118,7 @@ class AudioPlayer extends EventEmitter {
 // Inject the new class into AudioContext prototype.
 AudioContext.prototype.createAudioPlayerNode =
     OfflineAudioContext.prototype.createAudioPlayerNode = function (options) {
-        return new AudioPlayer(this, options);
+        return new AudioPlayerNode(this, options);
     };
 
-module.exports = AudioPlayer;
+module.exports = AudioPlayerNode;

@@ -19,7 +19,7 @@ const loadAudioFile = require("./load-audio-file.js");
 
 const MicrophoneFilterNode = require("./microphone-filter-node.js");
 const AudioRecorder = require("./audio-recorder.js");
-const AudioPlayer = require("./audio-player.js");
+const AudioPlayerNode = require("./audio-player-node.js");
 const WaveformVisualizer = require("./waveform-visualizer.js");
 const visualizeDecoding = require("./decoding-visualizer.js");
 const TextTransformationVisualizer = require("./text-transformation-visualizer.js");
@@ -61,7 +61,7 @@ async function init() {
         destination: audioContext.destination,
         duration: AUDIO_DURATION_SEC * 1000,
     });
-    const audioPlayer = new AudioPlayer(audioContext, {audioBuffer: recorder.audioBuffer});
+    const audioPlayer = new AudioPlayerNode(audioContext, {audioBuffer: recorder.audioBuffer});
     audioPlayer.connect(audioContext.destination);
     const samples = recorder.samples;
 
