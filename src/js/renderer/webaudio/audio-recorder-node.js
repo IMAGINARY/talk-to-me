@@ -1,6 +1,6 @@
 const assert = require('assert');
 const EventEmitter = require('events');
-const FixedSizeBuffer = require("../common/util/FixedSizeBuffer.js");
+const FixedSizeBuffer = require("../../common/util/FixedSizeBuffer.js");
 
 class AudioRecorderNode extends EventEmitter {
     _setState(newState) {

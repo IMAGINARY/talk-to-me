@@ -15,11 +15,11 @@ const {toUpperCase} = require("../common/util/string-utils.js");
 const ImageUtils = require('../common/util/image-utils.js');
 
 const isPackaged = require('../common/is-packaged.js');
-const loadAudioFile = require("./load-audio-file.js");
+const loadAudioFile = require("./webaudio/load-audio-file.js");
 
-const MicrophoneFilterNode = require("./microphone-filter-node.js");
-const AudioRecorderNode = require("./audio-recorder-node.js");
-const AudioPlayerNode = require("./audio-player-node.js");
+const MicrophoneFilterNode = require("./webaudio/microphone-filter-node.js");
+const AudioRecorderNode = require("./webaudio/audio-recorder-node.js");
+const AudioPlayerNode = require("./webaudio/audio-player-node.js");
 const WaveformVisualizer = require("./waveform-visualizer.js");
 const visualizeDecoding = require("./decoding-visualizer.js");
 const TextTransformationVisualizer = require("./text-transformation-visualizer.js");
