@@ -1,5 +1,6 @@
 const assert = require('assert');
 const EventEmitter = require('events');
+require('./extend-audio-node-for-private-input.js');
 const FixedSizeBuffer = require("../../common/util/FixedSizeBuffer.js");
 
 class AudioRecorderNode extends EventEmitter {
@@ -11,7 +12,7 @@ class AudioRecorderNode extends EventEmitter {
         }
     }
 
-    get _isAudioRecorderNode() {
+    get _hasPrivateInputNode() {
         return true;
     }
 
@@ -135,16 +136,6 @@ AudioRecorderNode.states = {
     "RECORDING": 1,
 };
 Object.freeze(AudioRecorderNode.states);
-
-
-AudioNode.prototype._connect_beforeAudioRecorderNode = AudioNode.prototype.connect;
-AudioNode.prototype.connect = function () {
-    const args = Array.prototype.slice.call(arguments);
-    if (args[0]._isAudioRecorderNode)
-        args[0] = args[0]._input;
-
-    this._connect_beforeAudioRecorderNode.apply(this, args);
-};
 
 // Inject the new class into AudioContext prototype.
 AudioContext.prototype.createAudioRecorderNode =

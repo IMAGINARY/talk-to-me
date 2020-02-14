@@ -1,6 +1,8 @@
-// from https://github.com/GoogleChromeLabs/web-audio-samples/wiki/CompositeAudioNode
+require('./extend-audio-node-for-private-input.js');
+
+// based on https://github.com/GoogleChromeLabs/web-audio-samples/wiki/CompositeAudioNode
 class CompositeAudioNode {
-    get _isCompositeAudioNode() {
+    get _hasPrivateInputNode() {
         return true;
     }
 
@@ -18,14 +20,5 @@ class CompositeAudioNode {
         this._output.disconnect.apply(this._output, arguments);
     }
 }
-
-AudioNode.prototype._connect_beforeCompositeAudioNode = AudioNode.prototype.connect;
-AudioNode.prototype.connect = function () {
-    const args = Array.prototype.slice.call(arguments);
-    if (args[0]._isCompositeAudioNode)
-        args[0] = args[0]._input;
-
-    this._connect_beforeCompositeAudioNode.apply(this, args);
-};
 
 module.exports = CompositeAudioNode;
