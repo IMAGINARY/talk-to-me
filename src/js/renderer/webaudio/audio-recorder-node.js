@@ -55,6 +55,10 @@ class AudioRecorderNode extends EventEmitter {
         this._state = AudioRecorderNode.states.IDLE;
     }
 
+    get context() {
+        return this._context;
+    }
+
     get numberOfInputs() {
         return 1;
     }

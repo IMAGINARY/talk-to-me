@@ -6,10 +6,14 @@ class CompositeAudioNode {
         return true;
     }
 
+    get context() {
+        return this._context;
+    }
+
     constructor(context, options) {
-        this.context = context;
-        this._input = this.context.createGain();
-        this._output = this.context.createGain();
+        this._context = context;
+        this._input = this._context.createGain();
+        this._output = this._context.createGain();
     }
 
     connect() {
