@@ -18,7 +18,7 @@ const isPackaged = require('../common/is-packaged.js');
 const loadAudioFile = require("./load-audio-file.js");
 
 const MicrophoneFilterNode = require("./microphone-filter-node.js");
-const AudioRecorder = require("./audio-recorder.js");
+const AudioRecorderNode = require("./audio-recorder-node.js");
 const AudioPlayerNode = require("./audio-player-node.js");
 const WaveformVisualizer = require("./waveform-visualizer.js");
 const visualizeDecoding = require("./decoding-visualizer.js");
@@ -51,17 +51,17 @@ async function init() {
     idleDetector.setTimeout(reset, idleTimeoutMs);
 
     const audioContext = new AudioContext({sampleRate: SAMPLE_RATE});
-    const micInputNode = await AudioRecorder.getMicrophoneAudioSource(audioContext);
+    const micInputNode = await AudioRecorderNode.getMicrophoneAudioSource(audioContext);
     const recorderInputNode = new MicrophoneFilterNode(audioContext, {bypass: true});
     micInputNode.connect(recorderInputNode);
 
-    const recorder = new AudioRecorder(audioContext, {
+    const audioRecorderNode = new AudioRecorderNode(audioContext, {
         duration: AUDIO_DURATION_SEC * 1000,
     });
-    recorderInputNode.connect(recorder);
-    const audioPlayer = new AudioPlayerNode(audioContext, {audioBuffer: recorder.audioBuffer});
+    recorderInputNode.connect(audioRecorderNode);
+    const audioPlayer = new AudioPlayerNode(audioContext, {audioBuffer: audioRecorderNode.audioBuffer});
     audioPlayer.connect(audioContext.destination);
-    const samples = recorder.samples;
+    const samples = audioRecorderNode.samples;
 
     const $textTransformationViz = $("#text-transformation-viz");
     const $decodingViz = $("#decoding-viz");
@@ -97,7 +97,7 @@ async function init() {
         const audioBaseUrl = new URL(isPackaged() ? "../../../audio/" : "../../audio/", window.location.href);
         const audioUrl = new URL('helloiamai_16kHz_16bit_short.wav', audioBaseUrl);
         const demoAudioBuffer = await loadAudioFile(audioContext, audioUrl);
-        recorder.recordFromBuffer(demoAudioBuffer);
+        audioRecorderNode.recordFromBuffer(demoAudioBuffer);
     }
 
     function decodePredictionExt(predictionExt) {
@@ -228,7 +228,7 @@ async function init() {
     });
 
     function reset() {
-        recorder.stopRecording();
+        audioRecorderNode.stopRecording();
         audioPlayer.stop();
 
         aq.clear();
@@ -298,11 +298,11 @@ async function init() {
         $playButton.hide();
         $recordButton.show();
     });
-    recorder.on('recording-stopped', () => $recordButton.button('toggle'));
+    audioRecorderNode.on('recording-stopped', () => $recordButton.button('toggle'));
     audioPlayer.on('ended', () => $playButton.button('toggle'));
     audioPlayer.on('paused', () => $playButton.button('toggle'));
 
-    $recordButton.each((i, e) => new Hammer(e).on('tap', () => recorder.startRecording()));
+    $recordButton.each((i, e) => new Hammer(e).on('tap', () => audioRecorderNode.startRecording()));
     $playButton.each((i, e) => new Hammer(e).on('tap', () => audioPlayer.play()));
     $restartButton.each((i, e) => new Hammer(e).on('tap', reset));
 

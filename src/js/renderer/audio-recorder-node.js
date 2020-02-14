@@ -2,7 +2,7 @@ const assert = require('assert');
 const EventEmitter = require('events');
 const FixedSizeBuffer = require("../common/util/FixedSizeBuffer.js");
 
-class AudioRecorder extends EventEmitter {
+class AudioRecorderNode extends EventEmitter {
     _setState(newState) {
         if (this.state !== newState) {
             const oldState = this.state;
@@ -34,7 +34,7 @@ class AudioRecorder extends EventEmitter {
 
         // properly restart recording if buffer is emptied while recording
         this._samples.on('empty', () => {
-            if (this.state === AudioRecorder.states.RECORDING) {
+            if (this.state === AudioRecorderNode.states.RECORDING) {
                 this.startRecording();
             }
         });
@@ -42,7 +42,7 @@ class AudioRecorder extends EventEmitter {
         this._input = this._context.createGain();
 
         this._appendAudioData = e => {
-            if (this._state === AudioRecorder.states.RECORDING)
+            if (this._state === AudioRecorderNode.states.RECORDING)
                 this._samples.push(e.inputBuffer.getChannelData(0));
         };
         this._processor = this._context.createScriptProcessor(1024, 1, 1);
@@ -51,7 +51,7 @@ class AudioRecorder extends EventEmitter {
         this._input.connect(this._processor);
         this._processor.connect(this._context.destination);
 
-        this._state = AudioRecorder.states.IDLE;
+        this._state = AudioRecorderNode.states.IDLE;
     }
 
     get numberOfInputs() {
@@ -85,9 +85,9 @@ class AudioRecorder extends EventEmitter {
     startRecording() {
         this.stopRecording();
 
-        assert(this.state === AudioRecorder.states.IDLE);
+        assert(this.state === AudioRecorderNode.states.IDLE);
 
-        this._setState(AudioRecorder.states.RECORDING);
+        this._setState(AudioRecorderNode.states.RECORDING);
         this.emit('recording-started');
     }
 
@@ -101,8 +101,8 @@ class AudioRecorder extends EventEmitter {
     }
 
     stopRecording() {
-        if (this.state === AudioRecorder.states.RECORDING) {
-            this._setState(AudioRecorder.states.IDLE);
+        if (this.state === AudioRecorderNode.states.RECORDING) {
+            this._setState(AudioRecorderNode.states.IDLE);
             this.emit("recording-stopped");
         }
     }
@@ -130,11 +130,11 @@ class AudioRecorder extends EventEmitter {
     }
 }
 
-AudioRecorder.states = {
+AudioRecorderNode.states = {
     "IDLE": 0,
     "RECORDING": 1,
 };
-Object.freeze(AudioRecorder.states);
+Object.freeze(AudioRecorderNode.states);
 
 
 AudioNode.prototype._connect_beforeAudioRecorderNode = AudioNode.prototype.connect;
@@ -149,7 +149,7 @@ AudioNode.prototype.connect = function () {
 // Inject the new class into AudioContext prototype.
 AudioContext.prototype.createAudioRecorderNode =
     OfflineAudioContext.prototype.createAudioRecorderNode = function (options) {
-        return new AudioRecorder(this, options);
+        return new AudioRecorderNode(this, options);
     };
 
-module.exports = AudioRecorder;
+module.exports = AudioRecorderNode;
