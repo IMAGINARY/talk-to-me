@@ -55,12 +55,10 @@ async function init() {
     const recorderInputNode = new MicrophoneFilterNode(audioContext, {bypass: true});
     micInputNode.connect(recorderInputNode);
 
-    const recorder = new AudioRecorder({
-        audioContext: audioContext,
-        source: recorderInputNode,
-        destination: audioContext.destination,
+    const recorder = new AudioRecorder(audioContext, {
         duration: AUDIO_DURATION_SEC * 1000,
     });
+    recorderInputNode.connect(recorder);
     const audioPlayer = new AudioPlayerNode(audioContext, {audioBuffer: recorder.audioBuffer});
     audioPlayer.connect(audioContext.destination);
     const samples = recorder.samples;

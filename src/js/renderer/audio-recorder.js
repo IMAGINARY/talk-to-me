@@ -11,13 +11,22 @@ class AudioRecorder extends EventEmitter {
         }
     }
 
-    constructor(options) {
+    get _isAudioRecorderNode() {
+        return true;
+    }
+
+    constructor(context, options) {
         super();
-        this._audioContext = options.audioContext;
+
+        this.channelCount = 1;
+        this.channelCountMode = 'max';
+        this.channelInterpretation = 'discrete';
+
+        this._context = context;
 
         this._duration = options.duration;
-        const numSamples = (this._audioContext.sampleRate * this._duration) / 1000;
-        this._audioBuffer = this._audioContext.createBuffer(1, numSamples, this._audioContext.sampleRate);
+        const numSamples = (this._context.sampleRate * this._duration) / 1000;
+        this._audioBuffer = this._context.createBuffer(1, numSamples, this._context.sampleRate);
         this._samples = FixedSizeBuffer.wrapArray(this._audioBuffer.getChannelData(0));
 
         // automatically stop recording whenever the buffer is filled
@@ -30,20 +39,27 @@ class AudioRecorder extends EventEmitter {
             }
         });
 
-        this._source = options.source;
-        this._destination = options.destination;
+        this._input = this._context.createGain();
 
         this._appendAudioData = e => {
             if (this._state === AudioRecorder.states.RECORDING)
                 this._samples.push(e.inputBuffer.getChannelData(0));
         };
-        this._processor = this._audioContext.createScriptProcessor(1024, 1, 1);
+        this._processor = this._context.createScriptProcessor(1024, 1, 1);
         this._processor.addEventListener('audioprocess', this._appendAudioData);
 
-        this._source.connect(this._processor);
-        this._processor.connect(this._audioContext.destination);
+        this._input.connect(this._processor);
+        this._processor.connect(this._context.destination);
 
         this._state = AudioRecorder.states.IDLE;
+    }
+
+    get numberOfInputs() {
+        return 1;
+    }
+
+    get numberOfOutputs() {
+        return 0;
     }
 
     get state() {
@@ -104,6 +120,14 @@ class AudioRecorder extends EventEmitter {
 
         return audioContext.createMediaStreamSource(micStream);
     }
+
+    connect() {
+        this._output.connect.apply(this._output, arguments);
+    }
+
+    disconnect() {
+        this._output.disconnect.apply(this._output, arguments);
+    }
 }
 
 AudioRecorder.states = {
@@ -111,5 +135,21 @@ AudioRecorder.states = {
     "RECORDING": 1,
 };
 Object.freeze(AudioRecorder.states);
+
+
+AudioNode.prototype._connect_beforeAudioRecorderNode = AudioNode.prototype.connect;
+AudioNode.prototype.connect = function () {
+    const args = Array.prototype.slice.call(arguments);
+    if (args[0]._isAudioRecorderNode)
+        args[0] = args[0]._input;
+
+    this._connect_beforeAudioRecorderNode.apply(this, args);
+};
+
+// Inject the new class into AudioContext prototype.
+AudioContext.prototype.createAudioRecorderNode =
+    OfflineAudioContext.prototype.createAudioRecorderNode = function (options) {
+        return new AudioRecorder(this, options);
+    };
 
 module.exports = AudioRecorder;
