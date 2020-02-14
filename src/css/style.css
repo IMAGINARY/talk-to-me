@@ -204,6 +204,11 @@ body {
     margin-top: auto;
 }
 
+#language-button i.fas.fa-language {
+    position: relative;
+    top: 0.075em;
+}
+
 #audio-controls {
     display: inline-block;
 }

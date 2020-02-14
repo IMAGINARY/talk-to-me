@@ -316,9 +316,20 @@ async function init() {
         }
     }
 
-    async function setLanguage(lang) {
+    async function setLanguage(lang, force) {
+        // Avoid resetting if language did not change
+        if (i18next.language === lang && !force)
+            return;
+
+        const namespace = 'frontend';
         await i18next.changeLanguage(lang);
-        const t = i18next.getFixedT(null, 'frontend');
+        // find and select the first language in the fallback list that is actually supported
+        for (lang of i18next.languages)
+            if (i18next.hasResourceBundle(lang, namespace))
+                break;
+        await i18next.changeLanguage(lang);
+
+        const t = i18next.getFixedT(lang, namespace);
         const elemsToLocalize = [
             {querySelector: "#text-transformation-viz .explanation", key: "short-expl.textTransformation"},
             {querySelector: "#decoding-viz .explanation", key: "short-expl.decoder"},
@@ -327,6 +338,7 @@ async function init() {
             {querySelector: "#waveform-viz .explanation", key: "short-expl.waveform"},
         ];
         elemsToLocalize.forEach(elem => $(elem.querySelector).html(t(elem.key)));
+        $("#language-label").text(langmap[lang]["nativeName"]);
         reset();
     }
 
@@ -337,7 +349,7 @@ async function init() {
         if (newLanguage !== i18next.language)
             setLanguage(newLanguage);
     }));
-    setLanguage(i18next.language);
+    setLanguage(i18next.language, true);
 
     reset();
     if (argv.demo)

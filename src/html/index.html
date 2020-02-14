@@ -88,11 +88,14 @@
         </button>
     </div>
     <div id="language-controls">
-        <div class="btn-group dropup">
+        <div class="btn-group dropleft">
             <button id="language-button" type="button" class="btn btn-secondary btn-md dropdown-toggle"
                     data-toggle="dropdown"
+                    data-flip="true"
+                    data-boundary="viewport"
                     aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-language fa-lg"></i>
+                <span id="language-label"></span>
             </button>
             <div id="language-selector" class="dropdown-menu">
                 <!-- supported languages will be filled in via JS -->
