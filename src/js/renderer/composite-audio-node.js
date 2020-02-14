@@ -19,13 +19,13 @@ class CompositeAudioNode {
     }
 }
 
-AudioNode.prototype._connect = AudioNode.prototype.connect;
+AudioNode.prototype._connect_beforeCompositeAudioNode = AudioNode.prototype.connect;
 AudioNode.prototype.connect = function () {
     const args = Array.prototype.slice.call(arguments);
     if (args[0]._isCompositeAudioNode)
         args[0] = args[0]._input;
 
-    this._connect.apply(this, args);
+    this._connect_beforeCompositeAudioNode.apply(this, args);
 };
 
 module.exports = CompositeAudioNode;
