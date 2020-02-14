@@ -61,7 +61,8 @@ async function init() {
         destination: audioContext.destination,
         duration: AUDIO_DURATION_SEC * 1000,
     });
-    const audioPlayer = new AudioPlayer(audioContext.destination, recorder.audioBuffer);
+    const audioPlayer = new AudioPlayer(audioContext, {audioBuffer: recorder.audioBuffer});
+    audioPlayer.connect(audioContext.destination);
     const samples = recorder.samples;
 
     const $textTransformationViz = $("#text-transformation-viz");
