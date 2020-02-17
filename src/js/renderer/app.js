@@ -20,6 +20,7 @@ const loadAudioFile = require("./webaudio/load-audio-file.js");
 const MicrophoneFilterNode = require("./webaudio/microphone-filter-node.js");
 const AudioRecorderNode = require("./webaudio/audio-recorder-node.js");
 const AudioPlayerNode = require("./webaudio/audio-player-node.js");
+const BarkDetectorNode = require('./webaudio/bark-detector-node.js');
 const WaveformVisualizer = require("./waveform-visualizer.js");
 const visualizeDecoding = require("./decoding-visualizer.js");
 const TextTransformationVisualizer = require("./text-transformation-visualizer.js");
@@ -55,8 +56,14 @@ async function init() {
     const recorderInputNode = new MicrophoneFilterNode(audioContext, {bypass: true});
     micInputNode.connect(recorderInputNode);
 
+    const barkDetectorNode = new BarkDetectorNode(audioContext);
+    micInputNode.connect(barkDetectorNode);
+    barkDetectorNode.on('on', () => console.log("loud"));
+    barkDetectorNode.on('off', () => console.log("silent"));
+
     const audioRecorderNode = new AudioRecorderNode(audioContext, {
         duration: AUDIO_DURATION_SEC * 1000,
+        preRecordingDuration: 300,
     });
     recorderInputNode.connect(audioRecorderNode);
     const audioPlayer = new AudioPlayerNode(audioContext, {audioBuffer: audioRecorderNode.audioBuffer});
@@ -228,6 +235,7 @@ async function init() {
     });
 
     function reset() {
+        audioRecorderNode.stopPreRecording();
         audioRecorderNode.stopRecording();
         audioPlayer.stop();
 
@@ -302,7 +310,14 @@ async function init() {
     audioPlayer.on('ended', () => $playButton.button('toggle'));
     audioPlayer.on('paused', () => $playButton.button('toggle'));
 
-    $recordButton.each((i, e) => new Hammer(e).on('tap', () => audioRecorderNode.startRecording()));
+    $recordButton.each((i, e) => new Hammer(e).on('tap', () => {
+        if (barkDetectorNode.isOn) {
+            audioRecorderNode.startRecording();
+        } else {
+            audioRecorderNode.startPreRecording();
+            barkDetectorNode.once('on', () => audioRecorderNode.startRecording());
+        }
+    }));
     $playButton.each((i, e) => new Hammer(e).on('tap', () => audioPlayer.play()));
     $restartButton.each((i, e) => new Hammer(e).on('tap', reset));
 
