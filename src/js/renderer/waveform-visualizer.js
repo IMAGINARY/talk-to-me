@@ -6,7 +6,7 @@ class WaveformVisualizer {
         this.ctx = this.canvas.getContext('2d');
         this.samples = samples;
         this.samples.on('empty', () => this._clear());
-        this.samples.on('data', (data, newLength, oldLength) => this._receiveSamples(data, oldLength));
+        this.samples.on('data_changed', (data, start, end) => this._receiveSamples(start, end));
         this.buckets = new Float32Array(this.canvas.width);
 
         this._requestAnimationFrameCB = this._redraw.bind(this);
@@ -28,10 +28,22 @@ class WaveformVisualizer {
         requestAnimationFrame(this._requestAnimationFrameCB);
     }
 
-    _receiveSamples(data, start) {
-        for (let i = 0; i < data.length; ++i) {
-            const bucketIndex = Math.floor(((start + i) / this.samples.maxLength) * this.buckets.length);
-            this.buckets[bucketIndex] = Math.max(this.buckets[bucketIndex], Math.abs(data[i]));
+    _bucketIndex(sampleIndex) {
+        return Math.floor((sampleIndex / this.samples.maxLength) * this.buckets.length);
+    }
+
+    _receiveSamples(sampleStart, sampleEnd) {
+        const bucketStart = this._bucketIndex(sampleStart);
+        const bucketEnd = this._bucketIndex(sampleEnd);
+
+        // clear buckets that will be refilled
+        for (let b = bucketStart; b < bucketEnd; ++b)
+            this.buckets[b] = 0;
+
+        // fill buckets
+        for (let s = sampleStart; s < sampleEnd; ++s) {
+            const bucketIndex = this._bucketIndex(s);
+            this.buckets[bucketIndex] = Math.max(this.buckets[bucketIndex], Math.abs(this.samples.data[s]));
         }
         requestAnimationFrame(this._requestAnimationFrameCB);
     }

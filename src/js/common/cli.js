@@ -44,6 +44,11 @@ async function argv() {
             default: false,
             description: t('description.demo'),
         })
+        .option('volume-threshold', {
+            type: 'number',
+            default: -50,
+            description: t('description.volumeThreshold'),
+        })
         .option('turbo', {
             alias: 't',
             type: 'boolean',

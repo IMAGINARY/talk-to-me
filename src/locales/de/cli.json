@@ -4,6 +4,7 @@
     "kiosk": "Starte im Kiosk-Modus. Achtung: Es könnte schwer werden, dass die App wieder zu schließen.",
     "menu": "Schalte ein Menü und bestimmte zum Debugging nützliche Tastaturkürzel ein.",
     "demo": "Lade eine Demoaufnahme.",
+    "volumeThreshold": "Zu erreichender Lautstärkeschwellwert zum Starten der Aufnahme (Bereich: [-100,0]).",
     "turbo": "Beschleunige bzw. deaktiviere Animationen."
   }
 }

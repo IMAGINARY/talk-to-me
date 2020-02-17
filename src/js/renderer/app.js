@@ -15,10 +15,12 @@ const {toUpperCase} = require("../common/util/string-utils.js");
 const ImageUtils = require('../common/util/image-utils.js');
 
 const isPackaged = require('../common/is-packaged.js');
-const loadAudioFile = require("./loadAudioFile.js");
+const loadAudioFile = require("./webaudio/load-audio-file.js");
 
-const MicrophoneFilterNode = require("./microphone-filter-node.js");
-const Recorder = require("./recorder.js");
+const MicrophoneFilterNode = require("./webaudio/microphone-filter-node.js");
+const AudioRecorderNode = require("./webaudio/audio-recorder-node.js");
+const AudioPlayerNode = require("./webaudio/audio-player-node.js");
+const BarkDetectorNode = require('./webaudio/bark-detector-node.js');
 const WaveformVisualizer = require("./waveform-visualizer.js");
 const visualizeDecoding = require("./decoding-visualizer.js");
 const TextTransformationVisualizer = require("./text-transformation-visualizer.js");
@@ -50,17 +52,23 @@ async function init() {
     idleDetector.setTimeout(reset, idleTimeoutMs);
 
     const audioContext = new AudioContext({sampleRate: SAMPLE_RATE});
-    const micInputNode = await Recorder.getMicrophoneAudioSource(audioContext);
+    const micInputNode = await AudioRecorderNode.getMicrophoneAudioSource(audioContext);
     const recorderInputNode = new MicrophoneFilterNode(audioContext, {bypass: true});
     micInputNode.connect(recorderInputNode);
 
-    const recorder = new Recorder({
-        audioContext: audioContext,
-        source: recorderInputNode,
-        destination: audioContext.destination,
+    const barkDetectorNode = new BarkDetectorNode(audioContext, {threshold: argv.volumeThreshold});
+    micInputNode.connect(barkDetectorNode);
+    barkDetectorNode.on('on', () => console.log("loud"));
+    barkDetectorNode.on('off', () => console.log("silent"));
+
+    const audioRecorderNode = new AudioRecorderNode(audioContext, {
         duration: AUDIO_DURATION_SEC * 1000,
+        preRecordingDuration: 300,
     });
-    const samples = recorder.samples;
+    recorderInputNode.connect(audioRecorderNode);
+    const audioPlayer = new AudioPlayerNode(audioContext, {audioBuffer: audioRecorderNode.audioBuffer});
+    audioPlayer.connect(audioContext.destination);
+    const samples = audioRecorderNode.samples;
 
     const $textTransformationViz = $("#text-transformation-viz");
     const $decodingViz = $("#decoding-viz");
@@ -96,7 +104,7 @@ async function init() {
         const audioBaseUrl = new URL(isPackaged() ? "../../../audio/" : "../../audio/", window.location.href);
         const audioUrl = new URL('helloiamai_16kHz_16bit_short.wav', audioBaseUrl);
         const demoAudioBuffer = await loadAudioFile(audioContext, audioUrl);
-        recorder.recordFromBuffer(demoAudioBuffer);
+        audioRecorderNode.recordFromBuffer(demoAudioBuffer);
     }
 
     function decodePredictionExt(predictionExt) {
@@ -227,8 +235,9 @@ async function init() {
     });
 
     function reset() {
-        recorder.stopRecording();
-        recorder.stopPlayback();
+        audioRecorderNode.stopPreRecording();
+        audioRecorderNode.stopRecording();
+        audioPlayer.stop();
 
         aq.clear();
 
@@ -297,11 +306,19 @@ async function init() {
         $playButton.hide();
         $recordButton.show();
     });
-    recorder.on('recording-stopped', () => $recordButton.button('toggle'));
-    recorder.on('playback-stopped', () => $playButton.button('toggle'));
+    audioRecorderNode.on('recording-stopped', () => $recordButton.button('toggle'));
+    audioPlayer.on('ended', () => $playButton.button('toggle'));
+    audioPlayer.on('paused', () => $playButton.button('toggle'));
 
-    $recordButton.each((i, e) => new Hammer(e).on('tap', () => recorder.startRecording()));
-    $playButton.each((i, e) => new Hammer(e).on('tap', () => recorder.startPlayback()));
+    $recordButton.each((i, e) => new Hammer(e).on('tap', () => {
+        if (barkDetectorNode.isOn) {
+            audioRecorderNode.startRecording();
+        } else {
+            audioRecorderNode.startPreRecording();
+            barkDetectorNode.once('on', () => audioRecorderNode.startRecording());
+        }
+    }));
+    $playButton.each((i, e) => new Hammer(e).on('tap', () => audioPlayer.play()));
     $restartButton.each((i, e) => new Hammer(e).on('tap', reset));
 
     function addSupportedLanguages() {

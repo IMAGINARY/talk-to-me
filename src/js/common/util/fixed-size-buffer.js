@@ -32,8 +32,8 @@ class FixedSizeBuffer extends EventEmitter {
     constructor(dtype, maxLength) {
         super();
         this._dtype = dtype;
-        this.buffer = new dtypes[this._dtype](maxLength);
-        this.count = 0;
+        this._buffer = new dtypes[this._dtype](maxLength);
+        this._count = 0;
     }
 
     static wrapArray(array) {
@@ -42,40 +42,61 @@ class FixedSizeBuffer extends EventEmitter {
         if (typeof dtype === "undefined")
             throw new TypeError("FixedSizeBuffer can not be build from this object");
         const result = new FixedSizeBuffer(dtype, 0);
-        result.buffer = array;
+        result._buffer = array;
         return result;
     }
 
     push(data) {
-        const newData = data.subarray(0, this.buffer.length - this.count);
-        const overflow = data.subarray(this.buffer.length - this.count);
+        const newData = data.subarray(0, this._buffer.length - this._count);
+        const overflow = data.subarray(this._buffer.length - this._count);
         if (newData.length > 0) {
-            this.buffer.set(newData, this.count);
-            const prevCount = this.count;
-            this.count += newData.length;
-            this.emit('data', this.buffer.subarray(prevCount, this.count), this.count, prevCount);
-            if (this.count === this.buffer.length) {
-                this.emit('full', this.buffer);
-            }
+            const start = this.length;
+            const end = this.length + newData.length;
+            this._buffer.set(newData, start);
+            this.length = end;
+            this.postData(start, end);
         }
         return overflow;
     }
 
+    postData(start, end) {
+        this.emit('data_changed', this._buffer.subarray(start, end), start, end);
+    }
+
     clear() {
-        this.count = 0;
-        this.emit('empty');
+        this.length = 0;
     }
 
     get data() {
-        return this.buffer.subarray(0, this.count);
+        return this._buffer.subarray(0, this._count);
+    }
+
+    get buffer() {
+        return this._buffer;
     }
 
     get length() {
-        return this.count;
+        return this._count;
+    }
+
+    set length(newLength) {
+        newLength = Math.max(0, Math.min(newLength, this.maxLength));
+        if (newLength !== this._count) {
+            const prevCount = this._count;
+            this._count = newLength;
+            this.emit('length_changed', this.data, this.length, prevCount);
+            switch (newLength) {
+                case 0:
+                    this.emit('empty');
+                    break;
+                case this.maxLength:
+                    this.emit('full', this._buffer);
+            }
+        }
     }
 
     get maxLength() {
-        return this.buffer.length;
+        return this._buffer.length;
     }
 
     get dtype() {

@@ -4,6 +4,7 @@
     "kiosk": "Run in kiosk mode. Caution: It might be difficult to quit the app.",
     "menu": "Enable a menu and certain shortcuts useful for debugging.",
     "demo": "Load a demo audio file.",
+    "volumeThreshold": "Volume to exceed before recording is started (range: [-100,0]).",
     "turbo": "Speed up respectively disable animations."
   }
 }
