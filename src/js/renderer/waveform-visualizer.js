@@ -6,7 +6,7 @@ class WaveformVisualizer {
         this.ctx = this.canvas.getContext('2d');
         this.samples = samples;
         this.samples.on('empty', () => this._clear());
-        this.samples.on('data', (data, newLength, oldLength) => this._receiveSamples(data, oldLength));
+        this.samples.on('data_changed', (data, start, end) => this._receiveSamples(data, start));
         this.buckets = new Float32Array(this.canvas.width);
 
         this._requestAnimationFrameCB = this._redraw.bind(this);
