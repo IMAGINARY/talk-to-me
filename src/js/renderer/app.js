@@ -56,7 +56,7 @@ async function init() {
     const recorderInputNode = new MicrophoneFilterNode(audioContext, {bypass: true});
     micInputNode.connect(recorderInputNode);
 
-    const barkDetectorNode = new BarkDetectorNode(audioContext);
+    const barkDetectorNode = new BarkDetectorNode(audioContext, {threshold: argv.volumeThreshold});
     micInputNode.connect(barkDetectorNode);
     barkDetectorNode.on('on', () => console.log("loud"));
     barkDetectorNode.on('off', () => console.log("silent"));
