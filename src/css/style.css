@@ -155,11 +155,11 @@ body {
 }
 
 .network-container .swiper-scrollbar {
-    background: var(--viz-color-low-alpha);
+    background: var(--viz-snd-color-mid-alpha);
 }
 
 .network-container .swiper-scrollbar-drag {
-    background: var(--viz-color-mid-alpha);
+    background: var(--viz-snd-color);
 }
 
 .full-width {
