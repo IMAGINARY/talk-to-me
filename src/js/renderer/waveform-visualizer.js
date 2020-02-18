@@ -9,6 +9,8 @@ class WaveformVisualizer {
         this.samples.on('data_changed', (data, start, end) => this._receiveSamples(start, end));
         this.buckets = new Float32Array(this.canvas.width);
 
+        this._cursorPosition = 0.0;
+
         this._requestAnimationFrameCB = this._redraw.bind(this);
 
         const callback = (mutationsList, observer) => {
@@ -21,6 +23,15 @@ class WaveformVisualizer {
         };
         this._observer = new MutationObserver(callback);
         this._observer.observe(this.canvas, {attributes: true});
+    }
+
+    get cursorPosition() {
+        return this._cursorPosition;
+    }
+
+    set cursorPosition(pos) {
+        this._cursorPosition = pos;
+        requestAnimationFrame(this._requestAnimationFrameCB);
     }
 
     _clear() {
@@ -75,6 +86,15 @@ class WaveformVisualizer {
             const barHeight = amplification * this.buckets[i] * this.canvas.height;
             this.ctx.fillRect(i / this.buckets.length * this.canvas.width, -0.5 * barHeight, barWidth, barHeight);
         }
+
+        // draw a simple cursor
+        if (this.cursorPosition >= 0.0 && this.cursorPosition <= 1.0) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.canvas.width * this.cursorPosition, -this.canvas.height / 2.0);
+            this.ctx.lineTo(this.canvas.width * this.cursorPosition, this.canvas.height / 2.0);
+            this.ctx.stroke();
+        }
+
         this.ctx.restore();
     }
 }

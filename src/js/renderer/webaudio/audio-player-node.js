@@ -51,6 +51,10 @@ class AudioPlayerNode extends EventEmitter {
         return this._offset;
     }
 
+    get duration() {
+        return this._duration;
+    }
+
     setAudioBuffer(audioBuffer) {
         this.stop();
         this._audioBuffer = audioBuffer;
@@ -73,12 +77,26 @@ class AudioPlayerNode extends EventEmitter {
         ramp.gain.linearRampToValueAtTime(Number.EPSILON, this._context.currentTime + remainingDuration);
         ramp.connect(this._output);
 
+        const progressUpdater = this._context.createScriptProcessor();
+        progressUpdater.onaudioprocess = () => {
+            const newOffset = Math.min(this._offset + this._context.currentTime - this._playbackStarted, this._duration);
+            if (newOffset !== this._offset) {
+                this._offset = newOffset;
+                this._playbackStarted = this._context.currentTime;
+                this.emit('progress', this._offset, this._duration);
+                console.log(this._offset);
+            }
+        };
+        ramp.connect(progressUpdater);
+        progressUpdater.connect(this._output);
+
         const audioBufferSource = this._context.createBufferSource();
         audioBufferSource.buffer = this._audioBuffer;
         audioBufferSource.connect(ramp);
         audioBufferSource.addEventListener('ended', () => {
             audioBufferSource.disconnect();
             ramp.disconnect();
+            progressUpdater.disconnect();
         });
         audioBufferSource.addEventListener('ended', this._emitEnded);
 

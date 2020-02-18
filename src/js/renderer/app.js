@@ -151,7 +151,14 @@ async function init() {
 
     const aq = new AnimationQueue();
 
-    samples.on('full', async data => {
+    samples.on('length_changed', () => waveformVisualizer.cursorPosition = samples.length / samples.maxLength);
+    audioPlayer.on('progress', (progress, duration) => waveformVisualizer.cursorPosition = progress / duration);
+    audioPlayer.on('ended', () => {
+        waveformVisualizer.cursorPosition = -1.0;
+        audioPlayer.stop();
+    });
+
+    const samplesFullCb = async data => {
         const languages = i18next.languages.filter(l => supportedLanguages.includes(l));
         assert(languages.length > 0, `No supported language in ${i18next.languages}. Must include one of ${supportedLanguages}.`);
 
@@ -232,6 +239,10 @@ async function init() {
         // TODO: wrap into module
         setCursorPosition(timeSlot, decodedPredictionExt.indices.shape[0]);
         $("#cursor").show();
+    };
+    samples.on('full', data => {
+        waveformVisualizer.cursorPosition = -1;
+        setTimeout(() => samplesFullCb(data), 0);
     });
 
     function reset() {
@@ -242,6 +253,7 @@ async function init() {
         aq.clear();
 
         samples.clear();
+        waveformVisualizer.cursorPosition = -1;
         $spectrogramCanvasContainer.empty();
         networkVisualizer.clear();
         $decodingContainer.empty();
