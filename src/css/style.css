@@ -1,24 +1,24 @@
 :root {
-    --main-bg-color: #202020;
-    --accent-color: #FFFF20;
+    --main-bg-color: #000000;
+    --accent-color: rgba(255, 255, 0, 1);
     --controls-height: 80px;
     --controls-bg-color: var(--main-bg-color);
     --controls-separator-color: #000000;
     --main-padding: 20px;
     --cell-size: 11px;
-    --viz-low-alpha: 0.1;
+    --viz-low-alpha: 0.25;
     --viz-mid-alpha: 0.5;
-    --viz-high-alpha: 0.9;
+    --viz-high-alpha: 0.75;
     --viz-font-size: 16px;
-    --viz-color: rgba(0, 0, 0, 1);
-    --viz-color-low-alpha: rgba(0, 0, 0, var(--viz-low-alpha));
-    --viz-color-mid-alpha: rgba(0, 0, 0, var(--viz-mid-alpha));
-    --viz-color-high-alpha: rgba(0, 0, 0, var(--viz-high-alpha));
+    --viz-color: rgba(255, 255, 0, 1);
+    --viz-color-low-alpha: rgba(255, 255, 0, var(--viz-low-alpha));
+    --viz-color-mid-alpha: rgba(255, 255, 0, var(--viz-mid-alpha));
+    --viz-color-high-alpha: rgba(255, 255, 0, var(--viz-high-alpha));
     --viz-snd-color: rgba(167, 0, 111, 1);
     --viz-snd-color-low-alpha: rgba(167, 0, 111, var(--viz-low-alpha));
     --viz-snd-color-mid-alpha: rgba(167, 0, 111, var(--viz-mid-alpha));
     --viz-snd-color-high-alpha: rgba(167, 0, 111, var(--viz-high-alpha));
-    --viz-bg-color: var(--accent-color);
+    --viz-bg-color: var(--main-bg-color);
 }
 
 * {
@@ -202,7 +202,7 @@ body {
 #waveform {
     border-radius: 20px;
     padding: 10px 23px 10px 8px;
-    background-color: #FFFF20;
+    background-color: var(--main-bg-color);
     box-sizing: content-box;
     line-height: 0px;
 }
