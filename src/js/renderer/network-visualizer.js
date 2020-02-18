@@ -1,4 +1,5 @@
 const assert = require('assert');
+const Color = require('color');
 const ImageUtils = require('../common/util/image-utils.js');
 
 const $ = require('jquery');
@@ -44,7 +45,7 @@ function visualizeLetterProbabilities(letterProbabilties, alphabet, cellSize) {
         const char = alphabet[l];
         if (legendLeft) {
             diagram.append("text")
-                .attr("class", ".legend")
+                .attr("class", "legend")
                 .attrs({
                     x: -0.5 * cellSize,
                     y: (l + 1 - 0.25) * cellSize,
@@ -103,13 +104,17 @@ class NetworkVisualizer {
         this.clear();
 
         // add new slides
+        const color = Color(window.getComputedStyle(this._swiperContainer).color);
+        const rgbaColor = [color.red(), color.green(), color.blue(), 255 * color.alpha()];
+        const alphamap = ImageUtils.alphamapForRgba(rgbaColor);
+        const alphamapInv = alpha => alphamap(1-alpha);
         const layerConversionOptions = {
             normalize: true,
             flipV: true,
         };
         const $swiperWrapper = $('<div></div>').addClass('swiper-wrapper');
         for (let l = 1; l < layers.length - 1; ++l) {
-            const $layerCanvas = $(ImageUtils.convert2DArrayToCanvas(layers[l], ImageUtils.alphamap, layerConversionOptions))
+            const $layerCanvas = $(ImageUtils.convert2DArrayToCanvas(layers[l], alphamap, layerConversionOptions))
                 .addClass('full-size')
                 .css('image-rendering', "pixelated");
             const $slide = $('<div></div>')

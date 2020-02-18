@@ -69,18 +69,20 @@ class WaveformVisualizer {
         const maxAmplitude = this.buckets.reduce((max, cur) => Math.max(max, Math.abs(cur)), MIN_AMPLITUDE);
         const amplification = 1.0 / maxAmplitude;
 
+        const color = window.getComputedStyle(this.canvas).color;
+
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.ctx.save();
+
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.translate(0, this.canvas.height / 2.0);
-        this.ctx.strokeStyle = '#999';
-        this.ctx.fillStyle = '#000';
+        this.ctx.strokeStyle = color;
+        this.ctx.fillStyle = color;
         this.ctx.beginPath();
         this.ctx.moveTo(0, 0);
         this.ctx.lineTo(this.canvas.width, 0.0);
         this.ctx.stroke();
-        this.ctx.strokeStyle = '#000';
         const barWidth = this.canvas.width / this.buckets.length;
         for (let i = 0; i < this.buckets.length; ++i) {
             const barHeight = amplification * this.buckets[i] * this.canvas.height;

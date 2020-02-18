@@ -186,6 +186,20 @@ const alphamap = (() => {
     };
 })();
 
+const alphamapForRgba = (rgbaColor) => {
+    const forAlpha = alpha => {
+        const result = Array.from(rgbaColor);
+        result[3] = result[3] * (alpha / 255);
+        return result;
+    };
+    const palette = Array.from({length: 256}, (_, i) => forAlpha(i));
+    return value => {
+        const constrainedValue = value < 0.0 ? 0.0 : (value > 1.0 ? 1.0 : value);
+        const index = Math.floor(255 * constrainedValue);
+        return palette[index];
+    };
+};
+
 module.exports = {
     convert2DArrayToCanvasImageSource: convert2DArrayToCanvasImageSource,
     convert2DArrayToCanvas: convert2DArrayToCanvas,
@@ -193,4 +207,5 @@ module.exports = {
     clearCanvas: clearCanvas,
     heatmap: heatmap,
     alphamap: alphamap,
+    alphamapForRgba: alphamapForRgba,
 };
