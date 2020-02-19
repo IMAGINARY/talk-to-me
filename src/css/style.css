@@ -1,12 +1,24 @@
 :root {
-    --main-bg-color: #202020;
-    --accent-color: #FFFF20;
+    --main-bg-color: #000000;
+    --accent-color: rgba(255, 236, 2, 1);
     --controls-height: 80px;
     --controls-bg-color: var(--main-bg-color);
     --controls-separator-color: #000000;
     --main-padding: 20px;
     --cell-size: 11px;
+    --viz-low-alpha: 0.25;
+    --viz-mid-alpha: 0.5;
+    --viz-high-alpha: 0.75;
     --viz-font-size: 16px;
+    --viz-color: rgba(255, 236, 2, 1);
+    --viz-color-low-alpha: rgba(255, 236, 2, var(--viz-low-alpha));
+    --viz-color-mid-alpha: rgba(255, 236, 2, var(--viz-mid-alpha));
+    --viz-color-high-alpha: rgba(255, 236, 2, var(--viz-high-alpha));
+    --viz-snd-color: rgba(143, 26, 129, 1);
+    --viz-snd-color-low-alpha: rgba(143, 26, 129, var(--viz-low-alpha));
+    --viz-snd-color-mid-alpha: rgba(143, 26, 129, var(--viz-mid-alpha));
+    --viz-snd-color-high-alpha: rgba(143, 26, 129, var(--viz-high-alpha));
+    --viz-bg-color: var(--main-bg-color);
 }
 
 * {
@@ -56,6 +68,11 @@ body {
     display: flex;
     flex-direction: column;
     margin-left: auto;
+}
+
+#viz-container .viz {
+    color: var(--viz-color);
+    background-color: var(--viz-bg-color);
 }
 
 #viz-container > * {
@@ -121,8 +138,8 @@ body {
     line-height: 20px;
     font-size: 12px;
     opacity: 1;
-    color: #000;
-    background: rgba(0, 0, 0, 0.1);
+    color: var(--viz-color);
+    background: var(--viz-color-low-alpha);
 }
 
 .network-container .swiper-container-vertical > .swiper-pagination-bullets .swiper-pagination-bullet {
@@ -135,6 +152,14 @@ body {
 
 .network-container .swiper-pagination-bullet-active {
     display: block;
+}
+
+.network-container .swiper-scrollbar {
+    background: var(--viz-snd-color-mid-alpha);
+}
+
+.network-container .swiper-scrollbar-drag {
+    background: var(--viz-snd-color);
 }
 
 .full-width {
@@ -177,7 +202,7 @@ body {
 #waveform {
     border-radius: 20px;
     padding: 10px 23px 10px 8px;
-    background-color: #FFFF20;
+    background-color: var(--main-bg-color);
     box-sizing: content-box;
     line-height: 0px;
 }
@@ -249,8 +274,8 @@ body {
 }
 
 #viz-container svg .grid {
-    stroke: rgb(0, 0, 0);
-    opacity: 0.1;
+    stroke: var(--viz-color);
+    opacity: var(--viz-low-alpha);
 }
 
 #viz-container svg text {
@@ -259,7 +284,7 @@ body {
 }
 
 svg.letter-probability-viz rect {
-    fill: black;
+    fill: var(--viz-color);
 }
 
 svg.letter-probability-viz text {
@@ -267,14 +292,19 @@ svg.letter-probability-viz text {
 }
 
 svg.letter-probability-viz text.legend {
-    fill: black;
+    fill: var(--viz-color);
 }
 
 svg.letter-probability-viz text.letters {
-    fill: #FFFF20;
+    fill: var(--viz-bg-color);
 }
 
 svg.decoding-viz text {
     font-size: var(--viz-font-size);
-    fill: black;
+    fill: var(--viz-color);
+}
+
+
+svg.text-transformation-viz text.letters {
+    fill: var(--viz-color);
 }

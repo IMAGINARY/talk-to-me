@@ -407,7 +407,7 @@ function visualizeResult(charArray, cellWidth, fontSizePx) {
         totalHeight = height + margin.top + margin.bottom;
 
     const svg = d3.create('svg')
-        .attr("class", "result-viz")
+        .attr("class", "text-transformation-viz")
         .attr("width", totalWidth)
         .attr("height", totalHeight);
 

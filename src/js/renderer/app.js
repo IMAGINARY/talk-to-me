@@ -4,6 +4,7 @@ const opsExt = require('../common/ndarray-ops-ext.js');
 const cli = require('../common/cli.js');
 const getI18Next = require('../common/i18n.js');
 const langmap = require('langmap');
+const Color = require('color');
 const IdleDetector = require('./idle-detector.js');
 const AutoViewport = require('./auto-viewport.js');
 
@@ -173,7 +174,11 @@ async function init() {
         $spectrogramViz.show();
 
         // Visualize spectrogram
-        const spectrogramCanvas = ImageUtils.convert2DArrayToCanvas(window.predictionExt.layers[0], ImageUtils.alphamap, {
+        const color = Color(window.getComputedStyle($spectrogramCanvasContainer.get(0)).color);
+        const rgbaColor = [color.red(), color.green(), color.blue(), 255 * color.alpha()];
+        const alphamap = ImageUtils.alphamapForRgba(rgbaColor);
+        const alphamapInv = alpha => alphamap(1 - alpha);
+        const spectrogramCanvas = ImageUtils.convert2DArrayToCanvas(window.predictionExt.layers[0], alphamap, {
             clearBeforeDrawing: true,
             flipV: true,
             normalize: true,
