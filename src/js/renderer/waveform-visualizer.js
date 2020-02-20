@@ -91,6 +91,8 @@ class WaveformVisualizer {
 
         // draw a simple cursor
         if (this.cursorPosition >= 0.0 && this.cursorPosition <= 1.0) {
+            this.ctx.strokeStyle = window.getComputedStyle(document.documentElement)
+                .getPropertyValue('--viz-snd-color');
             this.ctx.beginPath();
             this.ctx.moveTo(this.canvas.width * this.cursorPosition, -this.canvas.height / 2.0);
             this.ctx.lineTo(this.canvas.width * this.cursorPosition, this.canvas.height / 2.0);
