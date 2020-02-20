@@ -251,10 +251,6 @@ async function init() {
         aq.push(() => textTransformationVisualizer.animator.showButtons());
 
         aq.play();
-
-        // TODO: wrap into module
-        setCursorPosition(timeSlot, decodedPredictionExt.indices.shape[0]);
-        $("#cursor").show();
     };
     samples.on('full', data => {
         waveformVisualizer.cursorPosition = -1;
@@ -282,36 +278,7 @@ async function init() {
 
         untoggleButton($recordButton);
         untoggleButton($playButton);
-
-        // TODO: wrap into module
-        $("#cursor").hide();
     }
-
-    function setCursorPosition(letterIndex, numLetters) {
-        const cursorWidth = 16;
-        const rect = $("#waveform-viz").get(0).getBoundingClientRect();
-        const discreteLeft = ((letterIndex + 0.5) / numLetters) * rect.width - cursorWidth / 2.0;
-        $("#cursor").css('left', `${discreteLeft}px`);
-    }
-
-    const moveCb = evt => {
-        const numLetters = 100; // TODO: Don't hard-code!
-
-        const rect = $vizContainer.get(0).getBoundingClientRect();
-        const left = Math.max(0, Math.min(evt.clientX - rect.left, rect.width));
-        const lerp = left / rect.width;
-        const letterIndex = Math.floor(lerp * numLetters);
-
-        setCursorPosition(letterIndex, numLetters);
-        //networkVisualizer.draw(letterIndex);
-    };
-    const $vizContainer = $('#viz-container');
-    $vizContainer.on('pointerdown', evt => {
-        moveCb(evt);
-        $vizContainer.on('pointermove', evt => moveCb(evt));
-    }).on('pointerup', function () {
-        $vizContainer.unbind('pointermove');
-    });
 
     const $recordButton = $("#record-button");
     const $playButton = $("#play-button");

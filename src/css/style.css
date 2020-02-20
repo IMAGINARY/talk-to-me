@@ -250,29 +250,6 @@ body {
     margin-right: 0;
 }
 
-#cursor-container {
-    position: relative;
-    box-sizing: content-box;
-    margin-left: var(--cell-size);
-    margin-right: var(--cell-size);
-}
-
-#cursor {
-    visibility: hidden;
-    pointer-events: none;
-    box-sizing: content-box;
-    position: absolute;
-    width: 10px;
-    height: calc(64px + 256px + 256px + 72px + 3 * 5px);
-    bottom: 0px;
-    border: 2px solid black;
-    border-radius: 10px;
-}
-
-#network-canvas {
-    display: none;
-}
-
 #viz-container svg .grid {
     stroke: var(--viz-color);
     opacity: var(--viz-low-alpha);
