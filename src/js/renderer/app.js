@@ -61,6 +61,8 @@ async function init() {
         enable: true,
     });
 
+    let turboMode = argv.turbo;
+
     const idleTimeoutMs = 5 * 60 * 1000;
     const idleDetector = new IdleDetector();
     idleDetector.setTimeout(reset, idleTimeoutMs);
@@ -232,7 +234,7 @@ async function init() {
         $networkViz.hide();
         $spectrogramViz.hide();
 
-        const initialDurations = argv.turbo ? turboAnimationDurations : animationDurations;
+        const initialDurations = turboMode ? turboAnimationDurations : animationDurations;
 
         const delayAnim = () => new Promise(resolve => setTimeout(resolve, initialDurations.slideDelay));
         const slideDown = $elems => () => new Promise(resolve => $elems.slideDown(initialDurations.slideDown, resolve))
@@ -314,6 +316,7 @@ async function init() {
     const $recordButton = $("#record-button");
     const $playButton = $("#play-button");
     const $restartButton = $("#restart-button");
+    const $turboToggle = $("#turbo-toggle");
 
     function untoggleButton($button) {
         if ($button.hasClass('active'))
@@ -346,6 +349,9 @@ async function init() {
     }));
     $playButton.each((i, e) => new Hammer(e).on('tap', () => audioPlayer.play()));
     $restartButton.each((i, e) => new Hammer(e).on('tap', reset));
+
+    $turboToggle.bootstrapToggle(turboMode ? 'on' : 'off');
+    $turboToggle.change(() => {turboMode = $turboToggle.prop('checked'); console.log(turboMode);});
 
     function addSupportedLanguages() {
         for (let l of supportedLanguages) {

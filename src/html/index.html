@@ -18,11 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../../node_modules/@fortawesome/fontawesome-free/css/all.css">
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap-reboot.min.css">
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap4-toggle/css/bootstrap4-toggle.min.css">
     <link rel="stylesheet" href="../../node_modules/swiper/css/swiper.min.css">
     <link rel="stylesheet" type="text/css" href="../css/circular-btn.css">
     <link rel="stylesheet" type="text/css" href="../css/style.css">
     <script>
+        const $ = jQuery = require('jquery');
         const bootstrap = require('bootstrap');
+        const bootstrapToggle = require('bootstrap4-toggle');
         const app = require('../js/renderer/app.js');
         app.init().then(() => console.log("Initialization complete"));
     </script>
@@ -101,6 +104,11 @@
                 <!-- supported languages will be filled in via JS -->
             </div>
         </div>
+    </div>
+    <div id="turbo-controls">
+        <label for="turbo-toggle">Turbo Mode</label>
+        <input id="turbo-toggle" type="checkbox" checked data-toggle="toggle"
+               data-onstyle="secondary" data-offstyle="dark">
     </div>
     <button id="restart-button" type="button" class="btn btn-secondary btn-circle btn-md">
         <i class="fas fa-redo-alt fa-2x">
