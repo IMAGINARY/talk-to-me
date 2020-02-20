@@ -37,6 +37,19 @@ const modelLoadedPromise = Promise.all(supportedLanguages
 const w2lOutputLengthPromise = modelLoadedPromise
     .then(() => wav2letter.computeOutputLength(AUDIO_DURATION_SEC * SAMPLE_RATE));
 
+// define the duration for certain animations
+const animationDurations = {
+    slideDown: 500,
+    slideDelay: 2000,
+    networkTransition: 300,
+    networkDelay: 200,
+    textTransform: 1000,
+};
+const turboFactor = 0.025;
+const turboAnimationDurations = Object.fromEntries(
+    Object.entries(animationDurations).map(([k, v], i) => [k, turboFactor * v])
+);
+
 async function init() {
     const argv = await cli.argv();
     const i18next = await getI18Next();
@@ -92,14 +105,16 @@ async function init() {
     const $textTransformationContainer = $('#text-transformation-viz .text-transformation-container');
     const networkVisualizer = new NetworkVisualizer(
         document.querySelector('#network-viz .network-container'),
-        {cellSize: LETTER_CELL_SIZE}
+        {
+            cellSize: LETTER_CELL_SIZE,
+            transitionDuration: animationDurations.networkTransition,
+            autoplayDelay: animationDurations.networkDelay,
+        }
     );
     const textTransformationVisualizer = new TextTransformationVisualizer(
         document.querySelector('#text-transformation-viz .text-transformation-container'),
-        {cellSize: LETTER_CELL_SIZE, fontSize: FONT_SIZE}
+        {cellSize: LETTER_CELL_SIZE, fontSize: FONT_SIZE, animationDuration: animationDurations.textTransform}
     );
-
-    //setInterval(() => networkVisualizer.currentLayer = (networkVisualizer.currentLayer + 1) % networkVisualizer.layers.length, 1000);
 
     async function loadDemoAudio() {
         const audioBaseUrl = new URL(isPackaged() ? "../../../audio/" : "../../audio/", window.location.href);
@@ -216,30 +231,22 @@ async function init() {
         $networkViz.hide();
         $spectrogramViz.hide();
 
-        if (argv.turbo) {
-            $spectrogramViz.show();
-            $networkViz.show();
-            networkVisualizer.goToLast(false);
-            $decodingViz.show();
-            $textTransformationViz.show();
-            textTransformationVisualizer.goToLast(false);
-        } else {
-            const animDurationMs = 500;
-            const delayMs = 2000;
-            const delayAnim = () => new Promise(resolve => setTimeout(resolve, delayMs));
-            const slideDown = $elems => () => new Promise(resolve => $elems.slideDown(animDurationMs, resolve))
+        const initialDurations = argv.turbo ? turboAnimationDurations : animationDurations;
 
-            aq.push(slideDown($spectrogramViz));
-            aq.push(delayAnim);
-            aq.push(slideDown($networkViz));
-            aq.push(async () => await networkVisualizer.autoplay());
-            aq.push(delayAnim);
-            aq.push(slideDown($decodingViz));
-            aq.push(delayAnim);
-            aq.push(slideDown($textTransformationViz));
-            aq.push(async () => await textTransformationVisualizer.autoplay());
-            aq.play();
-        }
+        const delayAnim = () => new Promise(resolve => setTimeout(resolve, initialDurations.slideDelay));
+        const slideDown = $elems => () => new Promise(resolve => $elems.slideDown(initialDurations.slideDown, resolve))
+
+        aq.push(slideDown($spectrogramViz));
+        aq.push(delayAnim);
+        aq.push(slideDown($networkViz));
+        aq.push(async () => await networkVisualizer.autoplay(initialDurations.networkTransition, initialDurations.networkDelay));
+        aq.push(delayAnim);
+        aq.push(slideDown($decodingViz));
+        aq.push(delayAnim);
+        aq.push(slideDown($textTransformationViz));
+        aq.push(async () => await textTransformationVisualizer.animator.last(initialDurations.textTransform));
+
+        aq.play();
 
         // TODO: wrap into module
         setCursorPosition(timeSlot, decodedPredictionExt.indices.shape[0]);

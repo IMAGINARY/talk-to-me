@@ -96,6 +96,8 @@ class NetworkVisualizer {
 
         const defaultOptions = {
             cellSize: 11,
+            transitionDuration: 300,
+            autoplayDelay: 100,
         };
         this._options = Object.assign(defaultOptions, options);
     }
@@ -110,7 +112,7 @@ class NetworkVisualizer {
         const color = Color(window.getComputedStyle(this._swiperContainer).color);
         const rgbaColor = [color.red(), color.green(), color.blue(), 255 * color.alpha()];
         const alphamap = ImageUtils.alphamapForRgba(rgbaColor);
-        const alphamapInv = alpha => alphamap(1-alpha);
+        const alphamapInv = alpha => alphamap(1 - alpha);
         const layerConversionOptions = {
             normalize: true,
             flipV: true,
@@ -160,13 +162,15 @@ class NetworkVisualizer {
             initialSlide: layers.length - 2,
             slidesPerView: 1,
             effect: 'fade',
+            speed: this._options.transitionDuration,
             fadeEffect: {
                 crossFade: true
             },
             autoplay: {
-                delay: 100,
+                delay: this._options.autoplayDelay,
                 reverseDirection: true,
                 stopOnLastSlide: true,
+                disableOnInteraction: false,
             },
             pagination: {
                 el: '.swiper-pagination',
@@ -182,38 +186,25 @@ class NetworkVisualizer {
             mousewheelControl: true,
         });
         swiper.autoplay.stop();
-
-        global.swiper = swiper;
     }
 
-    async autoplay() {
+    async autoplay(transitionDuration, autoplayDelay) {
         if (typeof this._swiperContainer.swiper !== "undefined" && this._swiperContainer.swiper !== null) {
             const swiper = this._swiperContainer.swiper;
-            swiper.autoplay.stop();
+            const oldTransitionDuration = swiper.params.speed;
+            const oldAutoplayDelay = swiper.params.autoplay.delay;
+            swiper.params.speed = typeof transitionDuration === "number" ? transitionDuration : oldTransitionDuration;
+            swiper.params.autoplay.delay = typeof autoplayDelay === "number" ? autoplayDelay : oldAutoplayDelay;
             swiper.slideTo(swiper.slides.length - 1, 0, false);
             await new Promise(resolve => {
                 swiper.once('autoplayStop', resolve);
                 swiper.autoplay.start();
             });
+            swiper.params.speed = oldTransitionDuration;
+            swiper.params.autoplay.delay = oldAutoplayDelay;
         } else {
             await Promise.resolve();
         }
-    }
-
-    goToFirst(animate) {
-        // FIXME: swiper refers to the global instance!
-        if (animate)
-            swiper.slideTo(swiper.slides.length - 1);
-        else
-            swiper.slideTo(swiper.slides.length - 1, 0);
-    }
-
-    goToLast(animate) {
-        // FIXME: swiper refers to the global instance!
-        if (animate)
-            swiper.slideTo(0);
-        else
-            swiper.slideTo(0, 0);
     }
 
     clear() {

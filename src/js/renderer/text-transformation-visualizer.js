@@ -296,6 +296,7 @@ class Animator {
 
         this._previousData = d3.local();
 
+        this.defaultDuration = 0;
         this._duration = 0;
         this._animating = false;
         this._animationPromise = Promise.resolve();
@@ -351,7 +352,7 @@ class Animator {
 
     async goTo(target, stepDuration) {
         this._target = Math.min(Math.max(0, target), this.steps - 1);
-        this._duration = typeof stepDuration === "undefined" ? 0 : stepDuration;
+        this._duration = typeof stepDuration === "undefined" ? this.defaultDuration : stepDuration;
         if (!this._animating) {
             this._animating = true;
             this._animationPromise = this._moveTowardsTarget();
@@ -417,10 +418,9 @@ function visualizeResult(charArray, cellWidth, fontSizePx) {
         .attr("class", "monospaced");
 
     const lineHeight = fontSizePx;
-    const charWidth = width / charArray.length;
 
     const d3select = () => letters.selectAll("text");
-    const positionX = c => (c.position + 0.5) * charWidth;
+    const positionX = c => (c.position + 0.5) * cellWidth;
     const positionY = c => (1 - 0.175) * lineHeight;
 
     d3select()
@@ -446,13 +446,15 @@ class TextTransformationVisualizer {
         this._parent = domElement;
         this._container = document.createElement('div');
         this._parent.append(this._container);
-        this._animator = null;
 
         const defaultOptions = {
             cellWidth: 11,
             fontSize: 16,
+            animationDuration: 1000,
         };
         this._options = Object.assign(defaultOptions, options);
+
+        this.setText("");
     }
 
     setText(string) {
@@ -461,24 +463,12 @@ class TextTransformationVisualizer {
         const {animator, element} = visualizeResult(charArray, this._options.cellWidth, this._options.fontSize);
         this._container.append(element);
         this._animator = animator;
-
-        // FIXME: do not store as a global reference!
-        global.animator = animator;
+        this._animator.defaultDuration = this._options.animationDuration;
+        return animator;
     }
 
-    async autoplay() {
-        if (this._animator !== null)
-            await this._animator.last(1000);
-    }
-
-    async goToFirst(animate) {
-        if (this._animator !== null)
-            await this._animator.first(animate ? 1000 : 0);
-    }
-
-    async goToLast(animate) {
-        if (this._animator !== null)
-            await this._animator.last(animate ? 1000 : 0);
+    get animator() {
+        return this._animator;
     }
 
     setRaw(indices, alphabet) {
@@ -487,7 +477,6 @@ class TextTransformationVisualizer {
 
     clear() {
         $(this._container).empty();
-        this._animator = null;
     }
 }
 
