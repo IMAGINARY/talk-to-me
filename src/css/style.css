@@ -307,3 +307,22 @@ svg.decoding-viz text {
 svg.text-transformation-viz .letters {
     fill: var(--viz-color);
 }
+
+svg.text-transformation-viz .button {
+    alignment-baseline: central;
+    fill: var(--viz-snd-color);
+    stroke: var(--viz-snd-color);
+}
+
+svg.text-transformation-viz .button.disabled {
+    fill: var(--viz-snd-color-mid-alpha);
+    stroke: var(--viz-snd-color-mid-alpha);
+}
+
+svg.text-transformation-viz .button.prev {
+    text-anchor: start;
+}
+
+svg.text-transformation-viz .button.next {
+    text-anchor: end;
+}

@@ -1,5 +1,6 @@
 const assert = require('assert');
 const $ = require('jquery');
+const Hammer = require('hammerjs');
 const d3 = require('d3');
 require('d3-selection-multi');
 require('d3-transition');
@@ -283,7 +284,7 @@ async function animateStep(d3selection, duration, positionX, positionY, getPrevD
 }
 
 class Animator {
-    constructor(d3select, charArrays, positionX, positionY) {
+    constructor(d3select, charArrays, positionX, positionY, prevButton, nextButton) {
         assert(charArrays.length !== 0);
         assert(charArrays[0].length === 1, "First set of states must only contain the single initial state.");
 
@@ -291,8 +292,15 @@ class Animator {
         this._charArrays = charArrays;
         this._positionX = positionX;
         this._positionY = positionY;
+        this._prevButton = prevButton;
+        this._nextButton = nextButton;
         this._current = 0;
         this._target = 0;
+
+        this._prevButtonHammer = new Hammer(this._prevButton.node());
+        this._prevButtonHammer.on('tap', () => this.prev());
+        this._nextButtonHammer = new Hammer(this._nextButton.node());
+        this._nextButtonHammer.on('tap', () => this.next());
 
         this._previousData = d3.local();
 
@@ -330,6 +338,16 @@ class Animator {
         this.goTo(this._target - 1, stepDuration);
     }
 
+    showButtons() {
+        this._prevButton.style('visibility', 'visible');
+        this._nextButton.style('visibility', 'visible');
+    }
+
+    hideButtons() {
+        this._prevButton.style('visibility', 'hidden');
+        this._nextButton.style('visibility', 'hidden');
+    }
+
     async _moveOneBigStepTowardsTarget() {
         if (this._current < this._target) {
             // step forward
@@ -343,6 +361,11 @@ class Animator {
         } else {
             // current === target, do nothing
         }
+        // (de-)activate nav buttons
+        this._prevButton.classed("disabled", this._current === 0);
+        this._prevButtonHammer.get('tap').set({enable: !(this._current === 0)});
+        this._nextButton.classed("disabled", this._current === this.steps - 1);
+        this._nextButtonHammer.get('tap').set({enable: !(this._current === this.steps - 1)});
     }
 
     async _moveTowardsTarget() {
@@ -435,9 +458,25 @@ function visualizeResult(charArray, cellWidth, fontSizePx) {
         })
         .text(c => c.char);
 
+    const navButtons = diagram.append("g");
+    const prevButton = navButtons.append("text")
+        .attr("class", "button prev fa")
+        .attrs({
+            x: positionX({position: -1.5}),
+            y: 0.53 * lineHeight,
+        })
+        .text("\uf104");
+    const nextButton = navButtons.append("text")
+        .attr("class", "button next fa")
+        .attrs({
+            x: positionX({position: charArray.length + 0.5}),
+            y: 0.53 * lineHeight,
+        })
+        .text("\uf105");
+
     return {
         element: svg.node(),
-        animator: new Animator(d3select, getSteps(charArray), positionX, positionY),
+        animator: new Animator(d3select, getSteps(charArray), positionX, positionY, prevButton, nextButton),
     };
 }
 

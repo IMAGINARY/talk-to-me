@@ -226,6 +226,7 @@ async function init() {
         textTransformationVisualizer.setRaw(decodedPredictionExt.indices, decodedPredictionExt.alphabet);
 
         // hide the viz containers before starting animations
+        textTransformationVisualizer.animator.hideButtons();
         $textTransformationViz.hide();
         $decodingViz.hide();
         $networkViz.hide();
@@ -245,6 +246,7 @@ async function init() {
         aq.push(delayAnim);
         aq.push(slideDown($textTransformationViz));
         aq.push(async () => await textTransformationVisualizer.animator.last(initialDurations.textTransform));
+        aq.push(() => textTransformationVisualizer.animator.showButtons());
 
         aq.play();
 
