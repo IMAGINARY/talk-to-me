@@ -33,6 +33,9 @@ function visualizeDecoder(indices, letterProbabilities, alphabet, numBest, cellW
             .attrs({x1: 0, y1: y * fontSizePx, x2: width, y2: y * fontSizePx});
     }
 
+    const letters = diagram.append("g")
+        .attr("class","monospaced");
+
     const lineHeight = fontSizePx;
     const charWidth = width / indices.shape[0];
     for (let position = 0; position < indices.shape[0]; ++position) {
@@ -42,7 +45,7 @@ function visualizeDecoder(indices, letterProbabilities, alphabet, numBest, cellW
             const char = alphabet[charIndex];
             const opacity = letterProbabilities.get(position, charIndex);
 
-            diagram.append("text")
+            letters.append("text")
                 .attr("class", "letters")
                 .attrs({
                     x: (position + 0.5) * charWidth,

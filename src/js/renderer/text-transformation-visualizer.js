@@ -412,12 +412,14 @@ function visualizeResult(charArray, cellWidth, fontSizePx) {
         .attr("height", totalHeight);
 
     const diagram = svg.append("g")
-        .attr("transform", `translate(${cellWidth},1)`);
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+    const letters = diagram.append("g")
+        .attr("class", "monospaced");
 
     const lineHeight = fontSizePx;
     const charWidth = width / charArray.length;
 
-    const d3select = () => diagram.selectAll("text");
+    const d3select = () => letters.selectAll("text");
     const positionX = c => (c.position + 0.5) * charWidth;
     const positionY = c => (1 - 0.175) * lineHeight;
 

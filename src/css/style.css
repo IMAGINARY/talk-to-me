@@ -278,7 +278,7 @@ body {
     opacity: var(--viz-low-alpha);
 }
 
-#viz-container svg text {
+#viz-container svg .monospaced {
     font-family: 'Inconsolata';
     text-anchor: middle;
 }
@@ -291,11 +291,11 @@ svg.letter-probability-viz text {
     font-size: 9px;
 }
 
-svg.letter-probability-viz text.legend {
+svg.letter-probability-viz .legend {
     fill: var(--viz-color);
 }
 
-svg.letter-probability-viz text.letters {
+svg.letter-probability-viz .letters {
     fill: var(--viz-bg-color);
 }
 
@@ -304,7 +304,6 @@ svg.decoding-viz text {
     fill: var(--viz-color);
 }
 
-
-svg.text-transformation-viz text.letters {
+svg.text-transformation-viz .letters {
     fill: var(--viz-color);
 }

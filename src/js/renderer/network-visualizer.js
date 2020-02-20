@@ -39,12 +39,15 @@ function visualizeLetterProbabilities(letterProbabilties, alphabet, cellSize) {
             .attrs({x1: 0, y1: y * cellSize, x2: width, y2: y * cellSize});
     }
 
+    const letters = diagram.append("g")
+        .attr("class", "monospaced");
+
     const legendLeft = true;
     const legendRight = false;
     for (let l = 0; l < letterProbabilties.shape[1]; ++l) {
         const char = alphabet[l];
         if (legendLeft) {
-            diagram.append("text")
+            letters.append("text")
                 .attr("class", "legend")
                 .attrs({
                     x: -0.5 * cellSize,
@@ -54,7 +57,7 @@ function visualizeLetterProbabilities(letterProbabilties, alphabet, cellSize) {
         }
         for (let t = 0; t < letterProbabilties.shape[0]; ++t) {
             const opacity = letterProbabilties.get(t, l);
-            diagram.append("rect")
+            letters.append("rect")
                 .attrs({
                     x: t * cellSize,
                     y: l * cellSize,
@@ -62,7 +65,7 @@ function visualizeLetterProbabilities(letterProbabilties, alphabet, cellSize) {
                     height: cellSize,
                     opacity: opacity,
                 });
-            diagram.append("text")
+            letters.append("text")
                 .attr("class", "letters")
                 .attrs({
                     x: (t + 0.5) * cellSize,
@@ -71,7 +74,7 @@ function visualizeLetterProbabilities(letterProbabilties, alphabet, cellSize) {
                 .text(char)
         }
         if (legendRight) {
-            diagram.append("text")
+            letters.append("text")
                 .attr("class", ".legend")
                 .attrs({
                     x: (letterProbabilties.shape[0] + 0.5) * cellSize,
