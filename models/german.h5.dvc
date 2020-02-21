@@ -1,0 +1,7 @@
+md5: 1f2a66e360ff6dd55a6ab21a229bc714
+outs:
+- md5: 8016d2f9bcfe366d6de1138798e6e14e
+  path: german.h5
+  cache: true
+  metric: false
+  persist: false
