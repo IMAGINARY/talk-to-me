@@ -26,6 +26,21 @@ yarn run dist
 ```
 and check the `dist` folder for the build results.
 
+## Requirement for converting Keras models to Tensorflow.js models
+
+The Tensorflow.js models in `models/<language>`  are generated from the Keras model files `models/<language>.h5` using
+the `convert-to-tfjs.sh` script located in the `models` folder. It is normally not necessary to re-do this step, but we
+include it here for reasons of reproducibility.
+ 
+The script utilizes `tensorflowjs_converter` that needs to be installed separately.
+Having `python` and `virtualenv` installed, it can be done using:
+```
+virtualenv --no-site-packages venv
+. venv/bin/activate
+pip install tensorflowjs==1.3.2
+```
+Other `tensorflowjs` versions might work as well, but will most likely not produce the exact same output files.
+
 ## Pushing to the repository
 
 Model files, test and training data are managed via `dvc`. Two remotes are set up for this repository.
