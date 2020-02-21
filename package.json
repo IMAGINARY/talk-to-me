@@ -57,10 +57,12 @@
     "appId": "org.imaginary.talk-to-me",
     "productName": "Talk to me",
     "files": [
+      "!**/.DS_Store",
       "!audio${/*}",
       "!models${/*}"
     ],
     "extraResources": [
+      "build/fallbackicon.png",
       "models/**/*",
       "!models/**/*.dvc",
       "!models/**/.gitignore",
