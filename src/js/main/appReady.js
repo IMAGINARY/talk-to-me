@@ -1,6 +1,7 @@
 const {BrowserWindow, Menu, screen} = require('electron');
 const path = require('path');
 
+const isPackaged = require('../common/is-packaged.js');
 const cli = require('../common/cli.js');
 
 function createWindow(argv) {
@@ -24,6 +25,9 @@ function createWindow(argv) {
         const bounds = display.bounds;
         Object.assign(options, bounds);
     }
+
+    if (process.platform === 'linux')
+        options.icon = path.resolve(__dirname, isPackaged() ? ".." : "", "../../../build/fallbackicon.png");
 
     // Create the browser window.
     const win = new BrowserWindow(options);
