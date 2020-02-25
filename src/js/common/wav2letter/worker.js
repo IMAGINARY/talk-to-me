@@ -24,8 +24,8 @@ const models = {
     "de": {
         lang: "de",
         url: 'file://' + path.resolve(modelBaseDir, 'german/model.json'),
-        tfLetters: "␣'abcdefghijklmnopqrstuvwxyzßäöü²³·",
-        letters: "␣'abcdefghijklmnopqrstuvwxyzßäöü²³·",
+        tfLetters: "·␣'abcdefghijklmnopqrstuvwxyzßäöü",
+        letters: "·␣'abcdefghijklmnopqrstuvwxyzßäöü",
         tfModel: null,
     }
 };
