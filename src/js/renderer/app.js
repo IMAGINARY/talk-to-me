@@ -101,7 +101,18 @@ async function init() {
         .replace(/px$/, ""));
     const $waveformCanvas = $('#waveform-canvas');
     $waveformCanvas.attr("width", LETTER_CELL_SIZE * W2L_OUTPUT_LENGTH);
-    const waveformVisualizer = new WaveformVisualizer($waveformCanvas.get(0), samples);
+    const liveAnalyzer = audioContext.createAnalyser();
+    recorderInputNode.connect(liveAnalyzer);
+
+    const liveSamplesCb = (() => {
+        let liveSamples = new Float32Array(0);
+        return () => {
+            liveSamples = liveSamples.length !== liveAnalyzer.fftSize ? new Float32Array(liveAnalyzer.fftSize) : liveSamples;
+            liveAnalyzer.getFloatTimeDomainData(liveSamples);
+            return liveSamples;
+        }
+    })();
+    const waveformVisualizer = new WaveformVisualizer($waveformCanvas.get(0), samples, liveSamplesCb);
     const $spectrogramCanvasContainer = $('#spectrogram-viz .canvas-container');
     const $decodingContainer = $('#decoding-viz .decoding-container');
     const $textTransformationContainer = $('#text-transformation-viz .text-transformation-container');
@@ -172,7 +183,7 @@ async function init() {
     samples.on('length_changed', () => waveformVisualizer.cursorPosition = samples.length / samples.maxLength);
     audioPlayer.on('progress', (progress, duration) => waveformVisualizer.cursorPosition = progress / duration);
     audioPlayer.on('ended', () => {
-        waveformVisualizer.cursorPosition = -1.0;
+        waveformVisualizer.cursorPosition = 2.0;
         audioPlayer.stop();
     });
 
@@ -253,8 +264,10 @@ async function init() {
         aq.play();
     };
     samples.on('full', data => {
-        waveformVisualizer.cursorPosition = -1;
-        setTimeout(() => samplesFullCb(data), 0);
+        waveformVisualizer.liveMode = false;
+        waveformVisualizer.cursorPosition = 2.0;
+
+        requestAnimationFrame(() => setTimeout(() => samplesFullCb(data), 0));
     });
 
     function reset() {
@@ -266,6 +279,7 @@ async function init() {
 
         samples.clear();
         waveformVisualizer.cursorPosition = -1;
+        waveformVisualizer.liveMode = true;
         $spectrogramCanvasContainer.empty();
         networkVisualizer.clear();
         $decodingContainer.empty();
@@ -318,7 +332,10 @@ async function init() {
     $restartButton.each((i, e) => new Hammer(e).on('tap', reset));
 
     $turboToggle.bootstrapToggle(turboMode ? 'on' : 'off');
-    $turboToggle.change(() => {turboMode = $turboToggle.prop('checked'); console.log(turboMode);});
+    $turboToggle.change(() => {
+        turboMode = $turboToggle.prop('checked');
+        console.log(turboMode);
+    });
 
     function addSupportedLanguages() {
         for (let l of supportedLanguages) {

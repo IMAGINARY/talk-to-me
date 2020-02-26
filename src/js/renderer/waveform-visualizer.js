@@ -1,7 +1,7 @@
 const MIN_AMPLITUDE = 0.1;
 
 class WaveformVisualizer {
-    constructor(canvas, samples) {
+    constructor(canvas, samples, liveSamplesCb) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
         this.samples = samples;
@@ -9,20 +9,25 @@ class WaveformVisualizer {
         this.samples.on('data_changed', (data, start, end) => this._receiveSamples(start, end));
         this.buckets = new Float32Array(this.canvas.width);
 
+        this._liveSamplesCb = liveSamplesCb;
+
         this._cursorPosition = 0.0;
 
         this._requestAnimationFrameCB = this._redraw.bind(this);
+        this._requestAnimationFrameCBId = 0;
 
         const callback = (mutationsList, observer) => {
             for (let mutation of mutationsList) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'width') {
-                    requestAnimationFrame(this._requestAnimationFrameCB);
+                    this.requestRedraw();
                     break;
                 }
             }
         };
         this._observer = new MutationObserver(callback);
         this._observer.observe(this.canvas, {attributes: true});
+
+        this.liveMode = true;
     }
 
     get cursorPosition() {
@@ -31,12 +36,27 @@ class WaveformVisualizer {
 
     set cursorPosition(pos) {
         this._cursorPosition = pos;
-        requestAnimationFrame(this._requestAnimationFrameCB);
+        this.requestRedraw();
+    }
+
+    get liveMode() {
+        return this._liveMode;
+    }
+
+    set liveMode(enabled) {
+        this._liveMode = enabled;
+        if (enabled)
+            this.requestRedraw()
+    }
+
+    requestRedraw() {
+        cancelAnimationFrame(this._requestAnimationFrameCBId);
+        this._requestAnimationFrameCBId = requestAnimationFrame(this._requestAnimationFrameCB);
     }
 
     _clear() {
         this.buckets.fill(0.0);
-        requestAnimationFrame(this._requestAnimationFrameCB);
+        this.requestRedraw();
     }
 
     _bucketIndex(sampleIndex) {
@@ -56,8 +76,9 @@ class WaveformVisualizer {
             const bucketIndex = this._bucketIndex(s);
             this.buckets[bucketIndex] = Math.max(this.buckets[bucketIndex], Math.abs(this.samples.data[s]));
         }
-        requestAnimationFrame(this._requestAnimationFrameCB);
+        this.requestRedraw();
     }
+
 
     _redraw(timestampMs) {
         if (this.buckets.length != this.canvas.width) {
@@ -65,40 +86,66 @@ class WaveformVisualizer {
             this._receiveSamples(this.samples.data.subarray(0, this.samples.length), 0);
         }
 
-        // compute maximum aplitude
-        const maxAmplitude = this.buckets.reduce((max, cur) => Math.max(max, Math.abs(cur)), MIN_AMPLITUDE);
-        const amplification = 1.0 / maxAmplitude;
+        const liveSamples = this.liveMode ? this._liveSamplesCb() : new Float32Array(0);
 
+        // compute maximum amplitude
+        const computeMaxAmplitude = (buf, min) => buf.reduce((max, cur) => Math.max(max, Math.abs(cur)), min);
+        const maxBucketAmplitude = computeMaxAmplitude(this.buckets, MIN_AMPLITUDE);
+        const maxLiveAmplitude = this.liveMode ? computeMaxAmplitude(liveSamples, MIN_AMPLITUDE) : MIN_AMPLITUDE;
+        const maxAmplitude = Math.max(maxBucketAmplitude, maxLiveAmplitude);
+
+        const boundedCursorPosition = Math.max(0.0, this.cursorPosition);
         const color = window.getComputedStyle(this.canvas).color;
 
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const ctx = this.ctx;
 
-        this.ctx.save();
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.ctx.imageSmoothingEnabled = false;
-        this.ctx.translate(0, this.canvas.height / 2.0);
-        this.ctx.strokeStyle = color;
-        this.ctx.fillStyle = color;
-        this.ctx.beginPath();
-        this.ctx.moveTo(0, 0);
-        this.ctx.lineTo(this.canvas.width, 0.0);
-        this.ctx.stroke();
-        const barWidth = this.canvas.width / this.buckets.length;
-        for (let i = 0; i < this.buckets.length; ++i) {
-            const barHeight = amplification * this.buckets[i] * this.canvas.height;
-            this.ctx.fillRect(i / this.buckets.length * this.canvas.width, -0.5 * barHeight, barWidth, barHeight);
+        ctx.save();
+
+        ctx.imageSmoothingEnabled = false;
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 3;
+
+        ctx.save();
+        ctx.translate(0.0, 0.5 * this.canvas.height);
+        ctx.scale(this.canvas.width / this.buckets.length, 0.5 * this.canvas.height / maxAmplitude);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo((this.liveMode ? boundedCursorPosition : 1.0) * this.buckets.length, 0);
+        for (let i = 0; i < this.buckets.length; ++i)
+            ctx.fillRect(i, -this.buckets[i], 1, 2.0 * this.buckets[i]);
+        ctx.restore();
+        ctx.stroke();
+
+        if (this.liveMode && this.cursorPosition < 1.0) {
+
+            ctx.save();
+
+            ctx.translate(boundedCursorPosition * this.canvas.width, 0.5 * this.canvas.height);
+            ctx.scale(this.canvas.width / liveSamples.length, 0.5 * this.canvas.height / maxAmplitude);
+
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            liveSamples.forEach((v, i) => ctx.lineTo(i, v));
+            ctx.lineTo(liveSamples, 0.0);
+
+            ctx.restore();
+            ctx.stroke();
+
+            this.requestRedraw();
         }
 
         // draw a simple cursor
         if (this.cursorPosition >= 0.0 && this.cursorPosition <= 1.0) {
             const cursorColor = window.getComputedStyle(document.documentElement)
                 .getPropertyValue('--viz-snd-color');
-            this.ctx.strokeStyle = cursorColor;
-            this.ctx.fillStyle = cursorColor;
-            this.ctx.fillRect(this.canvas.width * this.cursorPosition - 1, -this.canvas.height / 2.0, 3, this.canvas.height);
+            ctx.fillStyle = cursorColor;
+            ctx.fillRect(this.cursorPosition * this.canvas.width, 0, 3, this.canvas.height);
         }
 
-        this.ctx.restore();
+        ctx.restore();
     }
 }
 
