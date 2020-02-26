@@ -17,12 +17,14 @@ const models = {
     "en": {
         lang: "en",
         url: 'file://' + path.resolve(modelBaseDir, 'english/model.json'),
+        tfLetters: "␣'abcdefghijklmnopqrstuvwxyz²³·",
         letters: "␣'abcdefghijklmnopqrstuvwxyz²³·",
         tfModel: null,
     },
     "de": {
         lang: "de",
         url: 'file://' + path.resolve(modelBaseDir, 'german/model.json'),
+        tfLetters: "␣'abcdefghijklmnopqrstuvwxyzßäöü²³·",
         letters: "␣'abcdefghijklmnopqrstuvwxyzßäöü²³·",
         tfModel: null,
     }
@@ -138,6 +140,20 @@ async function transcribe(params) {
     return transcription;
 }
 
+function mapTfLetters(outputLayer, tfLetters, letters) {
+    // compute mapping from letters to tfLetters
+    const letterMapping = Array.from(letters).map(l => tfLetters.indexOf(l));
+
+    // decompose layer into rows tfLetters.length rows
+    const tfRows = tf.unstack(outputLayer, 1);
+
+    // reorder rows according to mapping
+    const rows = letterMapping.map(i => tfRows[i]);
+
+    // recompose the reordered rows
+    return tf.stack(rows, 1);
+}
+
 function tf_predictExtSync(model, waveform16kHzFloat32) {
     const windowSize = 400;
     waveform16kHzFloat32 = ensureWaveformLength(waveform16kHzFloat32, windowSize);
@@ -147,6 +163,12 @@ function tf_predictExtSync(model, waveform16kHzFloat32) {
     const allActivations = model.tfModel
         .predict(tf.expandDims(logMelSpectrogram, 0))
         .map(layer => layer.squeeze(0));
+
+    // rows in output correspond to model.tfLetters
+    // reorder them to match model.letters
+    const outputLayer = allActivations.pop();
+    const outputLayerLettersMapped = mapTfLetters(outputLayer, model.tfLetters, model.letters);
+    allActivations.push(outputLayerLettersMapped);
 
     return {
         layers: allActivations,
