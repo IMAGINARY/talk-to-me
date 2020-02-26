@@ -63,7 +63,7 @@
     ],
     "extraResources": [
       "build/fallbackicon.png",
-      "models/**/*",
+      "models/*/**/*",
       "!models/**/*.dvc",
       "!models/**/.gitignore",
       "audio/**/*",

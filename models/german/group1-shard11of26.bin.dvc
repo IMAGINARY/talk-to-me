@@ -1,7 +1,0 @@
-md5: d79decf304e2b98b3e27e0b7e61c4e9a
-outs:
-- md5: c85c602fd6b259dbd86edaf81b016dfa
-  path: group1-shard11of26.bin
-  cache: true
-  metric: false
-  persist: false
