@@ -17,9 +17,10 @@ class WaveformVisualizer {
         this._requestAnimationFrameCBId = 0;
 
         const callback = (mutationsList, observer) => {
+            const attributes = ['width', 'height'];
             for (let mutation of mutationsList) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'width') {
-                    this.requestRedraw();
+                if (mutation.type === 'attributes' && attributes.indexOf(mutation.attributeName) !== -1) {
+                    this._redraw();
                     break;
                 }
             }
@@ -80,10 +81,10 @@ class WaveformVisualizer {
     }
 
 
-    _redraw(timestampMs) {
+    _redraw() {
         if (this.buckets.length != this.canvas.width) {
             this.buckets = new Float32Array(this.canvas.width);
-            this._receiveSamples(this.samples.data.subarray(0, this.samples.length), 0);
+            this._receiveSamples(0, this.samples.length);
         }
 
         const liveSamples = this.liveMode ? this._liveSamplesCb() : new Float32Array(0);
