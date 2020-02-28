@@ -65,7 +65,7 @@ class WaveformVisualizer {
 
     _receiveSamples(sampleStart, sampleEnd) {
         const bucketStart = this._bucketIndex(sampleStart);
-        const bucketEnd = this._bucketIndex(sampleEnd);
+        const bucketEnd = this._bucketIndex(sampleEnd) + 1;
 
         // clear buckets that will be refilled
         for (let b = bucketStart; b < bucketEnd; ++b)
