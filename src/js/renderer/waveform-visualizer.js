@@ -107,7 +107,7 @@ class WaveformVisualizer {
         ctx.imageSmoothingEnabled = false;
         ctx.strokeStyle = color;
         ctx.fillStyle = color;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 1;
 
         ctx.save();
         ctx.translate(0.0, 0.5 * this.canvas.height);
@@ -120,6 +120,7 @@ class WaveformVisualizer {
         ctx.restore();
         ctx.stroke();
 
+        ctx.lineWidth = 3;
         if (this.liveMode && this.cursorPosition < 1.0) {
 
             ctx.save();
