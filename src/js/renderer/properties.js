@@ -12,6 +12,14 @@ const properties = {
     },
     turboFactor: 0.025,
     styles: {
+        recording: {
+            waveformHeight: 513,
+            vizBounds: {top: 20, left: 0, width: 1920},
+        },
+        recognition: {
+            waveformHeight: 65,
+            vizBounds: {top: 100, left: 20},
+        },
     },
 };
 

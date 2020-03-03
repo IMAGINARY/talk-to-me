@@ -84,6 +84,9 @@ async function init() {
     audioPlayer.connect(audioContext.destination);
     const samples = audioRecorderNode.samples;
 
+    const $title = $("#title");
+    const $recordButtonContainer = $("#record-button-container");
+    const $vizContainer = $("#viz-container");
     const $textTransformationViz = $("#text-transformation-viz");
     const $decodingViz = $("#decoding-viz");
     const $networkViz = $("#network-viz");
@@ -98,7 +101,7 @@ async function init() {
         .getPropertyValue('--viz-font-size')
         .replace(/px$/, ""));
     const $waveformCanvas = $('#waveform-canvas');
-    $waveformCanvas.attr("width", LETTER_CELL_SIZE * W2L_OUTPUT_LENGTH);
+    //$waveformCanvas.attr("width", LETTER_CELL_SIZE * W2L_OUTPUT_LENGTH);
     const liveAnalyzer = audioContext.createAnalyser();
     recorderInputNode.connect(liveAnalyzer);
 
@@ -143,7 +146,6 @@ async function init() {
             alphabet: predictionExt.letters,
         };
     }
-
 
 
     const aq = new AnimationQueue();
@@ -215,9 +217,20 @@ async function init() {
 
         const initialDurations = turboMode ? turboAnimationDurations : animationDurations;
 
+        const vizBoundsRecognition = Object.assign({}, props.styles.recognition.vizBounds, {width: LETTER_CELL_SIZE * (W2L_OUTPUT_LENGTH + 2)});
+
+        const moveVizUp = () => Promise.all([
+            $vizContainer.animate(vizBoundsRecognition, initialDurations.moveViz).promise(),
+            $waveformCanvas.animate({height: props.styles.recognition.waveformHeight}, initialDurations.moveViz).promise(),
+            $recordButtonContainer.fadeOut(initialDurations.moveViz).promise(),
+            $title.fadeOut(initialDurations.moveViz).promise(),
+        ]).then(() => $waveformCanvas.attr({height: $waveformCanvas.height(), width: $waveformCanvas.width()}));
+
         const delayAnim = AnimationQueue.delay(initialDurations.slideDelay);
         const slideDown = $elems => () => $elems.slideDown(initialDurations.slideDown).promise();
 
+        aq.push(moveVizUp);
+        aq.push(delayAnim);
         aq.push(slideDown($spectrogramViz));
         aq.push(delayAnim);
         aq.push(slideDown($networkViz));
@@ -228,6 +241,11 @@ async function init() {
         aq.push(slideDown($textTransformationViz));
         aq.push(async () => await textTransformationVisualizer.animator.last(initialDurations.textTransform));
         aq.push(() => textTransformationVisualizer.animator.showButtons());
+        aq.push(delayAnim);
+        aq.push(() => Promise.all([
+            $playButton.fadeIn().promise(),
+            $restartButton.fadeIn().promise(),
+        ]));
 
         aq.play();
     };
@@ -243,8 +261,6 @@ async function init() {
         audioRecorderNode.stopRecording();
         audioPlayer.stop();
 
-        aq.clear();
-
         samples.clear();
         waveformVisualizer.cursorPosition = -1;
         waveformVisualizer.liveMode = true;
@@ -253,6 +269,12 @@ async function init() {
         $decodingContainer.empty();
         textTransformationVisualizer.clear();
 
+        $vizContainer.css(props.styles.recording.vizBounds);
+        $waveformCanvas.css({height: props.styles.recording.waveformHeight});
+        $recordButtonContainer.show();
+        $title.show();
+        $waveformCanvas.attr({height: $waveformCanvas.height(), width: $waveformCanvas.width()});
+
         $textTransformationViz.hide();
         $decodingViz.hide();
         $networkViz.hide();
@@ -260,6 +282,17 @@ async function init() {
 
         untoggleButton($recordButton);
         untoggleButton($playButton);
+
+        $recordButtonContainer.show();
+        $playButton.hide();
+        $restartButton.hide();
+    }
+
+    function resetWithFade() {
+        aq.push(() => $(document.body).animate({opacity: 0.0}).promise());
+        aq.push(reset);
+        aq.push(() => $(document.body).animate({opacity: 1.0}).promise());
+        aq.play();
     }
 
     const $recordButton = $("#record-button");
@@ -273,17 +306,8 @@ async function init() {
     }
 
     $playButton.hide();
+    $restartButton.hide();
 
-    samples.on('full', () => {
-        $recordButton.hide();
-        $playButton.show();
-    });
-    samples.on('empty', () => {
-        untoggleButton($recordButton);
-        untoggleButton($playButton);
-        $playButton.hide();
-        $recordButton.show();
-    });
     audioRecorderNode.on('recording-stopped', () => $recordButton.button('toggle'));
     audioPlayer.on('ended', () => $playButton.button('toggle'));
     audioPlayer.on('paused', () => $playButton.button('toggle'));
@@ -294,7 +318,7 @@ async function init() {
         barkDetectorNode.once('on', () => audioRecorderNode.startRecording());
     }));
     $playButton.each((i, e) => new Hammer(e).on('tap', () => audioPlayer.play()));
-    $restartButton.each((i, e) => new Hammer(e).on('tap', reset));
+    $restartButton.each((i, e) => new Hammer(e).on('tap', resetWithFade));
 
     $turboToggle.bootstrapToggle(turboMode ? 'on' : 'off');
     $turboToggle.change(() => {
@@ -329,6 +353,9 @@ async function init() {
 
         const t = i18next.getFixedT(lang, namespace);
         const elemsToLocalize = [
+            {querySelector: "#title", key: "title"},
+            {querySelector: "#record-button-label", key: "label.startRecording"},
+            {querySelector: "#turbo-toggle-label", key: "label.toggleTurboMode"},
             {querySelector: "#text-transformation-viz .explanation", key: "short-expl.textTransformation"},
             {querySelector: "#decoding-viz .explanation", key: "short-expl.decoder"},
             {querySelector: "#network-viz .explanation", key: "short-expl.network"},

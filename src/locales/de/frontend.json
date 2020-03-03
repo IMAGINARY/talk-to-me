@@ -1,4 +1,9 @@
 {
+  "title": "Sprich zu mir",
+  "label": {
+    "startRecording": "Aufnahme starten",
+    "toggleTurboMode": "Turbo Modus"
+  },
   "short-expl": {
     "textTransformation": "Die <em>Steuerzeichen</em> werden verarbeitet.",
     "decoder": "Ein <em>Dekoder</em> läuft durch die Wahrscheinlichkeitstabelle um den besten Pfad zur Ableitung von Worten und Sätzen zu finden.",
