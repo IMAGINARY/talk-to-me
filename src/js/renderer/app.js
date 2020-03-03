@@ -29,6 +29,7 @@ const NetworkVisualizer = require("./network-visualizer.js");
 
 const SAMPLE_RATE = 16000;
 const AUDIO_DURATION_SEC = 2.5;
+const AnimationQueue = require('./animation-queue.js');
 
 const supportedLanguages = ['en', 'de'];
 const modelLoadedPromise = Promise.all(supportedLanguages
@@ -146,37 +147,7 @@ async function init() {
         };
     }
 
-    class AnimationQueue {
-        constructor() {
-            this._queue = [];
-            this._running = Promise.resolve();
-        }
 
-        push(item) {
-            this._queue.push(item);
-        }
-
-        async play() {
-            await this._running;
-            this._running = this._play();
-            await this._running;
-        }
-
-        async _play() {
-            while (this._queue.length > 0) {
-                const item = this._queue.shift();
-                await item();
-            }
-        }
-
-        async wait() {
-            await this._running;
-        }
-
-        clear() {
-            this._queue.length = 0;
-        }
-    }
 
     const aq = new AnimationQueue();
 
