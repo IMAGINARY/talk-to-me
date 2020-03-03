@@ -82,6 +82,15 @@ class BarkDetectorNode extends EventEmitter {
             this._signalHistory.shift();
     }
 
+    reset() {
+        const wasBarking = this._barking;
+        this._signalHistory.fill(0);
+        this._barking = false;
+
+        if (wasBarking)
+            this.emit('off');
+    }
+
     _getMaxVolume() {
         this._analyzer.getFloatFrequencyData(this._fftBins);
         return this._fftBins.reduce(

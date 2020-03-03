@@ -289,12 +289,9 @@ async function init() {
     audioPlayer.on('paused', () => $playButton.button('toggle'));
 
     $recordButton.each((i, e) => new Hammer(e).on('tap', () => {
-        if (barkDetectorNode.isOn) {
-            audioRecorderNode.startRecording();
-        } else {
-            audioRecorderNode.startPreRecording();
-            barkDetectorNode.once('on', () => audioRecorderNode.startRecording());
-        }
+        barkDetectorNode.reset();
+        audioRecorderNode.startPreRecording();
+        barkDetectorNode.once('on', () => audioRecorderNode.startRecording());
     }));
     $playButton.each((i, e) => new Hammer(e).on('tap', () => audioPlayer.play()));
     $restartButton.each((i, e) => new Hammer(e).on('tap', reset));
