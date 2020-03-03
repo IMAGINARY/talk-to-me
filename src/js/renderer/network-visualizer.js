@@ -126,7 +126,7 @@ class NetworkVisualizer {
                 .addClass('swiper-slide')
                 .addClass('needs-padding')
                 .append($layerCanvas);
-            $swiperWrapper.prepend($slide);
+            $swiperWrapper.append($slide);
         }
 
         // add letter probability diagram
@@ -134,7 +134,7 @@ class NetworkVisualizer {
         const $slide = $('<div></div>')
             .addClass('swiper-slide')
             .append(svg);
-        $swiperWrapper.prepend($slide);
+        $swiperWrapper.append($slide);
 
         // add pagination bullets
         const $swiperPagination = $('<div></div>')
@@ -159,7 +159,6 @@ class NetworkVisualizer {
         const swiper = new Swiper(this._swiperContainer, {
             direction: 'vertical',
             centeredSlides: true,
-            initialSlide: layers.length - 2,
             slidesPerView: 1,
             effect: 'fade',
             speed: this._options.transitionDuration,
@@ -168,14 +167,13 @@ class NetworkVisualizer {
             },
             autoplay: {
                 delay: this._options.autoplayDelay,
-                reverseDirection: true,
                 stopOnLastSlide: true,
                 disableOnInteraction: false,
             },
             pagination: {
                 el: '.swiper-pagination',
                 renderBullet: function (index, className) {
-                    return '<span class="' + className + '">' + (layers.length - index - 1) + '</span>';
+                    return '<span class="' + className + '">' + (index + 1) + '</span>';
                 },
             },
             scrollbar: {
@@ -195,7 +193,6 @@ class NetworkVisualizer {
             const oldAutoplayDelay = swiper.params.autoplay.delay;
             swiper.params.speed = typeof transitionDuration === "number" ? transitionDuration : oldTransitionDuration;
             swiper.params.autoplay.delay = typeof autoplayDelay === "number" ? autoplayDelay : oldAutoplayDelay;
-            swiper.slideTo(swiper.slides.length - 1, 0, false);
             await new Promise(resolve => {
                 swiper.once('autoplayStop', resolve);
                 swiper.autoplay.start();
