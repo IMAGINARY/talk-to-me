@@ -27,11 +27,14 @@ const visualizeDecoding = require("./decoding-visualizer.js");
 const TextTransformationVisualizer = require("./text-transformation-visualizer.js");
 const NetworkVisualizer = require("./network-visualizer.js");
 
-const SAMPLE_RATE = 16000;
-const AUDIO_DURATION_SEC = 2.5;
 const AnimationQueue = require('./animation-queue.js');
 
-const supportedLanguages = ['en', 'de'];
+const props = require('./properties.js');
+
+const SAMPLE_RATE = props.sampleRate;
+const AUDIO_DURATION_SEC = props.audioDuration / 1000.0;
+
+const supportedLanguages = props.supportedLanguages;
 const modelLoadedPromise = Promise.all(supportedLanguages
     .map(lang => wav2letter.transcribe({waveform: new Float32Array(), lang: lang})))
     .then(() => console.log("Speech recognition models loaded."));
@@ -39,14 +42,8 @@ const w2lOutputLengthPromise = modelLoadedPromise
     .then(() => wav2letter.computeOutputLength(AUDIO_DURATION_SEC * SAMPLE_RATE));
 
 // define the duration for certain animations
-const animationDurations = {
-    slideDown: 500,
-    slideDelay: 2000,
-    networkTransition: 300,
-    networkDelay: 200,
-    textTransform: 1000,
-};
-const turboFactor = 0.025;
+const animationDurations = props.animationDurations;
+const turboFactor = props.turboFactor;
 const turboAnimationDurations = Object.fromEntries(
     Object.entries(animationDurations).map(([k, v], i) => [k, turboFactor * v])
 );
@@ -219,7 +216,7 @@ async function init() {
         const initialDurations = turboMode ? turboAnimationDurations : animationDurations;
 
         const delayAnim = AnimationQueue.delay(initialDurations.slideDelay);
-        const slideDown = $elems => () => new Promise(resolve => $elems.slideDown(initialDurations.slideDown, resolve))
+        const slideDown = $elems => () => $elems.slideDown(initialDurations.slideDown).promise();
 
         aq.push(slideDown($spectrogramViz));
         aq.push(delayAnim);
