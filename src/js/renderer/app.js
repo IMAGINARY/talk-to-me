@@ -218,7 +218,7 @@ async function init() {
 
         const initialDurations = turboMode ? turboAnimationDurations : animationDurations;
 
-        const delayAnim = () => new Promise(resolve => setTimeout(resolve, initialDurations.slideDelay));
+        const delayAnim = AnimationQueue.delay(initialDurations.slideDelay);
         const slideDown = $elems => () => new Promise(resolve => $elems.slideDown(initialDurations.slideDown, resolve))
 
         aq.push(slideDown($spectrogramViz));

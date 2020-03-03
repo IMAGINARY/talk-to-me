@@ -28,6 +28,10 @@ class AnimationQueue {
     clear() {
         this._queue.length = 0;
     }
+
+    static delay(duration) {
+        return () => new Promise(resolve => setTimeout(resolve, duration));
+    }
 }
 
 module.exports = AnimationQueue;
