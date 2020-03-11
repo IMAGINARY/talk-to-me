@@ -58,17 +58,35 @@ body::-webkit-scrollbar {
     color: var(--viz-color);
     position: absolute;
     width: 100%;
-    bottom: 50px;
     font-family: 'gap_sansbold';
     font-size: 150px;
     letter-spacing: 0.05em;
     text-transform: uppercase;
+    z-index: 1;
+    top: 50px;
+    transform: scale(1);
+}
+
+#title.recognition {
+    animation: moveTitleTop forwards;
+}
+
+@keyframes moveTitleTop {
+    from {
+        top: 50px;
+        transform: scale(1);
+    }
+
+    to {
+        top: 0;
+        transform: scale(0.5);
+    }
 }
 
 #record-button-container {
     position: absolute;
     width: 100%;
-    bottom: 420px;
+    bottom: 75px;
 }
 
 #button-bar {

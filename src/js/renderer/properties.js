@@ -14,11 +14,11 @@ const properties = {
     styles: {
         recording: {
             waveformHeight: 513,
-            vizBounds: {top: 20, left: 0, width: 1920},
+            vizBounds: {top: Math.floor((1080 - 513) / 2), left: 0, width: 1920},
         },
         recognition: {
             waveformHeight: 65,
-            vizBounds: {top: 100, left: 20},
+            vizBounds: {top: 175, left: 20},
         },
     },
 };

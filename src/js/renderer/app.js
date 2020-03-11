@@ -219,16 +219,25 @@ async function init() {
 
         const vizBoundsRecognition = Object.assign({}, props.styles.recognition.vizBounds, {width: LETTER_CELL_SIZE * (W2L_OUTPUT_LENGTH + 2)});
 
+        const makeRoom = () => {
+            const cssAnimPromise = new Promise(resolve => $title.one('animationend', resolve));
+            $title.css('animation-duration', `${initialDurations.moveViz}ms`);
+            $title.addClass('recognition');
+            return Promise.all([
+                $recordButtonContainer.fadeOut(initialDurations.moveViz).promise(),
+                cssAnimPromise,
+            ]);
+        };
         const moveVizUp = () => Promise.all([
             $vizContainer.animate(vizBoundsRecognition, initialDurations.moveViz).promise(),
             $waveformCanvas.animate({height: props.styles.recognition.waveformHeight}, initialDurations.moveViz).promise(),
-            $recordButtonContainer.fadeOut(initialDurations.moveViz).promise(),
-            $title.fadeOut(initialDurations.moveViz).promise(),
         ]).then(() => $waveformCanvas.attr({height: $waveformCanvas.height(), width: $waveformCanvas.width()}));
 
         const delayAnim = AnimationQueue.delay(initialDurations.slideDelay);
         const slideDown = $elems => () => $elems.slideDown(initialDurations.slideDown).promise();
 
+        aq.push(AnimationQueue.skipFrame());
+        aq.push(makeRoom);
         aq.push(moveVizUp);
         aq.push(delayAnim);
         aq.push(slideDown($spectrogramViz));
@@ -269,6 +278,7 @@ async function init() {
         $decodingContainer.empty();
         textTransformationVisualizer.clear();
 
+        $title.removeClass('recognition');
         $vizContainer.css(props.styles.recording.vizBounds);
         $waveformCanvas.css({height: props.styles.recording.waveformHeight});
         $recordButtonContainer.show();
