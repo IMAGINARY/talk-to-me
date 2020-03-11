@@ -3,7 +3,7 @@ const properties = {
     sampleRate: 16000,
     audioDuration: 2500,
     animationDurations: {
-        movViz: 1000,
+        moveViz: 1000,
         slideDown: 500,
         slideDelay: 2000,
         networkTransition: 300,
