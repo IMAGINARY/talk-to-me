@@ -290,8 +290,8 @@ async function init() {
         $networkViz.hide();
         $spectrogramViz.hide();
 
-        untoggleButton($recordButton);
-        untoggleButton($playButton);
+        resetRecordButton();
+        resetPlayButton();
 
         $recordButtonContainer.show();
         $playButton.hide();
@@ -305,30 +305,48 @@ async function init() {
         aq.play();
     }
 
-    const $recordButton = $("#record-button");
-    const $playButton = $("#play-button");
-    const $restartButton = $("#restart-button");
-    const $turboToggle = $("#turbo-toggle");
+    const recordButton = document.querySelector("#record-button");
+    const playButton = document.querySelector("#play-button"), $playButton = $(playButton);
+    const restartButton = document.querySelector("#restart-button"), $restartButton = $(restartButton);
+    const turboToggle = document.querySelector("#turbo-toggle"), $turboToggle = $(turboToggle);
 
-    function untoggleButton($button) {
-        if ($button.hasClass('active'))
-            $button.button('toggle');
+    const hammerRecordButton = new Hammer(recordButton);
+    hammerRecordButton.get('press').set({time: 0});
+
+    function startRecordingCb() {
+        audioRecorderNode.startRecording();
     }
 
-    $playButton.hide();
-    $restartButton.hide();
+    function resetRecordButton() {
+        audioRecorderNode.removeListener('recording-stopped', resetRecordButton);
+        barkDetectorNode.removeListener('on', startRecordingCb);
+        recordButton.classList.remove('active');
+        hammerRecordButton.off('press');
+        hammerRecordButton.on('press', () => {
+            hammerRecordButton.off('press');
+            recordButton.classList.add('active');
+            barkDetectorNode.reset();
+            audioRecorderNode.startPreRecording();
+            barkDetectorNode.once('on', startRecordingCb);
+        });
+    }
 
-    audioRecorderNode.on('recording-stopped', () => $recordButton.button('toggle'));
-    audioPlayer.on('ended', () => $playButton.button('toggle'));
-    audioPlayer.on('paused', () => $playButton.button('toggle'));
+    const hammerPlayButton = new Hammer(playButton);
 
-    $recordButton.each((i, e) => new Hammer(e).on('tap', () => {
-        barkDetectorNode.reset();
-        audioRecorderNode.startPreRecording();
-        barkDetectorNode.once('on', () => audioRecorderNode.startRecording());
-    }));
-    $playButton.each((i, e) => new Hammer(e).on('tap', () => audioPlayer.play()));
-    $restartButton.each((i, e) => new Hammer(e).on('tap', resetWithFade));
+    function resetPlayButton() {
+        audioPlayer.removeListener('ended', resetPlayButton);
+        playButton.classList.remove('active');
+        hammerPlayButton.off('tap');
+        hammerPlayButton.on('tap', () => {
+            hammerPlayButton.off('tap');
+            playButton.classList.add('active');
+            audioPlayer.once('ended', resetPlayButton);
+            audioPlayer.play();
+        });
+    }
+
+    const hammerRestartButton = new Hammer(restartButton);
+    hammerRestartButton.on('tap', resetWithFade);
 
     $turboToggle.bootstrapToggle(turboMode ? 'on' : 'off');
     $turboToggle.change(() => {

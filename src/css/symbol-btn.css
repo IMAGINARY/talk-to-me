@@ -1,0 +1,14 @@
+.btn-symbol {
+    color: var(--viz-snd-color);
+}
+
+.btn-symbol.focus, .btn-symbol:focus {
+}
+
+.btn-symbol.active, .btn-symbol:active {
+    color: var(--viz-snd-color-active);
+}
+
+.btn-symbol:hover:not(.active) {
+    color: var(--viz-snd-color-high-alpha);
+}

@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap4-toggle/css/bootstrap4-toggle.min.css">
     <link rel="stylesheet" href="../../node_modules/swiper/css/swiper.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/symbol-btn.css">
     <link rel="stylesheet" type="text/css" href="../css/circular-btn.css">
     <link rel="stylesheet" type="text/css" href="../css/style.css">
     <link rel="stylesheet" type="text/css" href="../css/gap-sans/stylesheet.css">
@@ -66,11 +67,10 @@
 </div>
 
 <div id="record-button-container">
-    <button id="record-button" type="button" class="btn btn-secondary btn-circle btn-xxxl btn-md"
-            data-toggle="button">
-        <i class="fas fa-microphone fa-4x">
+    <span id="record-button" class="btn-symbol">
+        <i class="fas fa-microphone">
         </i>
-    </button>
+    </span>
     <br/>
     <label id="record-button-label" for="record-button"></label>
 </div>
@@ -81,15 +81,14 @@
                data-onstyle="secondary" data-offstyle="dark">
         <label id="turbo-toggle-label" for="turbo-toggle"></label>
     </div>
-    <button id="play-button" type="button" class="btn btn-secondary btn-circle btn-md" data-toggle="button">
-        <i class="fas fa-play fa-2x"
-           style="transform: translateX(0.225ex);">
+    <span id="restart-button" class="btn-symbol">
+        <i class="fas fa-arrow-left fa-2x">
         </i>
-    </button>
-    <button id="restart-button" type="button" class="btn btn-secondary btn-circle btn-md">
-        <i class="fas fa-redo-alt fa-2x">
+    </span>
+    <span id="play-button" class="btn-symbol">
+        <i class="fas fa-play fa-2x">
         </i>
-    </button>
+    </span>
     <div id="language-controls">
         <div class="btn-group dropup">
             <button id="language-button" type="button" class="btn btn-secondary btn-md dropdown-toggle"

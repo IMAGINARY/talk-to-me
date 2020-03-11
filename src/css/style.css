@@ -18,6 +18,7 @@
     --viz-snd-color-low-alpha: rgba(143, 26, 129, var(--viz-low-alpha));
     --viz-snd-color-mid-alpha: rgba(143, 26, 129, var(--viz-mid-alpha));
     --viz-snd-color-high-alpha: rgba(143, 26, 129, var(--viz-high-alpha));
+    --viz-snd-color-active: rgb(179, 34, 162);
     --viz-bg-color: var(--main-bg-color);
     --viz-waveform-height: 512px;
     --viz-top: var(--main-padding);
@@ -83,10 +84,14 @@ body::-webkit-scrollbar {
     }
 }
 
+#record-button {
+    font-size: 150px;
+}
+
 #record-button-container {
     position: absolute;
     width: 100%;
-    bottom: 75px;
+    top: calc(calc(1080px / 2) + calc(513px / 2));
 }
 
 #button-bar {
