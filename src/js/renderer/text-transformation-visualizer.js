@@ -196,7 +196,18 @@ function cleanUpSteps(bigSteps) {
     return bigStepsCleaned;
 }
 
-function getSteps(charArray) {
+// In this version, duplicate letter are detected by utilizing the blank symbol.
+function getSteps_DuplicatesThroughBlanks(charArray) {
+    const charArrays = [[charArray]];
+    charArrays.push(removeDuplicates_n(last2(charArrays)));
+    charArrays.push(removeGarbage_n(last2(charArrays)));
+    charArrays.push(convertBlankSymbolsToSpace_n(last2(charArrays)));
+
+    return cleanUpSteps(charArrays);
+}
+
+// In this version, duplicate letters are detected through the ² and ³ control symbols.
+function getSteps_DuplicatesThrough23(charArray) {
     const charArrays = [[charArray]];
     charArrays.push(removeGarbage_n(last2(charArrays)));
     charArrays.push(map32To33_n(last2(charArrays)));
@@ -207,6 +218,12 @@ function getSteps(charArray) {
     charArrays.push(convertBlankSymbolsToSpace_n(last2(charArrays)));
 
     return cleanUpSteps(charArrays);
+}
+
+function getSteps(charArray) {
+    // the decoding method used needs to be in line with how the model detects duplicate characters
+    // getSteps_DuplicatesThrough23(charArray);
+    return getSteps_DuplicatesThroughBlanks(charArray);
 }
 
 async function animateExit(d3ExitSelection, duration) {
