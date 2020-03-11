@@ -17,15 +17,15 @@ const models = {
     "en": {
         lang: "en",
         url: 'file://' + path.resolve(modelBaseDir, 'english/model.json'),
-        tfLetters: "␣'abcdefghijklmnopqrstuvwxyz²³·",
-        letters: "␣'abcdefghijklmnopqrstuvwxyz²³·",
+        tfLetters: "·␣'abcdefghijklmnopqrstuvwxyzßäöü",
+        letters: "·␣'abcdefghijklmnopqrstuvwxyz",
         tfModel: null,
     },
     "de": {
         lang: "de",
         url: 'file://' + path.resolve(modelBaseDir, 'german/model.json'),
-        tfLetters: "␣'abcdefghijklmnopqrstuvwxyzßäöü²³·",
-        letters: "␣'abcdefghijklmnopqrstuvwxyzßäöü²³·",
+        tfLetters: "·␣'abcdefghijklmnopqrstuvwxyzßäöü",
+        letters: "·␣'abcdefghijklmnopqrstuvwxyzßäöü",
         tfModel: null,
     }
 };
