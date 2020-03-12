@@ -1,7 +1,8 @@
 {
   "title": "Sprich zu mir",
   "label": {
-    "toggleTurboMode": "Turbo Modus"
+    "toggleTurboModeOn": "Turbo\u00A0Modus\u00A0an",
+    "toggleTurboModeOff": "Turbo\u00A0Modus\u00A0aus"
   },
   "short-expl": {
     "textTransformation": "Die <em>Steuerzeichen</em> werden verarbeitet.",

@@ -1,7 +1,8 @@
 {
   "title": "Talk to me",
   "label": {
-    "toggleTurboMode": "Turbo mode"
+    "toggleTurboModeOn": "Turbo\u00A0mode\u00A0on",
+    "toggleTurboModeOff": "Turbo\u00A0mode\u00A0off"
   },
   "short-expl": {
     "textTransformation": "The <em>control symbols</em> are processed.",

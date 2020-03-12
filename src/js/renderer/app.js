@@ -393,7 +393,6 @@ async function init() {
         const t = i18next.getFixedT(lang, namespace);
         const elemsToLocalize = [
             {querySelector: "#title", key: "title"},
-            {querySelector: "#turbo-toggle-label", key: "label.toggleTurboMode"},
             {querySelector: "#text-transformation-viz .explanation", key: "short-expl.textTransformation"},
             {querySelector: "#decoding-viz .explanation", key: "short-expl.decoder"},
             {querySelector: "#network-viz .explanation", key: "short-expl.network"},
@@ -401,6 +400,11 @@ async function init() {
             {querySelector: "#waveform-viz .explanation", key: "short-expl.waveform"},
         ];
         elemsToLocalize.forEach(elem => $(elem.querySelector).html(t(elem.key)));
+        $("#turbo-toggle").bootstrapToggle('destroy');
+        $("#turbo-toggle").bootstrapToggle({
+            on: t("label.toggleTurboModeOn"),
+            off: t("label.toggleTurboModeOff"),
+        });
         $("#language-label").text(langmap[lang]["nativeName"]);
         reset();
     }
