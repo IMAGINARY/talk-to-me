@@ -97,6 +97,13 @@ body::-webkit-scrollbar {
 
 #record-button *:first-child {
     position: relative;
+    animation: 1000ms infinite alternate blinkActive;
+}
+
+@keyframes blinkActive {
+    to {
+        color: var(--viz-snd-color-active);
+    }
 }
 
 #record-button *:nth-child(2) {
