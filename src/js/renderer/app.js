@@ -252,7 +252,7 @@ async function init() {
         aq.push(() => textTransformationVisualizer.animator.showButtons());
         aq.push(delayAnim);
         aq.push(() => Promise.all([
-            $playButton.fadeIn().promise(),
+            argv.hidePlayButton ? Promise.resolve() : $playButton.fadeIn().promise(),
             $restartButton.fadeIn().promise(),
         ]));
 

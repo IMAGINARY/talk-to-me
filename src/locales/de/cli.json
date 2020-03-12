@@ -6,6 +6,7 @@
     "demo": "Lade eine Demoaufnahme.",
     "volumeThreshold": "Zu erreichender Lautstärkeschwellwert zum Starten der Aufnahme (Bereich: [-100,0]).",
     "idleTimeout": "Programm nach angegebener Anzahl Sekunden der Untätigkeit zurücksetzen. Deaktiviere mit Werten <= 0.",
+    "hidePlayButton": "Abspielknopf verstecken",
     "turbo": "Beschleunige bzw. deaktiviere Animationen."
   }
 }
