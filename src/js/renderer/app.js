@@ -393,7 +393,6 @@ async function init() {
         const t = i18next.getFixedT(lang, namespace);
         const elemsToLocalize = [
             {querySelector: "#title", key: "title"},
-            {querySelector: "#record-button-label", key: "label.startRecording"},
             {querySelector: "#turbo-toggle-label", key: "label.toggleTurboMode"},
             {querySelector: "#text-transformation-viz .explanation", key: "short-expl.textTransformation"},
             {querySelector: "#decoding-viz .explanation", key: "short-expl.decoder"},
