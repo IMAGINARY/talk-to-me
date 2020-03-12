@@ -26,7 +26,7 @@ class BarkDetectorNode extends EventEmitter {
         this._context = context;
         this.channelCount = 1;
 
-        this._input = this._analyzer = this._context.createAnalyser({
+        this._input = this._analyzer = new AnalyserNode(this._context, {
             fftSize: 512,
             smoothingTimeConstant: options.smoothingTimeConstant,
         });
