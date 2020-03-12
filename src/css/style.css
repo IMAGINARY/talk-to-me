@@ -85,13 +85,32 @@ body::-webkit-scrollbar {
 }
 
 #record-button {
+    position: relative;
+    display: inline-block;
     font-size: 150px;
+    margin: var(--main-padding);
+}
+
+#record-button * {
+    display: block;
+}
+
+#record-button *:first-child {
+    position: relative;
+}
+
+#record-button *:nth-child(2) {
+    transition: 0.1s linear;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    color: yellow;
 }
 
 #record-button-container {
     position: absolute;
     width: 100%;
-    top: calc(calc(1080px / 2) + calc(513px / 2));
+    top: calc(calc(calc(1080px / 2) + calc(513px / 2)) + 50px);
 }
 
 #button-bar {

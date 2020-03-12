@@ -306,6 +306,7 @@ async function init() {
     }
 
     const recordButton = document.querySelector("#record-button");
+    const volumeIndicator = document.querySelector("#volume-indicator");
     const playButton = document.querySelector("#play-button"), $playButton = $(playButton);
     const restartButton = document.querySelector("#restart-button"), $restartButton = $(restartButton);
     const turboToggle = document.querySelector("#turbo-toggle"), $turboToggle = $(turboToggle);
@@ -313,11 +314,20 @@ async function init() {
     const hammerRecordButton = new Hammer(recordButton);
     hammerRecordButton.get('press').set({time: 0});
 
+    function volumeChangeCb(currentVolume, threshold) {
+        const percent = 100 * ((100 + currentVolume) / (100 + threshold));
+        volumeIndicator.style.clipPath = `inset(${100 - percent}% 0px 0px 0px)`;
+    }
+
     function startRecordingCb() {
+        barkDetectorNode.removeListener('volume_change', volumeChangeCb);
+        volumeChangeCb(0, 0);
         audioRecorderNode.startRecording();
     }
 
     function resetRecordButton() {
+        volumeChangeCb(-100, 0);
+        barkDetectorNode.removeListener('volume_change', volumeChangeCb);
         audioRecorderNode.removeListener('recording-stopped', resetRecordButton);
         barkDetectorNode.removeListener('on', startRecordingCb);
         recordButton.classList.remove('active');
@@ -328,6 +338,7 @@ async function init() {
             barkDetectorNode.reset();
             audioRecorderNode.startPreRecording();
             barkDetectorNode.once('on', startRecordingCb);
+            barkDetectorNode.on('volume_change', volumeChangeCb);
         });
     }
 
