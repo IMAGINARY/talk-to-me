@@ -49,6 +49,11 @@ async function argv() {
             default: -50,
             description: t('description.volumeThreshold'),
         })
+        .option('idle-timeout', {
+            type: 'number',
+            default: 5 * 60,
+            description: t('description.idleTimeout'),
+        })
         .option('turbo', {
             alias: 't',
             type: 'boolean',

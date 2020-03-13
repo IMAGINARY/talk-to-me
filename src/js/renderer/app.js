@@ -61,9 +61,9 @@ async function init() {
 
     let turboMode = argv.turbo;
 
-    const idleTimeoutMs = 5 * 60 * 1000;
     const idleDetector = new IdleDetector();
-    idleDetector.setTimeout(reset, idleTimeoutMs);
+    if (argv.idleTimeout > 0)
+        idleDetector.setTimeout(reset, argv.idleTimeout * 1000);
 
     const audioContext = new AudioContext({sampleRate: SAMPLE_RATE});
     const micInputNode = await AudioRecorderNode.getMicrophoneAudioSource(audioContext);

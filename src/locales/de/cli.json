@@ -5,6 +5,7 @@
     "menu": "Schalte ein Menü und bestimmte zum Debugging nützliche Tastaturkürzel ein.",
     "demo": "Lade eine Demoaufnahme.",
     "volumeThreshold": "Zu erreichender Lautstärkeschwellwert zum Starten der Aufnahme (Bereich: [-100,0]).",
+    "idleTimeout": "Programm nach angegebener Anzahl Sekunden der Untätigkeit zurücksetzen. Deaktiviere mit Werten <= 0.",
     "turbo": "Beschleunige bzw. deaktiviere Animationen."
   }
 }
