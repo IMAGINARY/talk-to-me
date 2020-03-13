@@ -49,7 +49,7 @@ function visualizeDecoder(indices, letterProbabilities, alphabet, numBest, cellW
                 .attr("class", "letters")
                 .attrs({
                     x: (position + 0.5) * charWidth,
-                    y: (lineNum + 1 - 0.175) * lineHeight,
+                    y: (bestK.shape[0] - lineNum - 0.175) * lineHeight,
                     opacity: opacity,
                 })
                 .text(char)

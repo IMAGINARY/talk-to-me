@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.12.1",
+    "@openfonts/exo-2_all": "^1.44.0",
     "@openfonts/inconsolata_all": "^1.44.0",
     "@tensorflow/tfjs-node": "^1.5.2",
     "bootstrap": "^4.4.1",

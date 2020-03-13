@@ -32,6 +32,10 @@ class AnimationQueue {
     static delay(duration) {
         return () => new Promise(resolve => setTimeout(resolve, duration));
     }
+
+    static skipFrame() {
+        return () => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+    }
 }
 
 module.exports = AnimationQueue;

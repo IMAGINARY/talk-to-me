@@ -1,4 +1,9 @@
 {
+  "title": "Talk to me",
+  "label": {
+    "toggleTurboModeOn": "Turbo\u00A0mode\u00A0on",
+    "toggleTurboModeOff": "Turbo\u00A0mode\u00A0off"
+  },
   "short-expl": {
     "textTransformation": "The <em>control symbols</em> are processed.",
     "decoder": "A <em>decoder</em> walks through the table of probabilities to find the most likely path to form words and sentences.",

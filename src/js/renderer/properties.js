@@ -3,7 +3,7 @@ const properties = {
     sampleRate: 16000,
     audioDuration: 2500,
     animationDurations: {
-        movViz: 1000,
+        moveViz: 1000,
         slideDown: 500,
         slideDelay: 2000,
         networkTransition: 300,
@@ -12,7 +12,16 @@ const properties = {
     },
     turboFactor: 0.025,
     styles: {
+        recording: {
+            waveformHeight: 513,
+            vizBounds: {top: Math.floor((1080 - 513) / 2), left: 0, width: 1920},
+        },
+        recognition: {
+            waveformHeight: 65,
+            vizBounds: {top: 175, left: 20},
+        },
     },
+    topPredictionCount: 4,
 };
 
 function freeze(obj) {

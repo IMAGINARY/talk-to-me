@@ -54,6 +54,11 @@ async function argv() {
             default: 5 * 60,
             description: t('description.idleTimeout'),
         })
+        .option('hide-play-button', {
+            type: 'boolean',
+            default: false,
+            description: t('description.hidePlayButton'),
+        })
         .option('turbo', {
             alias: 't',
             type: 'boolean',

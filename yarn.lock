@@ -42,6 +42,11 @@
   resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.12.1.tgz#2a98fea9fbb8a606ddc79a4680034e9d5591c550"
   integrity sha512-ZtjIIFplxncqxvogq148C3hBLQE+W3iJ8E4UvJ09zIJUgzwLcROsWwFDErVSXY2Plzao5J9KUYNHKHMEUYDMKw==
 
+"@openfonts/exo-2_all@^1.44.0":
+  version "1.44.0"
+  resolved "https://registry.yarnpkg.com/@openfonts/exo-2_all/-/exo-2_all-1.44.0.tgz#c825f986fbd005f084862a29d5eeefd78544b1b8"
+  integrity sha512-esswls+ERw4hM628dEHUSvLjl5ixpuCErT9/iRTfBc43Y+6pC06rz8u/m9glCVs7WKg731iItXmzxUAYObPGPQ==
+
 "@openfonts/inconsolata_all@^1.44.0":
   version "1.44.0"
   resolved "https://registry.yarnpkg.com/@openfonts/inconsolata_all/-/inconsolata_all-1.44.0.tgz#e46bd09ac0132daefe66250c75854380c254ffe8"

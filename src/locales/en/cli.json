@@ -6,6 +6,7 @@
     "demo": "Load a demo audio file.",
     "volumeThreshold": "Volume to exceed before recording is started (range: [-100,0]).",
     "idleTimeout": "Reset the program after being idle for the given number of seconds. Values <=0 disable the reset.",
+    "hidePlayButton": "Hide the play button",
     "turbo": "Speed up respectively disable animations."
   }
 }

@@ -3,25 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Talk to Me</title>
-    <!-- preload Inconsolata, otherwise it might not be ready when drawing to a canvas for the first time -->
-    <link rel="preload" href="../../node_modules/@openfonts/inconsolata_all/files/inconsolata-all-400.woff" as="font"
-          type="font/woff">
-    <link rel="preload" href="../../node_modules/@openfonts/inconsolata_all/files/inconsolata-all-400.woff2" as="font"
-          type="font/woff">
-    <link rel="preload" href="../../node_modules/@openfonts/inconsolata_all/files/inconsolata-all-700.woff" as="font"
-          type="font/woff">
-    <link rel="preload" href="../../node_modules/@openfonts/inconsolata_all/files/inconsolata-all-700.woff2" as="font"
-          type="font/woff">
-    <link rel="preload" href="../../node_modules/@openfonts/inconsolata_all/index.css" as="style">
 
     <link href="../../node_modules/@openfonts/inconsolata_all/index.css" rel="stylesheet">
+    <link href="../../node_modules/@openfonts/exo-2_all/index.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="../../node_modules/@fortawesome/fontawesome-free/css/all.css">
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap-reboot.min.css">
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap4-toggle/css/bootstrap4-toggle.min.css">
     <link rel="stylesheet" href="../../node_modules/swiper/css/swiper.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/symbol-btn.css">
     <link rel="stylesheet" type="text/css" href="../css/circular-btn.css">
     <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/gap-sans/stylesheet.css">
     <script>
         const $ = jQuery = require('jquery');
         const bootstrap = require('bootstrap');
@@ -31,67 +24,72 @@
     </script>
 </head>
 <body>
-<div id="scroll-area">
-    <div id="scroll-content">
-        <div id="main">
-            <div id="waveform">
-                <div id="viz-container">
-                    <div id="text-transformation-viz">
-                        <div class="explanation-container">
-                            <div class="explanation"></div>
-                        </div>
-                        <div class="text-transformation-container viz">
-                        </div>
-                    </div>
-                    <div id="decoding-viz">
-                        <div class="explanation-container">
-                            <div class="explanation"></div>
-                        </div>
-                        <div class="decoding-container viz">
-                        </div>
-                    </div>
-                    <div id="network-viz">
-                        <div class="explanation-container">
-                            <div class="explanation"></div>
-                        </div>
-                        <div class="network-container viz">
-                        </div>
-                    </div>
-                    <div id="spectrogram-viz">
-                        <div class="explanation-container">
-                            <div class="explanation"></div>
-                        </div>
-                        <div class="canvas-container needs-margin viz">
-                        </div>
-                    </div>
-                    <div id="waveform-viz">
-                        <div class="explanation-container">
-                            <div class="explanation"></div>
-                        </div>
-                        <div class="needs-margin viz">
-                            <canvas id="waveform-canvas" height="64"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+<h1 id="title"></h1>
+
+<div id="viz-container">
+    <div id="waveform-viz">
+        <div class="explanation-container">
+            <div class="explanation"></div>
+        </div>
+        <div class="needs-margin viz">
+            <canvas id="waveform-canvas" class="full-width" width="1920" height="512"></canvas>
+        </div>
+    </div>
+    <div id="spectrogram-viz">
+        <div class="explanation-container">
+            <div class="explanation"></div>
+        </div>
+        <div class="canvas-container needs-margin viz">
+        </div>
+    </div>
+    <div id="network-viz">
+        <div class="explanation-container">
+            <div class="explanation"></div>
+        </div>
+        <div class="network-container viz">
+        </div>
+    </div>
+    <div id="decoding-viz">
+        <div class="explanation-container">
+            <div class="explanation"></div>
+        </div>
+        <div class="decoding-container viz">
+        </div>
+    </div>
+    <div id="text-transformation-viz">
+        <div class="explanation-container">
+            <div class="explanation"></div>
+        </div>
+        <div class="text-transformation-container viz">
         </div>
     </div>
 </div>
-<div id="controls">
-    <div id="audio-controls">
-        <button id="record-button" type="button" class="btn btn-secondary btn-circle btn-md"
-                data-toggle="button">
-            <i class="fas fa-microphone fa-3x">
-            </i>
-        </button>
-        <button id="play-button" type="button" class="btn btn-secondary btn-circle btn-md" data-toggle="button">
-            <i class="fas fa-play fa-2x"
-               style="transform: translateX(0.225ex);">
-            </i>
-        </button>
+
+<div id="record-button-container">
+    <span id="record-button" class="btn-symbol">
+        <i class="fas fa-microphone">
+        </i>
+        <i id="volume-indicator" class="fas fa-microphone">
+        </i>
+    </span>
+</div>
+
+<div id="button-bar" class="side-by-side-buttons">
+    <div id="turbo-controls">
+        <input id="turbo-toggle" type="checkbox" checked data-toggle="toggle"
+               data-onstyle="secondary" data-offstyle="dark">
     </div>
+    <span id="restart-button" class="btn-symbol">
+        <i class="fas fa-arrow-left fa-2x">
+        </i>
+    </span>
+    <span id="play-button" class="btn-symbol">
+        <i class="fas fa-play fa-2x">
+        </i>
+    </span>
     <div id="language-controls">
-        <div class="btn-group dropright">
+        <div class="btn-group dropup">
             <button id="language-button" type="button" class="btn btn-secondary btn-md dropdown-toggle"
                     data-toggle="dropdown"
                     data-flip="true"
@@ -105,15 +103,7 @@
             </div>
         </div>
     </div>
-    <div id="turbo-controls">
-        <label for="turbo-toggle">Turbo Mode</label>
-        <input id="turbo-toggle" type="checkbox" checked data-toggle="toggle"
-               data-onstyle="secondary" data-offstyle="dark">
-    </div>
-    <button id="restart-button" type="button" class="btn btn-secondary btn-circle btn-md">
-        <i class="fas fa-redo-alt fa-2x">
-        </i>
-    </button>
 </div>
+
 </body>
 </html>

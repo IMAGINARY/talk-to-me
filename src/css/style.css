@@ -18,7 +18,10 @@
     --viz-snd-color-low-alpha: rgba(143, 26, 129, var(--viz-low-alpha));
     --viz-snd-color-mid-alpha: rgba(143, 26, 129, var(--viz-mid-alpha));
     --viz-snd-color-high-alpha: rgba(143, 26, 129, var(--viz-high-alpha));
+    --viz-snd-color-active: rgb(179, 34, 162);
     --viz-bg-color: var(--main-bg-color);
+    --viz-waveform-height: 512px;
+    --viz-top: var(--main-padding);
 }
 
 * {
@@ -33,38 +36,110 @@
 body {
     background-color: var(--main-bg-color);
     text-align: center;
+    position: absolute;
     color: #F0F0F0;
     position: absolute;
     width: 1920px;
     min-height: 1080px;
     height: 100%;
     box-sizing: content-box;
-    font-family: 'Inconsolata';
+    font-family: 'Exo 2';
     border-right: 1px solid white;
     overflow-x: hidden;
-}
-
-#scroll-area {
-    position: relative;
-    height: calc(100% - var(--controls-height));
-}
-
-#scroll-content {
-    position: absolute;
-    bottom: 0px;
-    padding: var(--main-padding);
-    width: 100%;
-    max-height: 100%;
     overflow-y: auto;
     -ms-overflow-style: none; /* Hide scrollbar in IE and Edge */
     scrollbar-width: none; /* Hide scrollbar in Firefox */
 }
 
-#scroll-content::-webkit-scrollbar {
+body::-webkit-scrollbar {
     display: none;
 }
 
+#title {
+    color: var(--viz-color);
+    position: absolute;
+    width: 100%;
+    font-family: 'gap_sansbold';
+    font-size: 150px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    z-index: 1;
+    top: 50px;
+    transform: scale(1);
+}
+
+#title.recognition {
+    animation: moveTitleTop forwards;
+}
+
+@keyframes moveTitleTop {
+    from {
+        top: 50px;
+        transform: scale(1);
+    }
+
+    to {
+        top: 0;
+        transform: scale(0.5);
+    }
+}
+
+#record-button {
+    position: relative;
+    display: inline-block;
+    font-size: 150px;
+    margin: var(--main-padding);
+}
+
+#record-button * {
+    display: block;
+}
+
+#record-button *:first-child {
+    position: relative;
+    animation: 1000ms infinite alternate blinkActive;
+}
+
+@keyframes blinkActive {
+    to {
+        color: var(--viz-snd-color-active);
+    }
+}
+
+#record-button *:nth-child(2) {
+    transition: 0.1s linear;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    color: yellow;
+}
+
+#record-button-container {
+    position: absolute;
+    width: 100%;
+    top: calc(calc(calc(1080px / 2) + calc(513px / 2)) + 50px);
+}
+
+#button-bar {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    padding: var(--main-padding);
+}
+
+.side-by-side-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.side-by-side-buttons > * {
+    display: inline-block;
+}
+
 #viz-container {
+    position: absolute;
+    top: var(--viz-top);
     display: flex;
     flex-direction: column;
     margin-left: auto;
@@ -73,6 +148,7 @@ body {
 #viz-container .viz {
     color: var(--viz-color);
     background-color: var(--viz-bg-color);
+    font-family: 'Inconsolata';
 }
 
 #viz-container > * {
@@ -108,7 +184,6 @@ body {
 .explanation-container > .explanation {
     margin-top: auto;
     margin-bottom: auto;
-    font-family: 'Inconsolata';
     font-style: italic;
 }
 
