@@ -59,6 +59,8 @@
     "productName": "Talk to me",
     "files": [
       "!**/.DS_Store",
+      "!.*${/*}",
+      "!venv${/*}",
       "!audio${/*}",
       "!models${/*}"
     ],
