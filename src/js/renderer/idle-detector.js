@@ -47,7 +47,9 @@ class IdleDetector {
             timeoutDelay: timeoutDelay,
             windowTimeoutId: 0,
             callback: function () {
-                if (!repeat)
+                if (repeat)
+                    this.reset();
+                else
                     this.delete();
                 func(...args);
             },
@@ -89,8 +91,9 @@ class IdleDetector {
             windowTimeoutId: 0,
             windowIntervalId: 0,
             callback: function () {
-                func(...args)
                 this.hasFired = true;
+                this.reset();
+                func(...args);
             },
             intervalCallback: function () {
                 this.windowIntervalId = window.setInterval(this.callback, this.intervalDelay);
