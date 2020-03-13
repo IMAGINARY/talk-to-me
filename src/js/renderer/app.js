@@ -62,8 +62,7 @@ async function init() {
     let turboMode = argv.turbo;
 
     const idleDetector = new IdleDetector();
-    if (argv.idleTimeout > 0)
-        idleDetector.setTimeout(reset, argv.idleTimeout * 1000);
+    let idleTimeout = 0;
 
     const audioContext = new AudioContext({sampleRate: SAMPLE_RATE});
     const micInputNode = await AudioRecorderNode.getMicrophoneAudioSource(audioContext);
@@ -262,6 +261,9 @@ async function init() {
 
         $turboToggle.bootstrapToggle('enable');
         $languageButton.removeClass('disabled');
+
+        if (argv.idleTimeout > 0)
+            idleTimeout = idleDetector.setTimeoutOnce(resetWithFade, argv.idleTimeout * 1000);
     };
     samples.on('full', data => {
         waveformVisualizer.liveMode = false;
