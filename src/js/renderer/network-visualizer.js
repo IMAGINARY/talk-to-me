@@ -189,16 +189,21 @@ class NetworkVisualizer {
     async autoplay(transitionDuration, autoplayDelay) {
         if (typeof this._swiperContainer.swiper !== "undefined" && this._swiperContainer.swiper !== null) {
             const swiper = this._swiperContainer.swiper;
-            const oldTransitionDuration = swiper.params.speed;
-            const oldAutoplayDelay = swiper.params.autoplay.delay;
-            swiper.params.speed = typeof transitionDuration === "number" ? transitionDuration : oldTransitionDuration;
-            swiper.params.autoplay.delay = typeof autoplayDelay === "number" ? autoplayDelay : oldAutoplayDelay;
-            await new Promise(resolve => {
-                swiper.once('autoplayStop', resolve);
-                swiper.autoplay.start();
-            });
-            swiper.params.speed = oldTransitionDuration;
-            swiper.params.autoplay.delay = oldAutoplayDelay;
+            if (transitionDuration === 0.0 && autoplayDelay === 0.0) {
+                swiper.slideTo(swiper.slides.length - 1, 0.0);
+                await new Promise(resolve => setTimeout(resolve, 0));
+            } else {
+                const oldTransitionDuration = swiper.params.speed;
+                const oldAutoplayDelay = swiper.params.autoplay.delay;
+                swiper.params.speed = typeof transitionDuration === "number" ? transitionDuration : oldTransitionDuration;
+                swiper.params.autoplay.delay = typeof autoplayDelay === "number" ? autoplayDelay : oldAutoplayDelay;
+                await new Promise(resolve => {
+                    swiper.once('autoplayStop', resolve);
+                    swiper.autoplay.start();
+                });
+                swiper.params.speed = oldTransitionDuration;
+                swiper.params.autoplay.delay = oldAutoplayDelay;
+            }
         } else {
             await Promise.resolve();
         }

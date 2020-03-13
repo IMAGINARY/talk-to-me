@@ -23,7 +23,7 @@ const AudioRecorderNode = require("./webaudio/audio-recorder-node.js");
 const AudioPlayerNode = require("./webaudio/audio-player-node.js");
 const BarkDetectorNode = require('./webaudio/bark-detector-node.js');
 const WaveformVisualizer = require("./waveform-visualizer.js");
-const visualizeDecoding = require("./decoding-visualizer.js");
+const decodingVisualizerFunc = require("./decoding-visualizer.js");
 const TextTransformationVisualizer = require("./text-transformation-visualizer.js");
 const NetworkVisualizer = require("./network-visualizer.js");
 
@@ -41,12 +41,16 @@ const modelLoadedPromise = Promise.all(supportedLanguages
 const w2lOutputLengthPromise = modelLoadedPromise
     .then(() => wav2letter.computeOutputLength(AUDIO_DURATION_SEC * SAMPLE_RATE));
 
-// define the duration for certain animations
-const animationDurations = props.animationDurations;
-const turboFactor = props.turboFactor;
-const turboAnimationDurations = Object.fromEntries(
-    Object.entries(animationDurations).map(([k, v], i) => [k, turboFactor * v])
-);
+function computeAnimationDurations(speedup) {
+    return Object.fromEntries(
+        Object.entries(props.animationDurations).map(([k, v], i) => [k, speedup * v])
+    );
+}
+
+const states = {
+    RECORDING: 0,
+    RECOGNITION: 1,
+};
 
 async function init() {
     const argv = await cli.argv();
@@ -59,7 +63,8 @@ async function init() {
         enable: true,
     });
 
-    let turboMode = argv.turbo;
+    let state = states.RECORDING;
+    let animationSpeedUp = 1.0;
 
     const idleDetector = new IdleDetector();
     let idleTimeout = 0;
@@ -120,13 +125,13 @@ async function init() {
         document.querySelector('#network-viz .network-container'),
         {
             cellSize: LETTER_CELL_SIZE,
-            transitionDuration: animationDurations.networkTransition,
-            autoplayDelay: animationDurations.networkDelay,
+            transitionDuration: props.animationDurations.networkTransition,
+            autoplayDelay: props.animationDurations.networkDelay,
         }
     );
     const textTransformationVisualizer = new TextTransformationVisualizer(
         document.querySelector('#text-transformation-viz .text-transformation-container'),
-        {cellSize: LETTER_CELL_SIZE, fontSize: FONT_SIZE, animationDuration: animationDurations.textTransform}
+        {cellSize: LETTER_CELL_SIZE, fontSize: FONT_SIZE, animationDuration: props.animationDurations.textTransform}
     );
 
     async function loadDemoAudio() {
@@ -146,7 +151,6 @@ async function init() {
         };
     }
 
-
     const aq = new AnimationQueue();
 
     samples.on('length_changed', () => waveformVisualizer.cursorPosition = samples.length / samples.maxLength);
@@ -156,9 +160,44 @@ async function init() {
         audioPlayer.stop();
     });
 
-    const samplesFullCb = async data => {
-        $turboToggle.bootstrapToggle('disable');
+    function enableSettingsUI(enable) {
+        if (enable) {
+            $turboToggle.bootstrapToggle('enable');
+            $languageButton.removeClass('disabled');
+        } else {
+            $turboToggle.bootstrapToggle('disable');
+            $languageButton.addClass('disabled');
+        }
+    }
 
+    async function transitionToRecognition(speedup) {
+        const animationDurations = computeAnimationDurations(speedup);
+
+        const vizBoundsRecognition = Object.assign({}, props.styles.recognition.vizBounds, {width: LETTER_CELL_SIZE * (W2L_OUTPUT_LENGTH + 2)});
+
+        const makeRoom = () => {
+            const cssAnimPromise = new Promise(resolve => $title.one('animationend', resolve));
+            $title.css('animation-duration', `${animationDurations.moveViz}ms`);
+            $title.addClass('recognition');
+            return Promise.all([
+                $recordButtonContainer.fadeOut(animationDurations.moveViz).promise(),
+                cssAnimPromise,
+            ]);
+        };
+        const moveVizUp = () => Promise.all([
+            $vizContainer.animate(vizBoundsRecognition, animationDurations.moveViz).promise(),
+            $waveformCanvas.animate({height: props.styles.recognition.waveformHeight}, animationDurations.moveViz).promise(),
+        ]).then(() => $waveformCanvas.attr({height: $waveformCanvas.height(), width: $waveformCanvas.width()}));
+
+        aq.push(AnimationQueue.skipFrame());
+        aq.push(makeRoom);
+        aq.push(moveVizUp);
+        aq.push(AnimationQueue.skipFrame());
+
+        await aq.play();
+    }
+
+    async function recognize(data) {
         const languages = i18next.languages.filter(l => supportedLanguages.includes(l));
         assert(languages.length > 0, `No supported language in ${i18next.languages}. Must include one of ${supportedLanguages}.`);
 
@@ -166,90 +205,78 @@ async function init() {
         window.predictionExt = await wav2letter.predictExt({waveform: data, lang: languages[0]});
         window.predictionExt.letters = toUpperCase(window.predictionExt.letters);
 
-        // briefly show the viz containers to allow certain layout calculations
-        $textTransformationViz.hide();
-        $decodingViz.show();
-        $networkViz.show();
-        $spectrogramViz.show();
+        return predictionExt;
+    }
 
-        // Visualize spectrogram
+    function visualizeSpectrogram(predictionExt) {
         const color = Color(window.getComputedStyle($spectrogramCanvasContainer.get(0)).color);
         const rgbaColor = [color.red(), color.green(), color.blue(), 255 * color.alpha()];
         const alphamap = ImageUtils.alphamapForRgba(rgbaColor);
         const alphamapInv = alpha => alphamap(1 - alpha);
-        const spectrogramCanvas = ImageUtils.convert2DArrayToCanvas(window.predictionExt.layers[0], alphamap, {
+        const spectrogramCanvas = ImageUtils.convert2DArrayToCanvas(predictionExt.layers[0], alphamap, {
             clearBeforeDrawing: true,
             flipV: true,
             normalize: true,
         });
         $spectrogramCanvasContainer.empty();
         $spectrogramCanvasContainer.append(spectrogramCanvas);
+    }
 
-        const numBest = 4;
-        const decodedPredictionExt = decodePredictionExt(window.predictionExt);
-        const decoderSvg = visualizeDecoding(
+    function visualizeNetwork(predictionExt) {
+        networkVisualizer.setLayers(predictionExt.layers, window.predictionExt.letters);
+    }
+
+    function visualizeDecoding(decodedPredictionExt) {
+        const decoderSvg = decodingVisualizerFunc(
             decodedPredictionExt.indices,
             decodedPredictionExt.probabilities,
             decodedPredictionExt.alphabet,
-            numBest,
+            props.topPredictionCount,
             LETTER_CELL_SIZE,
             FONT_SIZE,
         );
         $decodingContainer.empty();
         $decodingContainer.append(decoderSvg);
+    }
 
-        let timeSlot = 0;
-        for (let t = decodedPredictionExt.indices.shape[0] - 1; t >= 0; --t) {
-            const letterIndex = decodedPredictionExt.indices.get(t, 0);
-            const letter = decodedPredictionExt.alphabet[letterIndex];
-            if (letter.match(/[a-z]/) !== null)
-                timeSlot = t;
-        }
-
-        networkVisualizer.setLayers(predictionExt.layers, window.predictionExt.letters);
+    function visualizeTextTransformation(decodedPredictionExt) {
         textTransformationVisualizer.setRaw(decodedPredictionExt.indices, decodedPredictionExt.alphabet);
+    }
+
+    function visualizeRecognition(predictionExt) {
+        const decodedPredictionExt = decodePredictionExt(predictionExt);
+
+        // briefly show the viz containers to allow certain layout calculations
+        const vizContainers = [$spectrogramViz, $networkViz, $decodingViz, $textTransformationViz];
+        vizContainers.forEach($c => $c.show());
+
+        // add the new visualizations
+        visualizeSpectrogram(predictionExt);
+        visualizeNetwork(predictionExt);
+        visualizeDecoding(decodedPredictionExt);
+        visualizeTextTransformation(decodedPredictionExt);
 
         // hide the viz containers before starting animations
         textTransformationVisualizer.animator.hideButtons();
-        $textTransformationViz.hide();
-        $decodingViz.hide();
-        $networkViz.hide();
-        $spectrogramViz.hide();
+        vizContainers.forEach($c => $c.hide());
+    }
 
-        const initialDurations = turboMode ? turboAnimationDurations : animationDurations;
+    async function animateRecognition(speedup) {
+        const animationDurations = computeAnimationDurations(speedup);
 
-        const vizBoundsRecognition = Object.assign({}, props.styles.recognition.vizBounds, {width: LETTER_CELL_SIZE * (W2L_OUTPUT_LENGTH + 2)});
+        const delayAnim = AnimationQueue.delay(animationDurations.slideDelay);
+        const slideDown = $elems => () => $elems.slideDown(animationDurations.slideDown).promise();
 
-        const makeRoom = () => {
-            const cssAnimPromise = new Promise(resolve => $title.one('animationend', resolve));
-            $title.css('animation-duration', `${initialDurations.moveViz}ms`);
-            $title.addClass('recognition');
-            return Promise.all([
-                $recordButtonContainer.fadeOut(initialDurations.moveViz).promise(),
-                cssAnimPromise,
-            ]);
-        };
-        const moveVizUp = () => Promise.all([
-            $vizContainer.animate(vizBoundsRecognition, initialDurations.moveViz).promise(),
-            $waveformCanvas.animate({height: props.styles.recognition.waveformHeight}, initialDurations.moveViz).promise(),
-        ]).then(() => $waveformCanvas.attr({height: $waveformCanvas.height(), width: $waveformCanvas.width()}));
-
-        const delayAnim = AnimationQueue.delay(initialDurations.slideDelay);
-        const slideDown = $elems => () => $elems.slideDown(initialDurations.slideDown).promise();
-
-        aq.push(AnimationQueue.skipFrame());
-        aq.push(makeRoom);
-        aq.push(moveVizUp);
         aq.push(delayAnim);
         aq.push(slideDown($spectrogramViz));
         aq.push(delayAnim);
         aq.push(slideDown($networkViz));
-        aq.push(async () => await networkVisualizer.autoplay(initialDurations.networkTransition, initialDurations.networkDelay));
+        aq.push(async () => await networkVisualizer.autoplay(animationDurations.networkTransition, animationDurations.networkDelay));
         aq.push(delayAnim);
         aq.push(slideDown($decodingViz));
         aq.push(delayAnim);
         aq.push(slideDown($textTransformationViz));
-        aq.push(async () => await textTransformationVisualizer.animator.last(initialDurations.textTransform));
+        aq.push(async () => await textTransformationVisualizer.animator.last(animationDurations.textTransform));
         aq.push(() => textTransformationVisualizer.animator.showButtons());
         aq.push(delayAnim);
         aq.push(() => Promise.all([
@@ -258,21 +285,41 @@ async function init() {
         ]));
 
         await aq.play();
+    }
 
-        $turboToggle.bootstrapToggle('enable');
-        $languageButton.removeClass('disabled');
+    samples.on('full', async waveformData => {
+        enableSettingsUI(false);
 
-        if (argv.idleTimeout > 0)
-            idleTimeout = idleDetector.setTimeoutOnce(resetWithFade, argv.idleTimeout * 1000);
-    };
-    samples.on('full', data => {
         waveformVisualizer.liveMode = false;
         waveformVisualizer.cursorPosition = 2.0;
 
-        requestAnimationFrame(() => setTimeout(() => samplesFullCb(data), 0));
+        await transitionToRecognition(animationSpeedUp);
+        state = states.RECOGNITION;
+        const predictionExt = await recognize(waveformData);
+        visualizeRecognition(predictionExt);
+        await animateRecognition(animationSpeedUp);
+
+        if (argv.idleTimeout > 0)
+            idleTimeout = idleDetector.setTimeoutOnce(() => withFade(reset), argv.idleTimeout * 1000);
+
+        enableSettingsUI(true);
     });
 
+    function resetRecognition() {
+        $textTransformationViz.hide();
+        $decodingViz.hide();
+        $networkViz.hide();
+        $spectrogramViz.hide();
+
+        resetPlayButton();
+
+        $playButton.hide();
+        $restartButton.hide();
+    }
+
     function reset() {
+        resetRecognition();
+
         audioRecorderNode.stopPreRecording();
         audioRecorderNode.stopRecording();
         audioPlayer.stop();
@@ -289,27 +336,22 @@ async function init() {
         $vizContainer.css(props.styles.recording.vizBounds);
         $waveformCanvas.css({height: props.styles.recording.waveformHeight});
         $recordButtonContainer.show();
-        $title.show();
         $waveformCanvas.attr({height: $waveformCanvas.height(), width: $waveformCanvas.width()});
 
-        $textTransformationViz.hide();
-        $decodingViz.hide();
-        $networkViz.hide();
-        $spectrogramViz.hide();
-
         resetRecordButton();
-        resetPlayButton();
-
         $recordButtonContainer.show();
-        $playButton.hide();
-        $restartButton.hide();
+
+        enableSettingsUI(true);
+
+        state = states.RECORDING;
     }
 
-    function resetWithFade() {
+    async function withFade(func) {
+        const aq = new AnimationQueue();
         aq.push(() => $(document.body).animate({opacity: 0.0}).promise());
-        aq.push(reset);
+        aq.push(() => Promise.resolve().then(func));
         aq.push(() => $(document.body).animate({opacity: 1.0}).promise());
-        aq.play();
+        await aq.play();
     }
 
     const recordButton = document.querySelector("#record-button");
@@ -340,7 +382,7 @@ async function init() {
         recordButton.classList.remove('active');
         hammerRecordButton.off('press');
         hammerRecordButton.on('press', () => {
-            $languageButton.addClass('disabled');
+            enableSettingsUI(false);
             hammerRecordButton.off('press');
             recordButton.classList.add('active');
             barkDetectorNode.reset();
@@ -365,13 +407,15 @@ async function init() {
     }
 
     const hammerRestartButton = new Hammer(restartButton);
-    hammerRestartButton.on('tap', resetWithFade);
+    hammerRestartButton.on('tap', () => withFade(reset));
 
-    $turboToggle.bootstrapToggle(turboMode ? 'on' : 'off');
-    $turboToggle.change(() => {
-        turboMode = $turboToggle.prop('checked');
-        console.log(turboMode);
-    });
+    function setTurbo(enabled) {
+        animationSpeedUp = enabled ? props.turboFactor : 1.0;
+    }
+
+    $turboToggle.bootstrapToggle(argv.turbo ? 'on' : 'off');
+    $turboToggle.change(() => setTurbo($turboToggle.prop('checked')));
+    setTurbo(argv.turbo);
 
     function addSupportedLanguages() {
         for (let l of supportedLanguages) {
@@ -390,31 +434,51 @@ async function init() {
         if (i18next.language === lang && !force)
             return;
 
-        const namespace = 'frontend';
-        await i18next.changeLanguage(lang);
-        // find and select the first language in the fallback list that is actually supported
-        for (lang of i18next.languages)
-            if (i18next.hasResourceBundle(lang, namespace))
-                break;
-        await i18next.changeLanguage(lang);
+        enableSettingsUI(false);
 
-        const t = i18next.getFixedT(lang, namespace);
-        const elemsToLocalize = [
-            {querySelector: "#title", key: "title"},
-            {querySelector: "#text-transformation-viz .explanation", key: "short-expl.textTransformation"},
-            {querySelector: "#decoding-viz .explanation", key: "short-expl.decoder"},
-            {querySelector: "#network-viz .explanation", key: "short-expl.network"},
-            {querySelector: "#spectrogram-viz .explanation", key: "short-expl.spectrogram"},
-            {querySelector: "#waveform-viz .explanation", key: "short-expl.waveform"},
-        ];
-        elemsToLocalize.forEach(elem => $(elem.querySelector).html(t(elem.key)));
-        $("#turbo-toggle").bootstrapToggle('destroy');
-        $("#turbo-toggle").bootstrapToggle({
-            on: t("label.toggleTurboModeOn"),
-            off: t("label.toggleTurboModeOff"),
-        });
-        $("#language-label").text(langmap[lang]["nativeName"]);
-        reset();
+        const changeLanguageAndGetT = async lang => {
+            const namespace = 'frontend';
+
+            await i18next.changeLanguage(lang);
+            // find and select the first language in the fallback list that is actually supported
+            for (lang of i18next.languages)
+                if (i18next.hasResourceBundle(lang, namespace))
+                    break;
+            await i18next.changeLanguage(lang);
+
+            return i18next.getFixedT(lang, namespace);
+        };
+
+        const localizeTexts = async t => {
+            const elemsToLocalize = [
+                {querySelector: "#title", key: "title"},
+                {querySelector: "#text-transformation-viz .explanation", key: "short-expl.textTransformation"},
+                {querySelector: "#decoding-viz .explanation", key: "short-expl.decoder"},
+                {querySelector: "#network-viz .explanation", key: "short-expl.network"},
+                {querySelector: "#spectrogram-viz .explanation", key: "short-expl.spectrogram"},
+                {querySelector: "#waveform-viz .explanation", key: "short-expl.waveform"},
+            ];
+            elemsToLocalize.forEach(elem => $(elem.querySelector).html(t(elem.key)));
+            $("#turbo-toggle").bootstrapToggle('destroy');
+            $("#turbo-toggle").bootstrapToggle({
+                on: t("label.toggleTurboModeOn"),
+                off: t("label.toggleTurboModeOff"),
+            });
+            $("#language-label").text(langmap[lang]["nativeName"]);
+        };
+
+        if (state === states.RECOGNITION) {
+            resetRecognition();
+            const t = await changeLanguageAndGetT(lang);
+            const predictionExtPromise = recognize(samples.data);
+            await localizeTexts(t);
+            visualizeRecognition(await predictionExtPromise);
+            await animateRecognition(0.0);
+        } else {
+            await localizeTexts(await changeLanguageAndGetT(lang));
+        }
+
+        enableSettingsUI(true);
     }
 
     addSupportedLanguages();

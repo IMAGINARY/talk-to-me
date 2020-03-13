@@ -21,6 +21,7 @@ const properties = {
             vizBounds: {top: 175, left: 20},
         },
     },
+    topPredictionCount: 4,
 };
 
 function freeze(obj) {
