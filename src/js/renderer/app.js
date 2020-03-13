@@ -158,6 +158,8 @@ async function init() {
     });
 
     const samplesFullCb = async data => {
+        $turboToggle.bootstrapToggle('disable');
+
         const languages = i18next.languages.filter(l => supportedLanguages.includes(l));
         assert(languages.length > 0, `No supported language in ${i18next.languages}. Must include one of ${supportedLanguages}.`);
 
@@ -256,7 +258,10 @@ async function init() {
             $restartButton.fadeIn().promise(),
         ]));
 
-        aq.play();
+        await aq.play();
+
+        $turboToggle.bootstrapToggle('enable');
+        $languageButton.removeClass('disabled');
     };
     samples.on('full', data => {
         waveformVisualizer.liveMode = false;
@@ -333,6 +338,7 @@ async function init() {
         recordButton.classList.remove('active');
         hammerRecordButton.off('press');
         hammerRecordButton.on('press', () => {
+            $languageButton.addClass('disabled');
             hammerRecordButton.off('press');
             recordButton.classList.add('active');
             barkDetectorNode.reset();
@@ -410,6 +416,7 @@ async function init() {
     }
 
     addSupportedLanguages();
+    const $languageButton = $("#language-button");
     const $languageButtons = $("#language-selector > a");
     $languageButtons.each((i, e) => new Hammer(e).on('tap', () => {
         const newLanguage = e.getAttribute("data-lang");
