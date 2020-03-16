@@ -1,3 +1,5 @@
+const EventEmitter = require('events');
+
 const defaultConstructorParams = {
     eventTypes: [
         'pointerdown',
@@ -10,9 +12,10 @@ const defaultConstructorParams = {
     domElement: document
 };
 
-class IdleDetector {
+class IdleDetector extends EventEmitter {
 
     constructor(params = {}) {
+        super();
         const {eventTypes, domElement} = Object.assign(Object.assign({}, defaultConstructorParams), params);
         this._eventTypes = eventTypes;
         this._domElement = domElement;
@@ -157,6 +160,7 @@ class IdleDetector {
     reset() {
         this._timeOfLastEvent = performance.now();
         Object.values(this._timers).forEach(timer => timer.reset());
+        this.emit('interrupted');
     }
 
     /***
