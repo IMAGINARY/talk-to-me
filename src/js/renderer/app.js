@@ -290,6 +290,8 @@ async function init() {
     samples.on('full', async waveformData => {
         enableSettingsUI(false);
 
+        idleDetector.clearTimeout(idleTimeout);
+
         waveformVisualizer.liveMode = false;
         waveformVisualizer.cursorPosition = 2.0;
 
@@ -389,6 +391,9 @@ async function init() {
             audioRecorderNode.startPreRecording();
             barkDetectorNode.once('on', startRecordingCb);
             barkDetectorNode.on('volume_change', volumeChangeCb);
+            idleDetector.clearTimeout(idleTimeout);
+            if (argv.idleTimeout > 0)
+                idleTimeout = idleDetector.setTimeoutOnce(() => withFade(reset), argv.idleTimeout * 1000);
         });
     }
 
