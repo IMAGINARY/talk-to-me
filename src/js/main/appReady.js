@@ -2,7 +2,6 @@ const {BrowserWindow, Menu, screen} = require('electron');
 const path = require('path');
 
 const isPackaged = require('../common/is-packaged.js');
-const cli = require('../common/cli.js');
 
 function createWindow(argv) {
     const options = {

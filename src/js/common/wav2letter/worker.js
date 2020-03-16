@@ -2,7 +2,7 @@ const assert = require('assert');
 const tf = require('@tensorflow/tfjs-node');
 const fs = require('fs');
 const path = require('path');
-const ndarray = require("ndarray")
+const ndarray = require("ndarray");
 
 const melFilter = require('./mel-filter.js');
 

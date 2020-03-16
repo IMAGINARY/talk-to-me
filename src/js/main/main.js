@@ -6,7 +6,7 @@ async function main(argv) {
     if (argv.help || argv.version)
         return; // prevent electron stuff from being loaded (otherwise windows might pop up for --help and --version)
 
-    const {app} = require('electron')
+    const {app} = require('electron');
     const path = require('path');
     if(!app.isPackaged)
         // Only auto-reload if dev-mode, not when packaged

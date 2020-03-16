@@ -17,6 +17,6 @@ const initPromise = i18next
     .use(languageDetector)
     .use(backend)
     .init(options)
-    .then(t => i18next);
+    .then(_ => i18next);
 
 module.exports = () => initPromise;

@@ -82,7 +82,7 @@ class WaveformVisualizer {
 
 
     _redraw() {
-        if (this.buckets.length != this.canvas.width) {
+        if (this.buckets.length !== this.canvas.width) {
             this.buckets = new Float32Array(this.canvas.width);
             this._receiveSamples(0, this.samples.length);
         }

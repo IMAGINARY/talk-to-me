@@ -287,10 +287,10 @@ async function animateStep(d3selection, duration, positionX, positionY, getPrevD
     const exitPromise = animateExit(d3selection.exit(), duration);
 
     const needsPositionUpdate = d3selection.filter((d, i, nodes) => d.position !== getPrevDataForNode(nodes[i]).position);
-    const positionUpdatePromise = animatePositionUpdate(needsPositionUpdate, duration, positionX, positionY)
+    const positionUpdatePromise = animatePositionUpdate(needsPositionUpdate, duration, positionX, positionY);
 
     const needsTextUpdate = d3selection.filter((d, i, nodes) => d.char !== getPrevDataForNode(nodes[i]).char);
-    const textUpdatePromise = animateTextUpdate(needsTextUpdate, duration)
+    const textUpdatePromise = animateTextUpdate(needsTextUpdate, duration);
 
     const enterPromise = animateEnter(d3selection.enter(), duration, positionX, positionY);
 
@@ -461,7 +461,7 @@ function visualizeResult(charArray, cellWidth, fontSizePx) {
 
     const d3select = () => letters.selectAll("text");
     const positionX = c => (c.position + 0.5) * cellWidth;
-    const positionY = c => (1 - 0.175) * lineHeight;
+    const positionY = _ => (1 - 0.175) * lineHeight;
 
     d3select()
         .data(charArray, c => c.key)

@@ -37,7 +37,7 @@ class FixedSizeBuffer extends EventEmitter {
     }
 
     static wrapArray(array) {
-        const arrayType = Object.prototype.toString.call(array).match(/\[object (.*)\]/)[1];
+        const arrayType = Object.prototype.toString.call(array).match(/\[object (.*)]/)[1];
         const dtype = dtypes_inv[arrayType];
         if (typeof dtype === "undefined")
             throw new TypeError("FixedSizeBuffer can not be build from this object");

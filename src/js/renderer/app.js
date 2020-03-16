@@ -1,6 +1,6 @@
+"use strict";
+
 const assert = require('assert');
-const ndarray = require('ndarray');
-const opsExt = require('../common/ndarray-ops-ext.js');
 const cli = require('../common/cli.js');
 const getI18Next = require('../common/i18n.js');
 const langmap = require('langmap');

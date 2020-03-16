@@ -36,7 +36,6 @@ const _indexToLetter = cwise({
 });
 
 function indexToLetter(indices, letters) {
-    const repacked = pack(unpack(indices));
     const totalSize = indices.shape.reduce((acc, cur) => acc * cur, 1);
     const result = ndarray(Array(totalSize), indices.shape);
     _indexToLetter(result, indices, letters);

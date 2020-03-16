@@ -6,6 +6,7 @@ const colormap = require('colormap');
  * Converts a 2D ndarray into a CanvasImageSource using a color map.
  * @param data2D {ndarray} A two-dimensional array.
  * @param colormap {function} Function that maps a float value in [0, 1] to a RGBA {uint8} array.
+ * @param options {object} Optional configuration of the draw command.
  * @param {boolean|function} [options.normalize=false] Normalize the values before color mapping.
  *      If {false}, no normalization is applied.
  *      If {true}, the range [min, max] is linearly mapped to [0, 1].
@@ -52,7 +53,7 @@ function convert2DArrayToCanvasImageSource(data2D, colormap, options) {
             normalizeFunc = v => v;
         }
     } else {
-        assert(typeof options.normalize === "function", "Normalization function required.")
+        assert(typeof options.normalize === "function", "Normalization function required.");
         normalizeFunc = options.normalize;
     }
 
@@ -81,6 +82,7 @@ function convert2DArrayToCanvasImageSource(data2D, colormap, options) {
  * Converts a 2D ndarray into a HTMLCanvasElement using a color map.
  * @param data2D {ndarray} A two-dimensional array.
  * @param colormap {function} Function that maps a float value in [0, 1] to a RGBA {uint8} array.
+ * @param options {object} Optional configuration of the draw command.
  * @param {boolean|function} [options.normalize=false] Normalize the values before color mapping.
  *      If {false}, no normalization is applied.
  *      If {true}, the range [min, max] is linearly mapped to [0, 1].

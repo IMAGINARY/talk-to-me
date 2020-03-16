@@ -94,7 +94,7 @@ class BarkDetectorNode extends EventEmitter {
     _getMaxVolume() {
         this._analyzer.getFloatFrequencyData(this._fftBins);
         return this._fftBins.reduce(
-            (max, cur) => max = cur > max && cur < 0 ? cur : max,
+            (max, cur) => cur > max && cur < 0 ? cur : max,
             BarkDetectorNode.TOTAL_SILENCE,
         );
     }
