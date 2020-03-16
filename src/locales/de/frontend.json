@@ -1,5 +1,9 @@
 {
   "title": "Sprich zu mir",
+  "reset": {
+    "counter": "Starte neu in:",
+    "cancel": "Zum Abbrechen antippen."
+  },
   "label": {
     "toggleTurboModeOn": "Turbo\u2013\uFEFFModus\u00A0an",
     "toggleTurboModeOff": "Turbo\u2013\uFEFFModus\u00A0aus"

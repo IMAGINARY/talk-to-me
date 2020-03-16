@@ -22,6 +22,7 @@ const properties = {
         },
     },
     topPredictionCount: 4,
+    resetCountdown: 10,
 };
 
 function freeze(obj) {

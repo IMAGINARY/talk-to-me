@@ -290,7 +290,7 @@ async function init() {
     samples.on('full', async waveformData => {
         enableSettingsUI(false);
 
-        idleDetector.clearTimeout(idleTimeout);
+        resetIdleTimeout(false);
 
         waveformVisualizer.liveMode = false;
         waveformVisualizer.cursorPosition = 2.0;
@@ -301,8 +301,7 @@ async function init() {
         visualizeRecognition(predictionExt);
         await animateRecognition(animationSpeedUp);
 
-        if (argv.idleTimeout > 0)
-            idleTimeout = idleDetector.setTimeoutOnce(() => withFade(reset), argv.idleTimeout * 1000);
+        resetIdleTimeout();
 
         enableSettingsUI(true);
     });
@@ -320,6 +319,7 @@ async function init() {
     }
 
     function reset() {
+        $resetOverlay.hide();
         resetRecognition();
 
         audioRecorderNode.stopPreRecording();
@@ -356,6 +356,53 @@ async function init() {
         await aq.play();
     }
 
+    const resetOverlay = document.querySelector("#reset-overlay"), $resetOverlay = $(resetOverlay);
+    const resetCounter = document.querySelector("#reset-counter"), $resetCounter = $(resetCounter);
+
+    function resetIdleTimeout(restart) {
+        idleDetector.clearTimeout(idleTimeout);
+        if ((typeof restart === 'undefined' || restart) && argv.idleTimeout > 0)
+            idleTimeout = idleDetector.setTimeoutOnce(resetAfterCountdown, argv.idleTimeout * 1000);
+    }
+
+    async function resetAfterCountdown() {
+        let counter = props.resetCountdown;
+        $resetCounter.text(counter);
+
+        const fadeInPromise = $resetOverlay.fadeIn().promise();
+
+        const counterPromise = new Promise((resolve, reject) => {
+            let intervalId = 0;
+
+            function update() {
+                counter -= 1;
+                $resetCounter.text(counter);
+                if (counter === 0) {
+                    clearInterval(intervalId);
+                    idleDetector.removeListener('interrupted', reject);
+                    resolve();
+                }
+            }
+
+            function abort() {
+                clearInterval(intervalId);
+                reject();
+            }
+
+            intervalId = setInterval(update, 1000);
+            idleDetector.once('interrupted', abort);
+        });
+
+        await fadeInPromise;
+        try {
+            await counterPromise;
+            await withFade(reset);
+        } catch (err) {
+            await $resetOverlay.fadeOut().promise();
+            resetIdleTimeout();
+        }
+    }
+
     const recordButton = document.querySelector("#record-button");
     const volumeIndicator = document.querySelector("#volume-indicator");
     const playButton = document.querySelector("#play-button"), $playButton = $(playButton);
@@ -371,6 +418,7 @@ async function init() {
     }
 
     function startRecordingCb() {
+        resetIdleTimeout();
         barkDetectorNode.removeListener('volume_change', volumeChangeCb);
         volumeChangeCb(0, 0);
         audioRecorderNode.startRecording();
@@ -391,9 +439,7 @@ async function init() {
             audioRecorderNode.startPreRecording();
             barkDetectorNode.once('on', startRecordingCb);
             barkDetectorNode.on('volume_change', volumeChangeCb);
-            idleDetector.clearTimeout(idleTimeout);
-            if (argv.idleTimeout > 0)
-                idleTimeout = idleDetector.setTimeoutOnce(() => withFade(reset), argv.idleTimeout * 1000);
+            resetIdleTimeout();
         });
     }
 
@@ -462,6 +508,8 @@ async function init() {
                 {querySelector: "#network-viz .explanation", key: "short-expl.network"},
                 {querySelector: "#spectrogram-viz .explanation", key: "short-expl.spectrogram"},
                 {querySelector: "#waveform-viz .explanation", key: "short-expl.waveform"},
+                {querySelector: "#reset-overlay .counter-label", key: "reset.counter"},
+                {querySelector: "#reset-overlay .cancel-label", key: "reset.cancel"},
             ];
             elemsToLocalize.forEach(elem => $(elem.querySelector).html(t(elem.key)));
             $("#turbo-toggle").bootstrapToggle('destroy');
