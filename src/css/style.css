@@ -50,10 +50,24 @@ body {
     -ms-overflow-style: none; /* Hide scrollbar in IE and Edge */
     /*noinspection CssUnknownProperty*/
     scrollbar-width: none; /* Hide scrollbar in Firefox */
+    opacity: 0.0;
 }
 
 body::-webkit-scrollbar {
     display: none;
+}
+
+.fade-in {
+    animation: fadeIn 0.25s linear forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0.0;
+    }
+    to {
+        opacity: 1.0;
+    }
 }
 
 #title {
