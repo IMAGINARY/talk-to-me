@@ -542,7 +542,7 @@ async function init() {
         if (newLanguage !== i18next.language)
             setLanguage(newLanguage);
     }));
-    setLanguage(i18next.language, true);
+    setLanguage(argv.lang, true);
 
     reset();
     if (argv.demo)
