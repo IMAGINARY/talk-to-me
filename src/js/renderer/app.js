@@ -350,9 +350,13 @@ async function init() {
 
     async function withFade(func) {
         const aq = new AnimationQueue();
+        aq.push(AnimationQueue.skipFrame());
         aq.push(() => $(document.body).animate({opacity: 0.0}).promise());
+        aq.push(AnimationQueue.skipFrame());
         aq.push(() => Promise.resolve().then(func));
+        aq.push(AnimationQueue.skipFrame());
         aq.push(() => $(document.body).animate({opacity: 1.0}).promise());
+        aq.push(AnimationQueue.skipFrame());
         await aq.play();
     }
 
