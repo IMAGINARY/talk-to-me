@@ -190,9 +190,9 @@ body::-webkit-scrollbar {
 #viz-container .explanation-container {
     display: flex;
     position: absolute;
-    width: 350px;
+    width: 440px;
     height: 100%;
-    right: -390px;
+    right: calc(-440px - 40px);
     line-height: normal;
     text-align: left;
 }
