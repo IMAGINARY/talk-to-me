@@ -164,6 +164,7 @@ class AudioRecorderNode extends EventEmitter {
 
     static async getMicrophoneAudioSource(audioContext, options) {
         const defaultOptions = {
+            latency: 0.05,
             sampleRate: audioContext.sampleRate,
             noiseSuppression: true,
             autoGainControl: false,

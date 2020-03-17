@@ -72,6 +72,9 @@ async function argv() {
         })
         .version()
         .parse(processArgv);
+
+    argv.initialLang = argv.lang;
+    argv.initialTurbo = argv.turbo;
     return argv;
 }
 
