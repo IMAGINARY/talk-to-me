@@ -517,7 +517,7 @@ async function init() {
                 on: t("label.toggleTurboModeOn"),
                 off: t("label.toggleTurboModeOff"),
             });
-            $("#language-label").text(langmap[lang]["nativeName"]);
+            $("#language-label").text(langmap[i18next.language]["nativeName"]);
         };
 
         if (state === states.RECOGNITION) {
