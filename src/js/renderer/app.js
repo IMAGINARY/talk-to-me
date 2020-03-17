@@ -461,6 +461,7 @@ async function init() {
     hammerRestartButton.on('tap', () => withFade(reset));
 
     function setTurbo(enabled) {
+        argv.turbo = enabled;
         animationSpeedUp = enabled ? props.turboFactor : 1.0;
     }
 
@@ -496,6 +497,7 @@ async function init() {
                 if (i18next.hasResourceBundle(lang, namespace))
                     break;
             await i18next.changeLanguage(lang);
+            argv.lang = lang;
 
             return i18next.getFixedT(lang, namespace);
         };
