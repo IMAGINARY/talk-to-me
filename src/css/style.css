@@ -58,7 +58,8 @@ body::-webkit-scrollbar {
 }
 
 .fade-in {
-    animation: fadeIn 0.25s linear forwards;
+    animation: fadeIn 0.25s linear;
+    opacity: 1.0;
 }
 
 @keyframes fadeIn {
