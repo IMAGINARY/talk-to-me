@@ -200,11 +200,11 @@ body::-webkit-scrollbar {
 .explanation-container > .explanation {
     margin-top: auto;
     margin-bottom: auto;
-    font-style: italic;
 }
 
 .explanation-container > .explanation em {
-    text-decoration: underline;
+    font-style: normal;
+    font-weight: bold;
 }
 
 #spectrogram-viz canvas {
