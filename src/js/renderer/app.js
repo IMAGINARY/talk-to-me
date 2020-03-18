@@ -93,7 +93,7 @@ async function init() {
 
     const audioRecorderNode = new AudioRecorderNode(audioContext, {
         duration: AUDIO_DURATION_SEC * 1000,
-        preRecordingDuration: 300,
+        preRecordingDuration: 400,
     });
     recorderInputNode.connect(audioRecorderNode);
     const audioPlayer = new AudioPlayerNode(audioContext, {audioBuffer: audioRecorderNode.audioBuffer});
