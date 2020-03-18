@@ -10,8 +10,8 @@
   },
   "short-expl": {
     "textTransformation": "Nach Verarbeitung der <em>Steuerzeichen</em> erhältst du das Ergebnis.",
-    "decoder": "Ein <em>Dekoder</em> ordnet die erkannten Buchstaben ihrer Wahrscheinlichkeit nach. Je intensiver die Farbe eines Zeichen, desto sicherer wurde es erkannt.",
-    "network": "<p>Das Spektrogramm wird von einem <em>Neuronalen Netzwerk</em> verarbeitet. Es berechnet Wahrscheinlichkeiten. Genauer gesagt, wie wahrscheinlich es ist, dass du in einem bestimmten Moment einen bestimmten Buchstaben aufgenommen hast.</p><p>Zum Trainieren des Netzwerkes wurden hunderte Stunden von Sprachaufnahmen verwendet.</p>",
+    "decoder": "Ein <em>Dekoder</em> ordnet die erkannten Buchstaben ihrer Wahrscheinlichkeit nach und wählt das Zeichen mit der höchsten Wahrscheinlichkeit aus.",
+    "network": "<p>Das Spektrogramm wird von einem <em>Neuronalen Netzwerk</em> verarbeitet. Es berechnet Wahrscheinlichkeiten. Genauer gesagt, wie gut deine Aufnahme in einem bestimmten Moment zu einem Buchstaben aus den Trainingsdaten passt.</p><p>Zum Trainieren des Netzwerkes wurden hunderte Stunden von Sprachaufnahmen verwendet.</p>",
     "spectrogram": "Die Wellenform wird in ein <em>Spektrogramm</em> überführt. Es beschreibt aus welchen Tonhöhen die Aufnahme zusammengesetzt ist (Frequenzspektrum) und wie sich diese Zusammensetzung mit der Zeit verändert.",
     "waveform": "Die Schallwellen deiner Stimme werden als <em>Wellenform</em> aufgenommen."
   }
