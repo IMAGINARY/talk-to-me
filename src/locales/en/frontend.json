@@ -5,8 +5,8 @@
     "cancel": "Tap to cancel."
   },
   "label": {
-    "toggleTurboModeOn": "Turbo\u00A0mode\u00A0on",
-    "toggleTurboModeOff": "Turbo\u00A0mode\u00A0off"
+    "toggleTurboModeOn": "Turbo\u00A0mode:\u00A0On",
+    "toggleTurboModeOff": "Turbo\u00A0mode:\u00A0Off"
   },
   "short-expl": {
     "textTransformation": "The <em>control symbols</em> are processed.",
