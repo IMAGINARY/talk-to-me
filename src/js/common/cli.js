@@ -59,6 +59,11 @@ async function argv() {
             default: false,
             description: t('description.hidePlayButton'),
         })
+        .option('lang', {
+            type: 'string',
+            default: i18next.language,
+            description: t('description.lang'),
+        })
         .option('turbo', {
             alias: 't',
             type: 'boolean',
@@ -67,6 +72,9 @@ async function argv() {
         })
         .version()
         .parse(processArgv);
+
+    argv.initialLang = argv.lang;
+    argv.initialTurbo = argv.turbo;
     return argv;
 }
 

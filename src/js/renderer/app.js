@@ -5,7 +5,7 @@ const cli = require('../common/cli.js');
 const getI18Next = require('../common/i18n.js');
 const langmap = require('langmap');
 const Color = require('color');
-const IdleDetector = require('./idle-detector.js');
+const IdleReloader = require("./idle-reloader.js");
 const AutoViewport = require('./auto-viewport.js');
 
 const $ = require('jquery');
@@ -54,6 +54,7 @@ const states = {
 
 async function init() {
     const argv = await cli.argv();
+    window.argv = argv;
     const i18next = await getI18Next();
     await $.ready;
 
@@ -66,11 +67,22 @@ async function init() {
     let state = states.RECORDING;
     let animationSpeedUp = 1.0;
 
-    const idleDetector = new IdleDetector();
-    let idleTimeout = 0;
+    const idleReloader = new IdleReloader(
+        document.querySelector("#reset-overlay"),
+        document.querySelector("#reset-counter"),
+        argv.idleTimeout * 1000,
+        props.resetCountdown,
+        () => withFade(reloadWithInitialSettings()),
+    );
 
     const audioContext = new AudioContext({sampleRate: SAMPLE_RATE});
-    const micInputNode = await AudioRecorderNode.getMicrophoneAudioSource(audioContext);
+    window.audioContext = audioContext;
+    const micInputNodeBefore = await AudioRecorderNode.getMicrophoneAudioSource(audioContext);
+    window.mic = micInputNodeBefore;
+    window.inBetweenNode = audioContext.createGain();
+    micInputNodeBefore.connect(inBetweenNode);
+    const micInputNode = inBetweenNode;
+
     const recorderInputNode = new MicrophoneFilterNode(audioContext, {bypass: true});
     micInputNode.connect(recorderInputNode);
 
@@ -290,7 +302,7 @@ async function init() {
     samples.on('full', async waveformData => {
         enableSettingsUI(false);
 
-        resetIdleTimeout(false);
+        await idleReloader.stopObservation();
 
         waveformVisualizer.liveMode = false;
         waveformVisualizer.cursorPosition = 2.0;
@@ -301,7 +313,7 @@ async function init() {
         visualizeRecognition(predictionExt);
         await animateRecognition(animationSpeedUp);
 
-        resetIdleTimeout();
+        await idleReloader.startObservation();
 
         enableSettingsUI(true);
     });
@@ -319,7 +331,7 @@ async function init() {
     }
 
     function reset() {
-        $resetOverlay.hide();
+        idleReloader.stopObservation();
         resetRecognition();
 
         audioRecorderNode.stopPreRecording();
@@ -345,62 +357,35 @@ async function init() {
 
         enableSettingsUI(true);
 
+        idleReloader.startObservation();
+
         state = states.RECORDING;
+    }
+
+    async function reloadWithSameSettings() {
+        // The promise will never settle.
+        // This helps ensuring that the app is able to wait until the reloading actually happens.
+        await new Promise(() => window.location.reload());
+    }
+
+    async function reloadWithInitialSettings() {
+        // restore initial settings
+        argv.lang = argv.initialLang;
+        argv.turbo = argv.initialTurbo;
+        // reload with the current (=initial) settings
+        await reloadWithSameSettings();
     }
 
     async function withFade(func) {
         const aq = new AnimationQueue();
+        aq.push(AnimationQueue.skipFrame());
         aq.push(() => $(document.body).animate({opacity: 0.0}).promise());
+        aq.push(AnimationQueue.skipFrame());
         aq.push(() => Promise.resolve().then(func));
+        aq.push(AnimationQueue.skipFrame());
         aq.push(() => $(document.body).animate({opacity: 1.0}).promise());
+        aq.push(AnimationQueue.skipFrame());
         await aq.play();
-    }
-
-    const resetOverlay = document.querySelector("#reset-overlay"), $resetOverlay = $(resetOverlay);
-    const resetCounter = document.querySelector("#reset-counter"), $resetCounter = $(resetCounter);
-
-    function resetIdleTimeout(restart) {
-        idleDetector.clearTimeout(idleTimeout);
-        if ((typeof restart === 'undefined' || restart) && argv.idleTimeout > 0)
-            idleTimeout = idleDetector.setTimeoutOnce(resetAfterCountdown, argv.idleTimeout * 1000);
-    }
-
-    async function resetAfterCountdown() {
-        let counter = props.resetCountdown;
-        $resetCounter.text(counter);
-
-        const fadeInPromise = $resetOverlay.fadeIn().promise();
-
-        const counterPromise = new Promise((resolve, reject) => {
-            let intervalId = 0;
-
-            function update() {
-                counter -= 1;
-                $resetCounter.text(counter);
-                if (counter === 0) {
-                    clearInterval(intervalId);
-                    idleDetector.removeListener('interrupted', reject);
-                    resolve();
-                }
-            }
-
-            function abort() {
-                clearInterval(intervalId);
-                reject();
-            }
-
-            intervalId = setInterval(update, 1000);
-            idleDetector.once('interrupted', abort);
-        });
-
-        await fadeInPromise;
-        try {
-            await counterPromise;
-            await withFade(reset);
-        } catch (err) {
-            await $resetOverlay.fadeOut().promise();
-            resetIdleTimeout();
-        }
     }
 
     const recordButton = document.querySelector("#record-button");
@@ -418,7 +403,7 @@ async function init() {
     }
 
     function startRecordingCb() {
-        resetIdleTimeout();
+        idleReloader.stopObservation();
         barkDetectorNode.removeListener('volume_change', volumeChangeCb);
         volumeChangeCb(0, 0);
         audioRecorderNode.startRecording();
@@ -439,7 +424,6 @@ async function init() {
             audioRecorderNode.startPreRecording();
             barkDetectorNode.once('on', startRecordingCb);
             barkDetectorNode.on('volume_change', volumeChangeCb);
-            resetIdleTimeout();
         });
     }
 
@@ -458,9 +442,10 @@ async function init() {
     }
 
     const hammerRestartButton = new Hammer(restartButton);
-    hammerRestartButton.on('tap', () => withFade(reset));
+    hammerRestartButton.on('tap', () => withFade(reloadWithSameSettings));
 
     function setTurbo(enabled) {
+        argv.turbo = enabled;
         animationSpeedUp = enabled ? props.turboFactor : 1.0;
     }
 
@@ -496,6 +481,7 @@ async function init() {
                 if (i18next.hasResourceBundle(lang, namespace))
                     break;
             await i18next.changeLanguage(lang);
+            argv.lang = lang;
 
             return i18next.getFixedT(lang, namespace);
         };
@@ -542,7 +528,7 @@ async function init() {
         if (newLanguage !== i18next.language)
             setLanguage(newLanguage);
     }));
-    setLanguage(i18next.language, true);
+    setLanguage(argv.lang, true);
 
     reset();
     if (argv.demo)
