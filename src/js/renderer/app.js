@@ -417,7 +417,6 @@ async function init() {
         recordButton.classList.remove('active');
         hammerRecordButton.off('press');
         hammerRecordButton.on('press', () => {
-            enableSettingsUI(false);
             hammerRecordButton.off('press');
             recordButton.classList.add('active');
             barkDetectorNode.reset();
