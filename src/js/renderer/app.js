@@ -360,6 +360,9 @@ async function init() {
         idleReloader.startObservation();
 
         state = states.RECORDING;
+
+        if (argv.auto)
+            startPreRecordingCb();
     }
 
     async function reloadWithSameSettings() {
@@ -409,6 +412,15 @@ async function init() {
         audioRecorderNode.startRecording();
     }
 
+    function startPreRecordingCb() {
+        hammerRecordButton.off('press');
+        recordButton.classList.add('active');
+        barkDetectorNode.reset();
+        audioRecorderNode.startPreRecording();
+        barkDetectorNode.once('on', startRecordingCb);
+        barkDetectorNode.on('volume_change', volumeChangeCb);
+    }
+
     function resetRecordButton() {
         volumeChangeCb(-100, 0);
         barkDetectorNode.removeListener('volume_change', volumeChangeCb);
@@ -416,14 +428,7 @@ async function init() {
         barkDetectorNode.removeListener('on', startRecordingCb);
         recordButton.classList.remove('active');
         hammerRecordButton.off('press');
-        hammerRecordButton.on('press', () => {
-            hammerRecordButton.off('press');
-            recordButton.classList.add('active');
-            barkDetectorNode.reset();
-            audioRecorderNode.startPreRecording();
-            barkDetectorNode.once('on', startRecordingCb);
-            barkDetectorNode.on('volume_change', volumeChangeCb);
-        });
+        hammerRecordButton.on('press', startPreRecordingCb);
     }
 
     const hammerPlayButton = new Hammer(playButton);

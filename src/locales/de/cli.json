@@ -8,6 +8,7 @@
     "idleTimeout": "Programm nach angegebener Anzahl Sekunden der Untätigkeit zurücksetzen. Deaktiviere mit Werten <= 0.",
     "hidePlayButton": "Abspielknopf verstecken",
     "lang": "Sprache vorauswählen.",
+    "autoStart": "Voraufnahme automatisch starten.",
     "turbo": "Beschleunige bzw. deaktiviere Animationen."
   }
 }

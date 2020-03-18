@@ -8,6 +8,7 @@
     "idleTimeout": "Reset the program after being idle for the given number of seconds. Values <=0 disable the reset.",
     "hidePlayButton": "Hide the play button",
     "lang": "Preselect language.",
+    "autoStart": "Start pre-recording automatically.",
     "turbo": "Speed up respectively disable animations."
   }
 }

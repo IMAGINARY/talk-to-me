@@ -64,6 +64,11 @@ async function argv() {
             default: i18next.language,
             description: t('description.lang'),
         })
+        .option('auto', {
+            type: 'boolean',
+            default: false,
+            description: t('description.autoStart'),
+        })
         .option('turbo', {
             alias: 't',
             type: 'boolean',
@@ -74,6 +79,7 @@ async function argv() {
         .parse(processArgv);
 
     argv.initialLang = argv.lang;
+    argv.initialAuto = argv.auto;
     argv.initialTurbo = argv.turbo;
     return argv;
 }
