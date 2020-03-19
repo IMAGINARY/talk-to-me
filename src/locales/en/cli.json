@@ -4,11 +4,11 @@
     "kiosk": "Run in kiosk mode. Caution: It might be difficult to quit the app.",
     "menu": "Enable a menu and certain shortcuts useful for debugging.",
     "demo": "Load a demo audio file.",
-    "volumeThreshold": "Volume to exceed before recording is started (range: [-100,0]).",
+    "volumeThreshold": "Required volume to be exceeded before recording is started (range: [-100,0]).",
     "idleTimeout": "Reset the program after being idle for the given number of seconds. Values <=0 disable the reset.",
     "hidePlayButton": "Hide the play button",
     "lang": "Preselect language.",
     "autoStart": "Start pre-recording automatically.",
-    "turbo": "Speed up respectively disable animations."
+    "turbo": "Speed up or disable animations."
   }
 }
