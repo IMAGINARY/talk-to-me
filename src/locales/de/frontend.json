@@ -9,10 +9,10 @@
     "toggleTurboModeOff": "Turbo\u2013\uFEFFModus:\u00A0Aus"
   },
   "short-expl": {
-    "textTransformation": "Die <em>Steuerzeichen</em> werden verarbeitet.",
-    "decoder": "Ein <em>Dekoder</em> läuft durch die Wahrscheinlichkeitstabelle um den besten Pfad zur Ableitung von Worten und Sätzen zu finden.",
-    "network": "Das Spektrogram wird von einem <em>Neuronalen Netzwerk</em> verarbeitet, dass für jeden Zeitschritt und jeden Buchstaben eine Wahrscheinlichkeit bestimmt.",
-    "spectrogram": "Die Wellenform wird in ein <em>Spektrogram</em> überführt, das das Frequenzspektrum zu jedem Zeitschritt aufzeigt.",
-    "waveform": "Dies ist die <em>Wellenform</em> deiner Stimme."
+    "textTransformation": "Nach Verarbeitung der <em>Steuerzeichen</em> erhältst du das Ergebnis.",
+    "decoder": "Ein <em>Dekoder</em> ordnet die erkannten Buchstaben ihrer Wahrscheinlichkeit nach und wählt das Zeichen mit der höchsten Wahrscheinlichkeit aus.",
+    "network": "<p>Das Spektrogramm wird von einem <em>Neuronalen Netzwerk</em> verarbeitet. Es berechnet Wahrscheinlichkeiten. Genauer gesagt, wie gut deine Aufnahme in einem bestimmten Moment zu einem Buchstaben aus den Trainingsdaten passt.</p><p>Zum Trainieren des Netzwerkes wurden hunderte Stunden von Sprachaufnahmen verwendet.</p>",
+    "spectrogram": "Die Wellenform wird in ein <em>Spektrogramm</em> überführt. Es beschreibt aus welchen Tonhöhen die Aufnahme zusammengesetzt ist (Frequenzspektrum) und wie sich diese Zusammensetzung mit der Zeit verändert.",
+    "waveform": "Die Schallwellen deiner Stimme werden als <em>Wellenform</em> aufgenommen."
   }
 }

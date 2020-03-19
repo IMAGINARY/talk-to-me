@@ -9,10 +9,10 @@
     "toggleTurboModeOff": "Turbo\u00A0mode:\u00A0Off"
   },
   "short-expl": {
-    "textTransformation": "The <em>control symbols</em> are processed.",
-    "decoder": "A <em>decoder</em> walks through the table of probabilities to find the most likely path to form words and sentences.",
-    "network": "The spectrogram is given to a <em>neural network</em> that tries to derive a probability for each letter and time step.",
-    "spectrogram": "The sound is transformed into a <em>spectrogram</em>, which shows the spectrum of frequencies for each time step.",
-    "waveform": "This is the <em>waveform</em> of your voice."
+    "textTransformation": "After the processing of the <em>control symbols</em> you will get your results.",
+    "decoder": "A <em>decoder</em> will order the recognized letters according to their probability and will assign each letter based on its most likely probability.",
+    "network": "The spectrogram will be processed by a <em>neural network</em>. It computes probabilities. To be more precise, how well the recording at a given time matches to a letter from the training data.</p><p>The training data consists of hundreds of hours of voice recordings.</p>",
+    "spectrogram": "The sound is converted into a <em>spectrogram</em>. It captures the composition of your pitch (frequency spectrum), and how this composition will change over time.",
+    "waveform": "The soundwaves of your voice are recorded as <em>waveform</em>."
   }
 }
