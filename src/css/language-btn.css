@@ -1,0 +1,40 @@
+#language-controls .dropdown-toggle {
+    color: var(--viz-snd-color);
+    background-color: transparent;
+    border-color: transparent;
+    outline-color: transparent;
+    box-shadow: none;
+}
+
+#language-controls .dropdown-toggle.focus, #language-controls .dropdown-toggle:focus {
+    color: var(--viz-snd-color-active);
+    border-color: transparent;
+    outline-color: transparent;
+    box-shadow: none;
+}
+
+#language-controls .dropdown-toggle.active, #language-controls .dropdown-toggle:active {
+    color: var(--viz-snd-color-active);
+}
+
+#language-controls .show .dropdown-toggle {
+    color: var(--viz-snd-color-active);
+}
+
+#language-controls .dropdown-toggle:hover:not(.active) {
+    color: var(--viz-snd-color-high-alpha);
+}
+
+#language-controls .show .dropdown-toggle:hover {
+    color: var(--viz-snd-color-active);
+}
+
+#language-controls .dropdown-menu {
+    color: black;
+    background-color: var(--viz-color);
+}
+
+#language-controls .dropdown-item:hover, #language-selector .dropdown-item:active, #language-selector .dropdown-item:focus {
+    color: white;
+    background-color: var(--viz-snd-color);
+}
