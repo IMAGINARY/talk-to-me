@@ -178,6 +178,8 @@ async function init() {
             $languageButton.removeClass('disabled');
         } else {
             $turboToggle.bootstrapToggle('disable');
+            if ($languageButton.siblings(".dropdown-menu").hasClass("show"))
+                $languageButton.dropdown('toggle');
             $languageButton.addClass('disabled');
         }
     }
