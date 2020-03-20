@@ -143,6 +143,25 @@ body::-webkit-scrollbar {
     padding: var(--main-padding);
 }
 
+#button-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#button-container > * {
+    display: inline-block;
+    box-sizing: content-box;
+    align-self: flex-end;
+}
+
+#button-container > #language-controls {
+    position: absolute;
+    right: 0px;
+}
+
 #restart-button {
     position: relative;
 }
@@ -150,17 +169,6 @@ body::-webkit-scrollbar {
 #restart-button *:first-child {
     position: absolute;
     left: -100%;
-}
-
-.side-by-side-buttons {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.side-by-side-buttons > * {
-    display: inline-block;
-    align-self: flex-end;
 }
 
 #play-button-container {

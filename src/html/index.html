@@ -9,7 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../node_modules/@fortawesome/fontawesome-free/css/all.css">
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap-reboot.min.css">
     <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap4-toggle/css/bootstrap4-toggle.min.css">
     <link rel="stylesheet" href="../../node_modules/swiper/css/swiper.min.css">
     <link rel="stylesheet" type="text/css" href="../css/symbol-btn.css">
     <link rel="stylesheet" type="text/css" href="../css/circular-btn.css">
@@ -73,30 +72,27 @@
     </span>
 </div>
 
-<div id="button-bar" class="side-by-side-buttons">
-    <div id="turbo-controls">
-        <!--suppress HtmlFormInputWithoutLabel -->
-        <input id="turbo-toggle" type="checkbox" checked data-toggle="toggle"
-               data-onstyle="secondary" data-offstyle="dark">
-    </div>
-    <span id="restart-button" class="btn-symbol">
-        <i class="fas fa-chevron-left fa-3x">
-        </i>
-        <i class="fas fa-microphone fa-3x">
-        </i>
-    </span>
-    <div id="language-controls">
-        <div class="btn-group dropup">
-            <button id="language-button" type="button" class="btn btn-md dropdown-toggle"
-                    data-toggle="dropdown"
-                    data-flip="true"
-                    data-boundary="viewport"
-                    aria-haspopup="true" aria-expanded="false">
-                <i class="fas fa-language fa-lg"></i>
-                <span id="language-label"></span>
-            </button>
-            <div id="language-selector" class="dropdown-menu">
-                <!-- supported languages will be filled in via JS -->
+<div id="button-bar">
+    <div id="button-container">
+        <span id="restart-button" class="btn-symbol">
+            <i class="fas fa-chevron-left fa-3x">
+            </i>
+            <i class="fas fa-microphone fa-3x">
+            </i>
+        </span>
+        <div id="language-controls">
+            <div class="btn-group dropup">
+                <button id="language-button" type="button" class="btn btn-md dropdown-toggle"
+                        data-toggle="dropdown"
+                        data-flip="true"
+                        data-boundary="viewport"
+                        aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-language fa-lg"></i>
+                    <span id="language-label"></span>
+                </button>
+                <div id="language-selector" class="dropdown-menu">
+                    <!-- supported languages will be filled in via JS -->
+                </div>
             </div>
         </div>
     </div>

@@ -24,7 +24,6 @@
     "@openfonts/inconsolata_all": "^1.44.0",
     "@tensorflow/tfjs-node": "^1.5.2",
     "bootstrap": "^4.4.1",
-    "bootstrap4-toggle": "^3.6.1",
     "color": "^3.1.2",
     "colormap": "^2.3.1",
     "cwise": "^1.0.10",

@@ -10,7 +10,7 @@ const properties = {
         networkDelay: 200,
         textTransform: 1000,
     },
-    turboFactor: 0.025,
+    turboFactor: 0.2,
     styles: {
         recording: {
             waveformHeight: 513,

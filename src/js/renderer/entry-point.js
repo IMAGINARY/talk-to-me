@@ -4,7 +4,6 @@ async function loadApp() {
     try {
         const $ = jQuery = require('jquery');
         const bootstrap = require('bootstrap');
-        const bootstrapToggle = require('bootstrap4-toggle');
 
         const app = require('../js/renderer/app.js');
         await app.init();

@@ -174,10 +174,8 @@ async function init() {
 
     function enableSettingsUI(enable) {
         if (enable) {
-            $turboToggle.bootstrapToggle('enable');
             $languageButton.removeClass('disabled');
         } else {
-            $turboToggle.bootstrapToggle('disable');
             if ($languageButton.siblings(".dropdown-menu").hasClass("show"))
                 $languageButton.dropdown('toggle');
             $languageButton.addClass('disabled');
@@ -317,6 +315,8 @@ async function init() {
 
         await idleReloader.startObservation();
 
+        setTurbo(true);
+
         enableSettingsUI(true);
     });
 
@@ -398,7 +398,6 @@ async function init() {
     const volumeIndicator = document.querySelector("#volume-indicator");
     const playButton = document.querySelector("#play-button"), $playButton = $(playButton);
     const restartButton = document.querySelector("#restart-button"), $restartButton = $(restartButton);
-    const turboToggle = document.querySelector("#turbo-toggle"), $turboToggle = $(turboToggle);
 
     const hammerRecordButton = new Hammer(recordButton);
     hammerRecordButton.get('press').set({time: 0});
@@ -456,8 +455,6 @@ async function init() {
         animationSpeedUp = enabled ? props.turboFactor : 1.0;
     }
 
-    $turboToggle.bootstrapToggle(argv.turbo ? 'on' : 'off');
-    $turboToggle.change(() => setTurbo($turboToggle.prop('checked')));
     setTurbo(argv.turbo);
 
     function addSupportedLanguages() {
@@ -505,11 +502,6 @@ async function init() {
                 {querySelector: "#reset-overlay .cancel-label", key: "reset.cancel"},
             ];
             elemsToLocalize.forEach(elem => $(elem.querySelector).html(t(elem.key)));
-            $("#turbo-toggle").bootstrapToggle('destroy');
-            $("#turbo-toggle").bootstrapToggle({
-                on: t("label.toggleTurboModeOn"),
-                off: t("label.toggleTurboModeOff"),
-            });
             $("#language-label").text(langmap[i18next.language]["nativeName"]);
         };
 
