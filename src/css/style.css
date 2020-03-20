@@ -169,6 +169,7 @@ body::-webkit-scrollbar {
 #restart-button *:first-child {
     position: absolute;
     left: -100%;
+    padding-right: 1ex;
 }
 
 #play-button-container {
