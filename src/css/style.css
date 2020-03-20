@@ -287,6 +287,15 @@ body::-webkit-scrollbar {
     background: var(--viz-snd-color);
 }
 
+.network-container .swiper-scrollbar::before, .network-container .swiper-scrollbar-drag::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    padding: 0 0 0 20px;
+}
+
 .full-width {
     box-sizing: content-box;
     width: 100%;
