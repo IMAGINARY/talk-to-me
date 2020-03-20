@@ -143,6 +143,15 @@ body::-webkit-scrollbar {
     padding: var(--main-padding);
 }
 
+#restart-button {
+    position: relative;
+}
+
+#restart-button *:first-child {
+    position: absolute;
+    left: -100%;
+}
+
 .side-by-side-buttons {
     display: flex;
     align-items: center;
@@ -151,6 +160,7 @@ body::-webkit-scrollbar {
 
 .side-by-side-buttons > * {
     display: inline-block;
+    align-self: flex-end;
 }
 
 #viz-container {

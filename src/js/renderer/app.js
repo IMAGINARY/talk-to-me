@@ -302,6 +302,8 @@ async function init() {
     samples.on('full', async waveformData => {
         enableSettingsUI(false);
 
+        argv.auto = true;
+
         await idleReloader.stopObservation();
 
         waveformVisualizer.liveMode = false;
@@ -375,6 +377,7 @@ async function init() {
         // restore initial settings
         argv.lang = argv.initialLang;
         argv.turbo = argv.initialTurbo;
+        argv.auto = argv.initialAuto;
         // reload with the current (=initial) settings
         await reloadWithSameSettings();
     }
