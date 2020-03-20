@@ -163,6 +163,17 @@ body::-webkit-scrollbar {
     align-self: flex-end;
 }
 
+#play-button-container {
+    display: flex;
+    position: absolute;
+    height: 100%;
+    left: calc(100% - 1ex);
+}
+
+#play-button {
+    align-self: center;
+}
+
 #viz-container {
     position: absolute;
     top: var(--viz-top);
@@ -195,6 +206,10 @@ body::-webkit-scrollbar {
 #viz-container .needs-padding {
     padding-left: var(--cell-size);
     padding-right: var(--cell-size)
+}
+
+#viz-container .canvas-container canvas {
+    display: block;
 }
 
 #viz-container .explanation-container {

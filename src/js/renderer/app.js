@@ -199,6 +199,7 @@ async function init() {
         const moveVizUp = () => Promise.all([
             $vizContainer.animate(vizBoundsRecognition, animationDurations.moveViz).promise(),
             $waveformCanvas.animate({height: props.styles.recognition.waveformHeight}, animationDurations.moveViz).promise(),
+            argv.hidePlayButton ? Promise.resolve() : $playButton.fadeIn().promise(),
         ]).then(() => $waveformCanvas.attr({height: $waveformCanvas.height(), width: $waveformCanvas.width()}));
 
         aq.push(AnimationQueue.skipFrame());
@@ -279,7 +280,7 @@ async function init() {
         const delayAnim = AnimationQueue.delay(animationDurations.slideDelay);
         const slideDown = $elems => () => $elems.slideDown(animationDurations.slideDown).promise();
 
-        aq.push(delayAnim);
+        aq.push(() => argv.hidePlayButton ? Promise.resolve() : $playButton.show().promise());
         aq.push(slideDown($spectrogramViz));
         aq.push(delayAnim);
         aq.push(slideDown($networkViz));
@@ -291,10 +292,7 @@ async function init() {
         aq.push(async () => await textTransformationVisualizer.animator.last(animationDurations.textTransform));
         aq.push(() => textTransformationVisualizer.animator.showButtons());
         aq.push(delayAnim);
-        aq.push(() => Promise.all([
-            argv.hidePlayButton ? Promise.resolve() : $playButton.fadeIn().promise(),
-            $restartButton.fadeIn().promise(),
-        ]));
+        aq.push(() => $restartButton.fadeIn().promise());
 
         await aq.play();
     }
