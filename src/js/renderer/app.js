@@ -363,7 +363,7 @@ async function init() {
 
         state = states.RECORDING;
 
-        if (argv.auto)
+        if (argv.auto && !argv.demo)
             startPreRecordingCb();
     }
 
