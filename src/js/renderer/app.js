@@ -313,11 +313,13 @@ async function init() {
         state = states.RECOGNITION;
         const predictionExt = await recognize(waveformData);
         visualizeRecognition(predictionExt);
-        await animateRecognition(animationSpeedUp);
+        const animateRecognitionPromoise = animateRecognition(animationSpeedUp);
 
-        await idleReloader.startObservation();
-
+        // enable turbo after the animations have been created, but before they are actually complete
         setTurbo(true);
+
+        await animateRecognitionPromoise;
+        await idleReloader.startObservation();
 
         enableSettingsUI(true);
     });
