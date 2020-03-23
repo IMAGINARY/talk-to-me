@@ -75,17 +75,28 @@ function map32To33_n(charArray) {
     return [map32To33_1(charArray)];
 }
 
-function removeDuplicates_n(charArray) {
-    const duplicatesMerged = [...charArray];
-    for (let i = 1; i < duplicatesMerged.length; ++i) {
-        if (duplicatesMerged[i - 1].char === duplicatesMerged[i].char)
-            duplicatesMerged[i] = new Char(duplicatesMerged[i].key, duplicatesMerged[i].char, duplicatesMerged[i - 1].position);
-    }
+function create_removeDuplicates_n(charsToCheck) {
+    let equals;
+    if (typeof charsToCheck === 'undefined')
+        equals = (a, b) => a === b;
+    else
+        equals = (a, b) => a === b && charsToCheck.indexOf(a) !== -1;
 
-    const duplicatesRemoved = charArray.filter((c, idx) => idx === 0 || c.char !== charArray[idx - 1].char);
-    const positionsUpdated = duplicatesRemoved.map((c, idx) => c.position === idx ? c : new Char(c.key, c.char, idx));
-    return [duplicatesMerged, duplicatesRemoved, positionsUpdated];
+    return charArray => {
+        const duplicatesMerged = [...charArray];
+        for (let i = 1; i < duplicatesMerged.length; ++i) {
+            if (equals(duplicatesMerged[i - 1].char, duplicatesMerged[i].char))
+                duplicatesMerged[i] = new Char(duplicatesMerged[i].key, duplicatesMerged[i].char, duplicatesMerged[i - 1].position);
+        }
+
+        const duplicatesRemoved = charArray.filter((c, idx) => idx === 0 || !equals(c.char, charArray[idx - 1].char));
+        const positionsUpdated = duplicatesRemoved.map((c, idx) => c.position === idx ? c : new Char(c.key, c.char, idx));
+        return [duplicatesMerged, duplicatesRemoved, positionsUpdated];
+    }
 }
+
+const removeDuplicates_n = create_removeDuplicates_n();
+const removeDuplicateSpaces_n = create_removeDuplicates_n('␣');
 
 function removePrefix_1(charArray, prefixChar) {
     const tmp = [...charArray];
@@ -201,6 +212,7 @@ function getSteps_DuplicatesThroughBlanks(charArray) {
     const charArrays = [[charArray]];
     charArrays.push(removeDuplicates_n(last2(charArrays)));
     charArrays.push(removeGarbage_n(last2(charArrays)));
+    charArrays.push(removeDuplicateSpaces_n(last2(charArrays)));
     charArrays.push(convertBlankSymbolsToSpace_n(last2(charArrays)));
 
     return cleanUpSteps(charArrays);
