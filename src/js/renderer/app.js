@@ -399,9 +399,6 @@ async function init() {
     const playButton = document.querySelector("#play-button"), $playButton = $(playButton);
     const restartButton = document.querySelector("#restart-button"), $restartButton = $(restartButton);
 
-    const hammerRecordButton = new Hammer(recordButton);
-    hammerRecordButton.get('press').set({time: 0});
-
     function volumeChangeCb(currentVolume, threshold) {
         const percent = 100 * ((100 + currentVolume) / (100 + threshold));
         volumeIndicator.style.clipPath = `inset(${100 - percent}% 0px 0px 0px)`;
@@ -415,7 +412,7 @@ async function init() {
     }
 
     function startPreRecordingCb() {
-        hammerRecordButton.off('press');
+        recordButton.removeEventListener('pointerdown', startPreRecordingCb);
         recordButton.classList.add('active');
         barkDetectorNode.reset();
         audioRecorderNode.startPreRecording();
@@ -429,8 +426,8 @@ async function init() {
         audioRecorderNode.removeListener('recording-stopped', resetRecordButton);
         barkDetectorNode.removeListener('on', startRecordingCb);
         recordButton.classList.remove('active');
-        hammerRecordButton.off('press');
-        hammerRecordButton.on('press', startPreRecordingCb);
+        recordButton.removeEventListener('pointerdown', startPreRecordingCb);
+        recordButton.addEventListener('pointerdown', startPreRecordingCb);
     }
 
     const hammerPlayButton = new Hammer(playButton);
