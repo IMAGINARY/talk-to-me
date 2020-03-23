@@ -4,8 +4,8 @@ class AnimationQueue {
         this._running = Promise.resolve();
     }
 
-    push(item) {
-        this._queue.push(item);
+    push(...items) {
+        items.forEach(item => this._queue.push(item));
     }
 
     async play() {
