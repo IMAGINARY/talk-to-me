@@ -201,10 +201,12 @@ async function init() {
             $waveformCanvas.animate({height: props.styles.recognition.waveformHeight}, animationDurations.moveViz).promise(),
             argv.hidePlayButton ? Promise.resolve() : $playButton.fadeIn().promise(),
         ]).then(() => $waveformCanvas.attr({height: $waveformCanvas.height(), width: $waveformCanvas.width()}));
+        const fadeInRestartButton = () => $restartButton.fadeIn().promise();
 
         aq.push(AnimationQueue.skipFrame());
         aq.push(makeRoom);
         aq.push(moveVizUp);
+        aq.push(fadeInRestartButton);
         aq.push(AnimationQueue.skipFrame());
 
         await aq.play();
