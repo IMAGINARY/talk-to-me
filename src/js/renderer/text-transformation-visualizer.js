@@ -476,20 +476,38 @@ function visualizeResult(charArray, cellWidth, fontSizePx) {
         .text(c => c.char);
 
     const navButtons = diagram.append("g");
-    const prevButton = navButtons.append("text")
+    const prevButton = navButtons.append("g");
+    prevButton.append("text")
         .attr("class", "button prev fa")
         .attrs({
             x: positionX({position: -1.5}),
             y: 0.53 * lineHeight,
         })
         .text("\uf104");
-    const nextButton = navButtons.append("text")
+    prevButton.append("rect")
+        .attrs({
+            x: positionX({position: -1.5}),
+            y: 0,
+            width: 2 * cellWidth,
+            height: lineHeight,
+            fill: "transparent",
+        });
+    const nextButton = navButtons.append("g");
+    nextButton.append("text")
         .attr("class", "button next fa")
         .attrs({
             x: positionX({position: charArray.length + 0.5}),
             y: 0.53 * lineHeight,
         })
         .text("\uf105");
+    prevButton.append("rect")
+        .attrs({
+            x: positionX({position: charArray.length - 1.5}),
+            y: 0,
+            width: 2 * cellWidth,
+            height: lineHeight,
+            fill: "transparent",
+        });
 
     return {
         element: svg.node(),
