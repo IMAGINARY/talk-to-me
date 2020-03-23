@@ -446,9 +446,13 @@ async function init() {
         });
     }
 
-    const hammerRestartButton = new Hammer(restartButton);
-    hammerRestartButton.on('tap', () => withFade(reloadWithSameSettings));
+    const hammerRestartWithSameSettingsButton = new Hammer(restartButton);
+    hammerRestartWithSameSettingsButton.on('tap', () => withFade(reloadWithSameSettings));
 
+    const hammerRestartWithInitialSettingsButton = new Hammer(restartButton);
+    hammerRestartWithInitialSettingsButton.get('press').set({time: 5000});
+    hammerRestartWithInitialSettingsButton.on('press', () => withFade(reloadWithInitialSettings));
+    
     function setTurbo(enabled) {
         argv.turbo = enabled;
         animationSpeedUp = enabled ? props.turboFactor : 1.0;
