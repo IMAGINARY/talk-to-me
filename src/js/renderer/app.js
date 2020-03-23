@@ -205,8 +205,7 @@ async function init() {
 
         aq.push(AnimationQueue.skipFrame());
         aq.push(makeRoom);
-        aq.push(moveVizUp);
-        aq.push(fadeInRestartButton);
+        aq.push(AnimationQueue.parallelize(moveVizUp, fadeInRestartButton));
         aq.push(AnimationQueue.skipFrame());
 
         await aq.play();
@@ -301,8 +300,10 @@ async function init() {
         aq.push(waitAtLeast(animationDurations.minDecoding));
         aq.push(slideDown($textTransformationViz));
         aq.push(waitAtLeast(animationDurations.minTextTransform, autoPlayTextTransformationVisualizer));
-        aq.push(() => textTransformationVisualizer.animator.showButtons());
-        aq.push(() => $restartButton.fadeIn().promise());
+        aq.push(AnimationQueue.parallelize(
+            () => textTransformationVisualizer.animator.showButtons(),
+            () => $restartButton.fadeIn().promise(),
+        ));
 
         await aq.play();
     }
@@ -462,7 +463,7 @@ async function init() {
     const hammerRestartWithInitialSettingsButton = new Hammer(restartButton);
     hammerRestartWithInitialSettingsButton.get('press').set({time: 5000});
     hammerRestartWithInitialSettingsButton.on('press', () => withFade(reloadWithInitialSettings));
-    
+
     function setTurbo(enabled) {
         argv.turbo = enabled;
         animationSpeedUp = enabled ? props.turboFactor : 1.0;
