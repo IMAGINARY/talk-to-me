@@ -278,22 +278,30 @@ async function init() {
 
     async function animateRecognition(speedup) {
         const animationDurations = computeAnimationDurations(speedup);
+        const wait = !argv.turbo;
 
-        const delayAnim = AnimationQueue.delay(animationDurations.slideDelay);
         const slideDown = $elems => () => $elems.slideDown(animationDurations.slideDown).promise();
+        const waitAtLeast = (duration, animFunc) => {
+            const funcList = [AnimationQueue.delay(wait ? duration : 0)];
+            if (typeof animFunc === 'function')
+                funcList.push(animFunc);
+            return () => Promise.all(funcList.map(f => f()));
+        };
+
+        const autoPlayNetworkVisualizer = async () => await networkVisualizer.autoplay(animationDurations.networkTransition, animationDurations.networkDelay);
+        const autoPlayTextTransformationVisualizer = async () => await textTransformationVisualizer.animator.last(animationDurations.textTransform);
 
         aq.push(() => argv.hidePlayButton ? Promise.resolve() : $playButton.show().promise());
+        aq.push(waitAtLeast(animationDurations.minWaveform));
         aq.push(slideDown($spectrogramViz));
-        aq.push(delayAnim);
+        aq.push(waitAtLeast(animationDurations.minSpectrogram));
         aq.push(slideDown($networkViz));
-        aq.push(async () => await networkVisualizer.autoplay(animationDurations.networkTransition, animationDurations.networkDelay));
-        aq.push(delayAnim);
+        aq.push(waitAtLeast(animationDurations.minNetwork, autoPlayNetworkVisualizer));
         aq.push(slideDown($decodingViz));
-        aq.push(delayAnim);
+        aq.push(waitAtLeast(animationDurations.minDecoding));
         aq.push(slideDown($textTransformationViz));
-        aq.push(async () => await textTransformationVisualizer.animator.last(animationDurations.textTransform));
+        aq.push(waitAtLeast(animationDurations.minTextTransform, autoPlayTextTransformationVisualizer));
         aq.push(() => textTransformationVisualizer.animator.showButtons());
-        aq.push(delayAnim);
         aq.push(() => $restartButton.fadeIn().promise());
 
         await aq.play();

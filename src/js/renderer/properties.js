@@ -5,10 +5,13 @@ const properties = {
     animationDurations: {
         moveViz: 1000,
         slideDown: 500,
-        slideDelay: 2000,
         networkTransition: 300,
         networkDelay: 200,
         textTransform: 1000,
+        minSpectrogram: 7000,
+        minNetwork: 10000,
+        minDecoding: 5000,
+        minTextTransform: 1000,
     },
     turboFactor: 0.2,
     styles: {
