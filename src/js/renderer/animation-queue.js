@@ -36,6 +36,10 @@ class AnimationQueue {
     static skipFrame() {
         return () => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
     }
+
+    static parallelize(...items) {
+        return () => Promise.all(items.map(item => item()));
+    }
 }
 
 module.exports = AnimationQueue;
