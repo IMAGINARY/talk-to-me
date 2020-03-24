@@ -42,11 +42,8 @@ body {
     width: 1920px;
     min-height: 1080px;
     height: 100%;
-    box-sizing: content-box;
     font-family: 'Exo 2', sans-serif;
-    border-right: 1px solid white;
-    overflow-x: hidden;
-    overflow-y: auto;
+    outline: 10000px solid #050505;
     -ms-overflow-style: none; /* Hide scrollbar in IE and Edge */
     /*noinspection CssUnknownProperty*/
     scrollbar-width: none; /* Hide scrollbar in Firefox */
@@ -55,6 +52,13 @@ body {
 
 body::-webkit-scrollbar {
     display: none;
+}
+
+body .full-hd-container {
+    position: relative;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
 }
 
 .fade-in {

@@ -18,95 +18,97 @@
     <script src="../js/renderer/entry-point.js"></script>
 </head>
 <body>
+<div class="full-hd-container">
 
-<h1 id="title"></h1>
+    <h1 id="title"></h1>
 
-<div id="viz-container">
-    <div id="waveform-viz">
-        <div class="explanation-container">
-            <div class="explanation"></div>
+    <div id="viz-container">
+        <div id="waveform-viz">
+            <div class="explanation-container">
+                <div class="explanation"></div>
+            </div>
+            <div id="play-button-container">
+                <span id="play-button" class="btn-symbol"><i class="fas fa-play-circle"></i></span>
+            </div>
+            <div class="canvas-container needs-margin viz">
+                <canvas id="waveform-canvas" class="full-width" width="1920" height="512"></canvas>
+            </div>
         </div>
-        <div id="play-button-container">
-            <span id="play-button" class="btn-symbol"><i class="fas fa-play-circle"></i></span>
+        <div id="spectrogram-viz">
+            <div class="explanation-container">
+                <div class="explanation"></div>
+            </div>
+            <div class="canvas-container needs-margin viz">
+            </div>
         </div>
-        <div class="canvas-container needs-margin viz">
-            <canvas id="waveform-canvas" class="full-width" width="1920" height="512"></canvas>
+        <div id="network-viz">
+            <div class="explanation-container">
+                <div class="explanation"></div>
+            </div>
+            <div class="network-container viz">
+            </div>
+        </div>
+        <div id="decoding-viz">
+            <div class="explanation-container">
+                <div class="explanation"></div>
+            </div>
+            <div class="decoding-container viz">
+            </div>
+        </div>
+        <div id="text-transformation-viz">
+            <div class="explanation-container">
+                <div class="explanation"></div>
+            </div>
+            <div class="text-transformation-container viz">
+            </div>
         </div>
     </div>
-    <div id="spectrogram-viz">
-        <div class="explanation-container">
-            <div class="explanation"></div>
-        </div>
-        <div class="canvas-container needs-margin viz">
-        </div>
-    </div>
-    <div id="network-viz">
-        <div class="explanation-container">
-            <div class="explanation"></div>
-        </div>
-        <div class="network-container viz">
-        </div>
-    </div>
-    <div id="decoding-viz">
-        <div class="explanation-container">
-            <div class="explanation"></div>
-        </div>
-        <div class="decoding-container viz">
-        </div>
-    </div>
-    <div id="text-transformation-viz">
-        <div class="explanation-container">
-            <div class="explanation"></div>
-        </div>
-        <div class="text-transformation-container viz">
-        </div>
-    </div>
-</div>
 
-<div id="record-button-container">
+    <div id="record-button-container">
     <span id="record-button" class="btn-symbol">
         <i class="fas fa-microphone">
         </i>
         <i id="volume-indicator" class="fas fa-microphone">
         </i>
     </span>
-</div>
+    </div>
 
-<div id="button-bar">
-    <div id="button-container">
+    <div id="button-bar">
+        <div id="button-container">
         <span id="restart-button" class="btn-symbol">
             <i class="fas fa-chevron-left fa-3x">
             </i>
             <i class="fas fa-microphone fa-3x">
             </i>
         </span>
-        <div id="language-controls">
-            <div class="btn-group dropup">
-                <button id="language-button" type="button" class="btn btn-md dropdown-toggle"
-                        data-toggle="dropdown"
-                        data-flip="true"
-                        data-boundary="viewport"
-                        aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-language fa-lg"></i>
-                    <span id="language-label"></span>
-                </button>
-                <div id="language-selector" class="dropdown-menu">
-                    <!-- supported languages will be filled in via JS -->
+            <div id="language-controls">
+                <div class="btn-group dropup">
+                    <button id="language-button" type="button" class="btn btn-md dropdown-toggle"
+                            data-toggle="dropdown"
+                            data-flip="true"
+                            data-boundary="viewport"
+                            aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-language fa-lg"></i>
+                        <span id="language-label"></span>
+                    </button>
+                    <div id="language-selector" class="dropdown-menu">
+                        <!-- supported languages will be filled in via JS -->
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div id="reset-overlay">
-    <div id="reset-container">
-        <div>
-            <div class="counter-label"></div>
-            <div id="reset-counter">5</div>
-            <div class="cancel-label"></div>
+    <div id="reset-overlay">
+        <div id="reset-container">
+            <div>
+                <div class="counter-label"></div>
+                <div id="reset-counter">5</div>
+                <div class="cancel-label"></div>
+            </div>
         </div>
     </div>
-</div>
 
+</div>
 </body>
 </html>
