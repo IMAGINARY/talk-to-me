@@ -6,6 +6,7 @@
     --controls-separator-color: #000000;
     --main-padding: 20px;
     --cell-size: 11px;
+    --viz-margin: var(--cell-size);
     --viz-low-alpha: 0.25;
     --viz-mid-alpha: 0.5;
     --viz-high-alpha: 0.75;
@@ -212,13 +213,13 @@ body .full-hd-container {
 }
 
 #viz-container .needs-margin {
-    margin-left: var(--cell-size);
-    margin-right: var(--cell-size);
+    margin-left: var(--viz-margin);
+    margin-right: var(--viz-margin);
 }
 
 #viz-container .needs-padding {
-    padding-left: var(--cell-size);
-    padding-right: var(--cell-size)
+    padding-left: var(--viz-margin);
+    padding-right: var(--viz-margin)
 }
 
 #viz-container .canvas-container canvas {

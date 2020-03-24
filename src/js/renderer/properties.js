@@ -1,3 +1,7 @@
+const VIZ_MARGIN = Number(getComputedStyle(document.documentElement)
+    .getPropertyValue('--viz-margin')
+    .replace(/px$/, ""));
+
 const properties = {
     supportedLanguages: ['en', 'de'],
     sampleRate: 16000,
@@ -17,7 +21,7 @@ const properties = {
     styles: {
         recording: {
             waveformHeight: 513,
-            vizBounds: {top: Math.floor((1080 - 513) / 2), left: 0, width: 1920},
+            vizBounds: {top: Math.floor((1080 - 513) / 2), left: -VIZ_MARGIN, width: 1920 + 2 * VIZ_MARGIN},
         },
         recognition: {
             waveformHeight: 65,
