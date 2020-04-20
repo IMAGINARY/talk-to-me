@@ -75,9 +75,21 @@ async function init() {
         () => withFade(reloadWithInitialSettings()),
     );
 
+    async function waitForMicrophone(audioContext) {
+        const t = i18next.getFixedT(null, 'frontend');
+        while (true) {
+            try {
+                return await AudioRecorderNode.getMicrophoneAudioSource(audioContext);
+            } catch (err) {
+                alert(t('error.no-mic'));
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+    }
+
     const audioContext = new AudioContext({sampleRate: SAMPLE_RATE});
     window.audioContext = audioContext;
-    const micInputNodeBefore = await AudioRecorderNode.getMicrophoneAudioSource(audioContext);
+    const micInputNodeBefore = await waitForMicrophone(audioContext);
     window.mic = micInputNodeBefore;
     window.inBetweenNode = audioContext.createGain();
     micInputNodeBefore.connect(inBetweenNode);

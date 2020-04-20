@@ -14,5 +14,8 @@
     "network": "<p>Das Spektrogramm wird von einem <em>Neuronalen Netzwerk</em> verarbeitet. Es berechnet Wahrscheinlichkeiten. Genauer gesagt, wie gut deine Aufnahme in einem bestimmten Moment zu einem Buchstaben aus den Trainingsdaten passt.</p><p>Zum Trainieren des Netzwerkes wurden hunderte Stunden von Sprachaufnahmen verwendet.</p>",
     "spectrogram": "Die Wellenform wird in ein <em>Spektrogramm</em> überführt. Es beschreibt aus welchen Tonhöhen die Aufnahme zusammengesetzt ist (Frequenzspektrum) und wie sich diese Zusammensetzung mit der Zeit verändert.",
     "waveform": "Die Schallwellen deiner Stimme werden als <em>Wellenform</em> aufgenommen."
+  },
+  "error": {
+    "no-mic": "Es wurde kein Mikrofon gefunden. Verbinde ein Mikrofon und versuche es erneut."
   }
 }

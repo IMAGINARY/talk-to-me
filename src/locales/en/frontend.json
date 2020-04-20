@@ -14,5 +14,8 @@
     "network": "The spectrogram will be processed by a <em>neural network</em>. It computes probabilities. To be more precise, how well the recording at a given time matches to a letter from the training data.</p><p>The training data consists of hundreds of hours of voice recordings.</p>",
     "spectrogram": "The sound is converted into a <em>spectrogram</em>. It captures the composition of your pitch (frequency spectrum), and how this composition will change over time.",
     "waveform": "The soundwaves of your voice are recorded as <em>waveform</em>."
+  },
+  "error": {
+    "no-mic": "No microphone found. Connect a microphone and retry."
   }
 }
