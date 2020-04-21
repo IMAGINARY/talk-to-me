@@ -6,7 +6,8 @@
   },
   "label": {
     "toggleTurboModeOn": "Turbo\u2013\uFEFFModus:\u00A0An",
-    "toggleTurboModeOff": "Turbo\u2013\uFEFFModus:\u00A0Aus"
+    "toggleTurboModeOff": "Turbo\u2013\uFEFFModus:\u00A0Aus",
+    "recordTime": "{{elapsedTime, elapsedTime}}&#8239;s&nbsp;/&nbsp;{{totalTime, totalTime}}&#8239;s"
   },
   "short-expl": {
     "textTransformation": "Nach Verarbeitung der <em>Steuerzeichen</em> erhältst du das Ergebnis.",

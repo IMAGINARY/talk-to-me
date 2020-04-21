@@ -6,7 +6,8 @@
   },
   "label": {
     "toggleTurboModeOn": "Turbo\u00A0mode:\u00A0On",
-    "toggleTurboModeOff": "Turbo\u00A0mode:\u00A0Off"
+    "toggleTurboModeOff": "Turbo\u00A0mode:\u00A0Off",
+    "recordTime": "{{elapsedTime, elapsedTime}}&#8239;s&nbsp;/&nbsp;{{totalTime, totalTime}}&#8239;s"
   },
   "short-expl": {
     "textTransformation": "After the processing of the <em>control symbols</em> you will get your results.",

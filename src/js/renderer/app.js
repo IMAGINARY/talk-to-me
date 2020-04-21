@@ -177,7 +177,21 @@ async function init() {
 
     const aq = new AnimationQueue();
 
-    samples.on('length_changed', () => waveformVisualizer.cursorPosition = samples.length / samples.maxLength);
+    const samplesLengthChangedCb = () => {
+        if (samples.length === 0) {
+            $('#record-time').hide();
+        } else {
+            const t = i18next.getFixedT(null, 'frontend');
+            $('#record-time').fadeIn();
+            $('#record-time').html(t('label.recordTime', {
+                elapsedTime: samples.length / SAMPLE_RATE,
+                totalTime: samples.maxLength / SAMPLE_RATE
+            }));
+        }
+        waveformVisualizer.cursorPosition = samples.length / samples.maxLength;
+    };
+    samples.on('length_changed', samplesLengthChangedCb);
+    samplesLengthChangedCb();
     audioPlayer.on('progress', (progress, duration) => waveformVisualizer.cursorPosition = progress / duration);
     audioPlayer.on('ended', () => {
         waveformVisualizer.cursorPosition = 2.0;
@@ -528,6 +542,10 @@ async function init() {
                 {querySelector: "#reset-overlay .cancel-label", key: "reset.cancel"},
             ];
             elemsToLocalize.forEach(elem => $(elem.querySelector).html(t(elem.key)));
+            $('#record-time').html(t('label.recordTime', {
+                elapsedTime: samples.length / SAMPLE_RATE,
+                totalTime: samples.maxLength / SAMPLE_RATE
+            }));
             $("#language-label").text(langmap[i18next.language]["nativeName"]);
         };
 
