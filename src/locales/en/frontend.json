@@ -12,7 +12,7 @@
   "short-expl": {
     "textTransformation": "After the processing of the <em>control symbols</em> you will get your results.",
     "decoder": "A <em>decoder</em> will order the recognized letters according to their probability and will assign each letter based on its most likely probability.",
-    "network": "The spectrogram will be processed by a <em>neural network</em>. It computes probabilities. To be more precise, how well the recording at a given time matches to a letter from the training data.</p><p>The training data consists of hundreds of hours of voice recordings.</p>",
+    "network": "The spectrogram will be processed by a <em>neural network</em>. It&nbsp;computes probabilities. To be more precise, how well the recording at a given time matches to a letter from the training data.</p><p>The graphic shows the neuron activation in the individual layers of the network. Layer 1 is derived directly from the spectrogram and the subsequent layers are derived from their respective predecessors. The activation in the last layer (12) corresponds to the probabilities of the letters.</p><p>Through training, the network learns how to compute a layer from the previous one. Hundreds of hours of voice recordings have been used for training the network.</p>",
     "spectrogram": "The sound is converted into a <em>spectrogram</em>. It captures the composition of your pitch (frequency spectrum), and how this composition will change over time.",
     "waveform": "The soundwaves of your voice are recorded as <em>waveform</em>."
   },

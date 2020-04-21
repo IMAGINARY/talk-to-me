@@ -12,7 +12,7 @@
   "short-expl": {
     "textTransformation": "Nach Verarbeitung der <em>Steuerzeichen</em> erhältst du das Ergebnis.",
     "decoder": "Ein <em>Dekoder</em> ordnet die erkannten Buchstaben ihrer Wahrscheinlichkeit nach und wählt das Zeichen mit der höchsten Wahrscheinlichkeit aus.",
-    "network": "<p>Das Spektrogramm wird von einem <em>Neuronalen Netzwerk</em> verarbeitet. Es berechnet Wahrscheinlichkeiten. Genauer gesagt, wie gut deine Aufnahme in einem bestimmten Moment zu einem Buchstaben aus den Trainingsdaten passt.</p><p>Zum Trainieren des Netzwerkes wurden hunderte Stunden von Sprachaufnahmen verwendet.</p>",
+    "network": "<p>Das Spektrogramm wird von einem <em>Neuronalen Netzwerk</em> verarbeitet. Es berechnet Wahrscheinlichkeiten. Genauer gesagt, wie gut deine Aufnahme in einem bestimmten Moment zu einem Buchstaben aus den Trainingsdaten passt.</p><p>Die Grafik zeigt die Aktivierung der Neuronen in den einzelnen Schichten des Netzwerks. Schicht 1 entsteht direkt aus dem Spektrogram, die nachfolgenden Schichten aus der jeweils vorhergehenden. Die Aktivierungen in der letzten Schicht (12) entsprechen den Wahrscheinlichkeiten der Buchstaben. </p><p>Durch Trainieren erlernt das Netzwerk, wie aus einer Schicht die folgende berechnet wird. Zum Trainieren wurden hunderte Stunden von Sprachaufnahmen verwendet.</p>",
     "spectrogram": "Die Wellenform wird in ein <em>Spektrogramm</em> überführt. Es beschreibt aus welchen Tonhöhen die Aufnahme zusammengesetzt ist (Frequenzspektrum) und wie sich diese Zusammensetzung mit der Zeit verändert.",
     "waveform": "Die Schallwellen deiner Stimme werden als <em>Wellenform</em> aufgenommen."
   },
